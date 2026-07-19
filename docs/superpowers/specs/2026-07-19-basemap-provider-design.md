@@ -71,7 +71,7 @@ Kepler 内部继续使用 `satellite` 和 `light` 两个稳定样式 ID：
 - 主底图：CARTO Voyager XYZ；
 - 简洁备用：OpenStreetMap XYZ。
 
-两者均使用内联 raster Style v8，避免额外 Style JSON 请求。界面始终显示对应数据归属。公共服务受其服务政策和可用性约束；生产或高并发部署建议使用本地地图服务。
+两者均使用内联 raster Style v8，避免额外 Style JSON 请求。技术上无需用户填写 Key 不等于没有许可或用途约束：部署前必须核实 [CARTO Basemaps 的许可/授权与用途条款](https://docs.carto.com/faqs/carto-basemaps)（当前文档说明商业用途需 Enterprise 许可，非商业用途须符合 grant 条款），并遵守 [OSM Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/) 对可见归属、缓存和请求标识的要求。`tile.openstreetmap.org` 仅尽力提供、没有 SLA，且可能限流或阻断；不要假定公共模式适合所有演示或商业用途。界面始终显示对应数据归属；生产和高并发部署应使用已核实许可与容量的受控地图服务。
 
 ## 本地地图服务
 
@@ -86,7 +86,7 @@ Kepler 内部继续使用 `satellite` 和 `light` 两个稳定样式 ID：
 
 - 非法模式、缺失显式模式配置、XYZ 占位符不完整、本地 Style HTTP 错误、非法 JSON 和不兼容 Style 均返回中文可操作错误。
 - 请求使用 `AbortController`，卸载和重试时取消旧请求。
-- 公共模式不依赖本地 Style 请求；公共服务瓦片运行期错误由 Kepler 地图错误状态呈现。
+- 公共模式不依赖本地 Style 请求；公共和本地 XYZ 的瓦片运行期错误由 Kepler 地图/浏览器网络状态呈现，不触发应用级配置重试。只有本地 Style JSON 的初始请求失败会进入可重试的配置错误状态。
 - Mapbox 模式仍要求 Token，但只在用户显式选择 Mapbox 时阻断。
 
 ## 测试与验收

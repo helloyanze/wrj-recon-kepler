@@ -54,7 +54,7 @@ npm run dev
 - `local`：要求配置本地 Style JSON URL 或本地 XYZ URL；缺少配置会显示明确的可操作错误。
 - `mapbox`：要求配置 `VITE_MAPBOX_TOKEN`；缺少 Token 会显示明确的可操作错误。
 
-公共模式的主底图为 CARTO Voyager，备用简洁底图为 OpenStreetMap（OSM），均不需要用户 Key。它们受各自服务政策和可用性约束，适合演示和低负载使用；高并发生产部署不应直接依赖这些公共服务，应使用受控的地图服务。
+公共模式的主底图为 CARTO Voyager，备用简洁底图为 OpenStreetMap（OSM），技术上不需要用户填写 API key，但这不等于没有许可、用途或可用性约束。部署前必须核实 [CARTO Basemaps 的许可/授权与用途条款](https://docs.carto.com/faqs/carto-basemaps)：CARTO 当前文档说明商业用途需要 Enterprise 许可，非商业用途须符合其 grant 条款。`tile.openstreetmap.org` 的使用还必须遵守 [OSM Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/)，包括可见归属、缓存和请求标识要求；该服务仅尽力提供、没有 SLA，并可能在不另行通知的情况下限流或阻断。不要假定公共模式适合所有演示或商业用途；生产和高并发部署应使用已核实许可与容量的受控地图服务。
 
 本地 XYZ 栅格服务示例（URL 必须保留 `{z}`、`{x}`、`{y}`）：
 
@@ -72,7 +72,9 @@ VITE_WRJ_LOCAL_STYLE_URL=https://maps.example.internal/styles/base/style.json
 VITE_WRJ_LOCAL_ATTRIBUTION=© 示例地图服务
 ```
 
-两者同时配置时，Style JSON 优先。Style JSON 必须符合 Mapbox Style Specification v8，并且其引用的 glyphs、sprites 和 tiles 均须能被浏览器访问；本地 Style/瓦片服务必须配置允许应用来源的 CORS。
+两者同时配置时，Style JSON 优先。Style JSON 必须符合 Mapbox Style Specification v8；其 glyph URL、sprite URL、tiles URL 及其派生资源 URL 都必须能被浏览器解析（建议使用绝对 URL）和访问，并分别配置允许应用来源的 CORS。本地 XYZ 瓦片服务同样必须配置 CORS。
+
+本地 Style JSON 在应用启动时加载失败，会进入可操作的配置错误页并可重试；XYZ URL 仅在启动时同步构造样式，后续瓦片服务不可用属于运行期地图/网络问题，应通过浏览器网络和画面诊断，不会触发应用级配置重试。
 
 只有显式 `mapbox` 模式，或 `auto` 实际选中 Mapbox 时，才需要 Token：
 

@@ -73,8 +73,9 @@
 
 Task5 待执行：
 
-- [ ] 无 `VITE_MAPBOX_TOKEN` 的公共模式：CARTO Voyager、OSM 切换、动态归属与无配置页启动
-- [ ] 本地 XYZ：瓦片请求、本地归属、公共备用与服务停止后的可操作失败/重试
+- [ ] 无 `VITE_MAPBOX_TOKEN` 的公共模式：CARTO Voyager、OSM 切换、动态归属与无配置页启动（技术验收不替代 CARTO/OSM 服务许可、用途与容量核实）
+- [ ] 本地 Style JSON：初始 fetch 失败显示可操作错误并可重试
+- [ ] 本地 XYZ：瓦片请求、本地归属、公共备用；服务停止时仅以浏览器网络/画面确认瓦片不可用，不作为应用级失败/重试验收
 
 ## 待有效 Token 后执行
 

@@ -103,8 +103,9 @@ export interface ResolvedBasemap {
 }
 
 const OSM_TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-const CARTO_TILES =
-  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png";
+const CARTO_TILES = ["a", "b", "c", "d"].map(
+  (subdomain) => `https://${subdomain}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png`
+);
 
 export function createRasterStyle(
   tiles: string[],
@@ -374,11 +375,11 @@ Expected: every command exits 0; record the actual test count and build output r
 
 - [ ] **Step 2: Verify public mode in a real browser**
 
-Start Vite without `VITE_MAPBOX_TOKEN`, open the app, and verify CARTO tiles, OSM switch, six datasets, Trip time control, 3D rotation, dynamic attribution, and no Token setup page. Test 1920×1080 and 1366×768.
+Start Vite without `VITE_MAPBOX_TOKEN`, open the app, and verify CARTO tiles, OSM switch, six datasets, Trip time control, 3D rotation, dynamic attribution, and no Token setup page. Test 1920×1080 and 1366×768. This is a technical browser check only: before deployment, separately verify CARTO licensing/grant/use terms and the OSM Tile Usage Policy; keyless access is not blanket permission or an availability guarantee.
 
 - [ ] **Step 3: Verify a local XYZ service**
 
-Run a temporary workspace-scoped XYZ fixture/service, start Vite with `VITE_WRJ_BASEMAP_MODE=local` and `VITE_WRJ_LOCAL_TILE_URL`, then verify local tile requests, local attribution, public backup switching, and actionable failure/retry when the local service is stopped.
+Run a temporary workspace-scoped XYZ fixture/service, start Vite with `VITE_WRJ_BASEMAP_MODE=local` and `VITE_WRJ_LOCAL_TILE_URL`, then verify local tile requests, local attribution, and public backup switching. When the XYZ service is stopped, use browser network/visual evidence only to confirm unavailable tiles; XYZ is resolved synchronously and does not enter the App configuration-error/retry flow. Separately use a local Style JSON URL whose initial fetch fails to verify the actionable configuration error and retry.
 
 - [ ] **Step 4: Update validation evidence**
 
