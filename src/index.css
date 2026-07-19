@@ -117,12 +117,12 @@ button { font: inherit; }
 .step-indicator .complete { color: var(--text-secondary); }
 .step-indicator .complete i { border-color: rgba(78,214,160,.55); color: var(--success); }
 
-.token-page { display: grid; place-items: center; width: 100%; height: 100%; padding: 24px; background: radial-gradient(circle at 50% 35%, #102b44, var(--bg-page) 58%); }
-.token-card { width: min(560px, 100%); padding: 34px; border: 1px solid var(--border-strong); background: rgba(12,26,43,.96); box-shadow: 0 24px 70px rgba(0,0,0,.28); }
-.token-card h1 { margin: 8px 0 10px; font-size: 27px; }
-.token-card p, .token-card li { color: var(--text-secondary); font-size: 13px; line-height: 1.7; }
-.token-card code { padding: 2px 5px; color: var(--accent); background: #07111f; }
-.token-note { padding-top: 14px; border-top: 1px solid var(--border); }
+.basemap-setup-page { display: grid; place-items: center; width: 100%; height: 100%; padding: 24px; background: radial-gradient(circle at 50% 35%, #102b44, var(--bg-page) 58%); }
+.basemap-setup-card { display: flex; flex-direction: column; align-items: center; gap: 14px; width: min(560px, 100%); padding: 34px; border: 1px solid var(--border-strong); background: rgba(12,26,43,.96); box-shadow: 0 24px 70px rgba(0,0,0,.28); }
+.basemap-setup-card h1 { align-self: stretch; margin: 0; font-size: 27px; }
+.basemap-setup-card p { align-self: stretch; margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.7; }
+.basemap-setup-card button { align-self: flex-start; border: 1px solid var(--border-strong); padding: 8px 10px; background: var(--bg-panel-strong); color: var(--text); cursor: pointer; }
+.basemap-setup-card button:hover { border-color: var(--accent); }
 
 @media (max-width: 1500px), (max-height: 820px) {
   .workspace { grid-template-rows: 56px 76px minmax(0, 1fr) 48px; }

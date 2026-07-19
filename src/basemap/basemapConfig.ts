@@ -109,7 +109,7 @@ function selectProvider(
 ): BasemapProvider {
   if (mode === "public") return "public";
   if (mode === "mapbox") {
-    if (!mapboxToken) throw configurationError("缺少 Mapbox Token");
+    if (!mapboxToken) throw configurationError("Mapbox Token 缺失");
     return "mapbox";
   }
   if (mode === "local") {

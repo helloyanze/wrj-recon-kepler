@@ -8,7 +8,6 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 import {createAppStore} from "../src/app/store";
 import {caseManifestSchema, caseSummarySchema} from "../src/data/caseSchema";
 import type {CaseBundle} from "../src/data/loadCase";
-import {TokenMissingPage} from "../src/components/TokenMissingPage";
 import {Workspace} from "../src/components/Workspace";
 
 vi.mock("../src/components/WrjKeplerMap", () => ({
@@ -57,13 +56,6 @@ function renderWorkspace(
 }
 
 describe("WRJ workspace", () => {
-  it("shows an explicit setup page when the Mapbox token is missing", () => {
-    render(<TokenMissingPage />);
-    expect(screen.getByRole("heading", {name: "缺少 Mapbox Token"})).toBeInTheDocument();
-    expect(screen.getByText(/VITE_MAPBOX_TOKEN/)).toBeInTheDocument();
-    expect(screen.getByText(".env.local")).toBeInTheDocument();
-  });
-
   it("loads the fixed case and renders metrics, UAVs and permanent provenance", async () => {
     const {caseLoader, keplerLoader} = renderWorkspace();
 
