@@ -4,7 +4,7 @@
 
 **Goal:** Make the WRJ workspace start without a Mapbox Token, automatically select local, Mapbox, or public basemaps, and support local Style v8 JSON and XYZ raster services.
 
-**Architecture:** A focused `basemapConfig` module converts environment inputs into a validated `ResolvedBasemap`, including stable `satellite`/`light` Kepler style IDs. `App` owns asynchronous local Style loading, cancellation, retry, and setup errors; `Workspace` owns provider-aware labels and attribution; `WrjKeplerMap` only adapts the resolved configuration to Kepler props.
+**Architecture:** A focused `basemapConfig` module converts environment inputs into a validated `ResolvedBasemap`, including stable `satellite`/`light` Kepler style IDs and `attributionByStyle`. `App` owns asynchronous local Style loading, cancellation, retry, and setup errors; `Workspace` owns provider-aware labels and per-style attribution; `WrjKeplerMap` only adapts the resolved configuration to Kepler props.
 
 **Tech Stack:** React 18, TypeScript 5.6, Kepler.gl 3.2.6, Redux 4.2, Vitest 2.1, Testing Library, Vite 5.4.
 
@@ -99,7 +99,7 @@ export interface ResolvedBasemap {
   primaryLabel: string;
   secondaryLabel: string;
   statusLabel: string;
-  attribution: string;
+  attributionByStyle: Record<"satellite" | "light", string>;
 }
 
 const OSM_TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";

@@ -8,7 +8,8 @@ React 18 + TypeScript + Vite + Kepler.gl 3.2.6 单页面工作台。项目自动
 
 - Node.js 20.x（开发验证版本：20.19.3）
 - npm 10.x
-- 有效的 Mapbox Access Token
+
+Mapbox Access Token 为可选项。默认 `auto` 模式会依次选择：本地 Style JSON/XYZ 配置、Mapbox Token、无需 Key 的公共地图。
 
 Kepler.gl 3.2.6 的部分传递依赖仍声明 React 16 peer，安装时需要 `--legacy-peer-deps`。按当前可用镜像选择一个临时 registry，不修改全局 npm 配置：
 
@@ -20,16 +21,20 @@ npm ci --legacy-peer-deps --registry=https://registry.npmmirror.com
 
 ## 启动
 
-复制环境变量示例并填写自己的 Token：
+复制环境变量示例：
 
 ```powershell
 Copy-Item .env.example .env.local
 ```
 
-`.env.local`：
+默认 `.env.local`：
 
 ```env
-VITE_MAPBOX_TOKEN=你的 Mapbox Token
+VITE_WRJ_BASEMAP_MODE=auto
+VITE_MAPBOX_TOKEN=
+VITE_WRJ_LOCAL_STYLE_URL=
+VITE_WRJ_LOCAL_TILE_URL=
+VITE_WRJ_LOCAL_ATTRIBUTION=本地地图数据
 VITE_WRJ_KEPLER_DEBUG=false
 VITE_WRJ_DATA_BASE=/data
 ```
@@ -40,7 +45,43 @@ VITE_WRJ_DATA_BASE=/data
 npm run dev
 ```
 
-缺少 `VITE_MAPBOX_TOKEN` 时，应用只显示明确的配置说明页，不会渲染空白地图。`VITE_WRJ_KEPLER_DEBUG=true` 时开放 Kepler 图层配置界面；默认模式保持只读。
+`VITE_WRJ_KEPLER_DEBUG=true` 时开放 Kepler 图层配置界面；默认模式保持只读。
+
+### 底图模式
+
+- `auto`（默认）：优先本地 Style JSON 或 XYZ；其次使用 `VITE_MAPBOX_TOKEN`；均未配置时使用公共地图。
+- `public`：始终使用无需用户 Key 的公共地图，即使已配置 Mapbox Token。
+- `local`：要求配置本地 Style JSON URL 或本地 XYZ URL；缺少配置会显示明确的可操作错误。
+- `mapbox`：要求配置 `VITE_MAPBOX_TOKEN`；缺少 Token 会显示明确的可操作错误。
+
+公共模式的主底图为 CARTO Voyager，备用简洁底图为 OpenStreetMap（OSM），均不需要用户 Key。它们受各自服务政策和可用性约束，适合演示和低负载使用；高并发生产部署不应直接依赖这些公共服务，应使用受控的地图服务。
+
+本地 XYZ 栅格服务示例（URL 必须保留 `{z}`、`{x}`、`{y}`）：
+
+```env
+VITE_WRJ_BASEMAP_MODE=local
+VITE_WRJ_LOCAL_TILE_URL=https://maps.example.internal/tiles/{z}/{x}/{y}.png
+VITE_WRJ_LOCAL_ATTRIBUTION=© 示例地图服务
+```
+
+本地 Style JSON 示例：
+
+```env
+VITE_WRJ_BASEMAP_MODE=local
+VITE_WRJ_LOCAL_STYLE_URL=https://maps.example.internal/styles/base/style.json
+VITE_WRJ_LOCAL_ATTRIBUTION=© 示例地图服务
+```
+
+两者同时配置时，Style JSON 优先。Style JSON 必须符合 Mapbox Style Specification v8，并且其引用的 glyphs、sprites 和 tiles 均须能被浏览器访问；本地 Style/瓦片服务必须配置允许应用来源的 CORS。
+
+只有显式 `mapbox` 模式，或 `auto` 实际选中 Mapbox 时，才需要 Token：
+
+```env
+VITE_WRJ_BASEMAP_MODE=mapbox
+VITE_MAPBOX_TOKEN=pk.你的公开访问令牌
+```
+
+不要将 Token 提交到仓库。公开 Token 仍应在 Mapbox 控制台限制允许的 URL、权限范围与使用配额。
 
 ## 数据
 
@@ -82,5 +123,5 @@ P0 实测结果、已通过项和 Token 相关待验收项见 [docs/P0_VALIDATIO
 - 点击 UAV 卡片：查看该机条带、高度、航程和时间
 - `Escape`：返回任务总览
 - `R`：重置日月湾三维视角
-- “卫星地图 / 简洁地图”：切换两个固定底图
+- 顶部两个底图按钮：切换两个固定样式；标签会随当前 provider 变化
 - Trip 播放：使用 Kepler 地图底部自带时间控制

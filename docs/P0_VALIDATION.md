@@ -5,7 +5,7 @@
 
 ## 结论
 
-自动化 P0、生产构建、Kepler reducer 集成、六类 Dataset、六个固定图层、四维 Trip、三维视角配置和 Token 缺失页均已通过。当前工作区未配置有效的 `VITE_MAPBOX_TOKEN`，因此真实卫星瓦片、真实 Token 下的 Trip 播放和 Chrome/Edge 完整手工验收标记为待执行，不将占位 Token 的结果冒充真实底图通过。
+既有自动化 P0、生产构建、Kepler reducer 集成、六类 Dataset、六个固定图层、四维 Trip 与三维视角证据见下表；支持 public、local、mapbox 的改造后自动化结果待本次最终复跑。无 Token 时的公共模式和本地 XYZ 的浏览器验收尚待 Task5，不提前记为通过。当前工作区未配置有效的 `VITE_MAPBOX_TOKEN`，因此真实卫星瓦片、真实 Token 下的 Trip 播放和 Chrome/Edge 完整手工验收仍标记为待执行，不将占位 Token 的结果冒充真实底图通过。
 
 ## 数据获取与真实性
 
@@ -36,13 +36,13 @@
 
 | 检查 | 结果 | 实际输出摘要 |
 |---|---|---|
-| `npm run data:validate` | 通过 | 164 POI、154 上下文、12 条带、3 架 UAV；边界、来源与安全契约通过 |
-| `npm run lint` | 通过 | 0 error，0 warning |
-| `npm run typecheck` | 通过 | 0 TypeScript error |
-| `npm run test:run` | 通过 | 9 个测试文件、35 个测试；含数据镜像基址、StrictMode 去重、Tooltip 字段及实例动作路由 |
-| `npm run build` | 通过 | Vite 5.4.21，5271 modules transformed |
+| `npm run data:validate` | 最近证据 | 164 POI、154 上下文、12 条带、3 架 UAV；边界、来源与安全契约通过 |
+| `npm run lint` | 待本次最终复跑 | 不沿用改造前结果作为当前通过结论 |
+| `npm run typecheck` | 待本次最终复跑 | 不沿用改造前结果作为当前通过结论 |
+| `npm run test:run` | 待本次最终复跑 | 不虚构改造后的测试文件或测试数量 |
+| `npm run build` | 待本次最终复跑 | 不沿用改造前构建结果作为当前通过结论 |
 
-测试覆盖 HTTP 错误、非法 JSON、请求取消、schema、OSM 规范化与 XML 回退、模拟标记、坐标顺序、时间单调性、3 架 UAV、12 条条带、摘要一致性、Trip CSV BOM 回归、Kepler 六 Dataset/六图层注入、Token 缺失、加载失败重试、UAV 选择、视角重置、底图切换、快捷键和永久声明。
+改造后的自动化测试已覆盖 public、local、mapbox 的配置解析、显式模式错误、本地 Style 加载与取消、provider 感知的标签/归属，以及 Kepler 自定义样式接入；最终完整命令结果仍待 Task5 复跑记录。数据与既有 P0 测试历史还覆盖 HTTP 错误、非法 JSON、schema、OSM 规范化与 XML 回退、模拟标记、坐标顺序、时间单调性、3 架 UAV、12 条条带、摘要一致性、Trip CSV BOM 回归、Kepler 六 Dataset/六图层注入、加载失败重试、UAV 选择、视角重置、底图切换、快捷键和永久声明。
 
 ## Kepler P0 集成
 
@@ -60,18 +60,21 @@
 
 ## 浏览器验证
 
-使用本地 Vite 服务和真实浏览器渲染完成：
+以下为改造前已观察到的浏览器证据；旧的 Token 缺失页已被新的启动流程取代，不能作为当前验收项：
 
-- 1920×1080 Token 缺失页：通过
-- 1366×768 Token 缺失页：通过
 - 两档页面均无白屏、横向溢出或说明截断
 - 占位 Token 下完整工作台成功渲染真实上下文、模拟任务区、12 条带、三架航迹、Trip 时间轴和 Kepler 图例
 - 无效 Token 按预期进入可重试错误态
-- 错误态仍常驻显示固定图例、真实/模拟数据边界、OSM 与 Mapbox 归属
+- 错误态仍常驻显示固定图例、真实/模拟数据边界与归属
 - 1366×768 保持 230/自适应/300 的压缩三栏结构和底部阶段条
 - 浏览器控制台未发现应用级 error 日志
 
 占位 Token 只能证明组件、数据、WebGL/Deck 渲染链和错误处理可运行，不能证明真实 Mapbox 卫星底图鉴权成功。
+
+Task5 待执行：
+
+- [ ] 无 `VITE_MAPBOX_TOKEN` 的公共模式：CARTO Voyager、OSM 切换、动态归属与无配置页启动
+- [ ] 本地 XYZ：瓦片请求、本地归属、公共备用与服务停止后的可操作失败/重试
 
 ## 待有效 Token 后执行
 
