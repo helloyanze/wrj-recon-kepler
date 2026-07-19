@@ -112,6 +112,18 @@ describe("resolveBasemap", () => {
     });
   });
 
+  it("isolates raster tile arrays between styles and resolved basemaps", async () => {
+    const tiles = ["https://tiles.example/{z}/{x}/{y}.png"];
+    const style = createRasterStyle(tiles, "Example");
+    tiles.push("https://mutated.example/{z}/{x}/{y}.png");
+    expect(style.sources.raster.tiles).toEqual(["https://tiles.example/{z}/{x}/{y}.png"]);
+
+    const first = await resolveBasemap({mode: "public"});
+    first.mapStyles![0].style.sources.raster.tiles!.push("https://mutated.example/{z}/{x}/{y}.png");
+    const second = await resolveBasemap({mode: "public"});
+    expect(second.mapStyles![0].style.sources.raster.tiles).toHaveLength(4);
+  });
+
   it("loads and preserves a valid local MapLibre style using the supplied signal", async () => {
     const style = {version: 8, sources: {local: {type: "vector"}}, layers: []};
     const controller = new AbortController();
@@ -157,6 +169,18 @@ describe("resolveBasemap", () => {
 
   it("rejects a local style with an incorrect version", async () => {
     await expectLocalStyleInvalid({version: 7, sources: {}, layers: []}, "version");
+  });
+
+  it("rejects null entries in local style sources and layers", async () => {
+    await expectLocalStyleInvalid({version: 8, sources: {bad: null}, layers: []}, "sources.bad");
+    await expectLocalStyleInvalid({version: 8, sources: {}, layers: [null]}, "layers[0]");
+  });
+
+  it("rejects local style layers with missing or empty id and type", async () => {
+    await expectLocalStyleInvalid({version: 8, sources: {}, layers: [{type: "fill"}]}, "layers[0].id");
+    await expectLocalStyleInvalid({version: 8, sources: {}, layers: [{id: "", type: "fill"}]}, "layers[0].id");
+    await expectLocalStyleInvalid({version: 8, sources: {}, layers: [{id: "a"}]}, "layers[0].type");
+    await expectLocalStyleInvalid({version: 8, sources: {}, layers: [{id: "a", type: ""}]}, "layers[0].type");
   });
 
   it("preserves AbortError when style loading is cancelled", async () => {

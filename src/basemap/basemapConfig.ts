@@ -36,16 +36,27 @@ export interface BasemapStyle {
   style: MapStyleV8;
 }
 
-export interface ResolvedBasemap {
-  provider: BasemapProvider;
+interface ResolvedBasemapBase {
   mapboxToken: string;
-  mapStyles?: BasemapStyle[];
-  mapStylesReplaceDefault: boolean;
   primaryLabel: string;
   secondaryLabel: string;
   statusLabel: string;
   attribution: string;
 }
+
+export interface RasterResolvedBasemap extends ResolvedBasemapBase {
+  provider: "public" | "local";
+  mapStyles: BasemapStyle[];
+  mapStylesReplaceDefault: true;
+}
+
+export interface MapboxResolvedBasemap extends ResolvedBasemapBase {
+  provider: "mapbox";
+  mapStyles?: undefined;
+  mapStylesReplaceDefault: false;
+}
+
+export type ResolvedBasemap = RasterResolvedBasemap | MapboxResolvedBasemap;
 
 type Fetcher = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -63,7 +74,7 @@ export function createRasterStyle(
 ): MapStyleV8 {
   return {
     version: 8,
-    sources: {raster: {type: "raster", tiles, tileSize, attribution}},
+    sources: {raster: {type: "raster", tiles: [...tiles], tileSize, attribution}},
     layers: [{id: "raster", type: "raster", source: "raster"}]
   };
 }
@@ -109,7 +120,7 @@ function selectProvider(
   return mapboxToken ? "mapbox" : "public";
 }
 
-function publicBasemap(): ResolvedBasemap {
+function publicBasemap(): RasterResolvedBasemap {
   return {
     provider: "public",
     mapboxToken: "",
@@ -125,7 +136,7 @@ function publicBasemap(): ResolvedBasemap {
   };
 }
 
-function mapboxBasemap(mapboxToken: string): ResolvedBasemap {
+function mapboxBasemap(mapboxToken: string): MapboxResolvedBasemap {
   return {
     provider: "mapbox",
     mapboxToken,
@@ -143,7 +154,7 @@ async function localBasemap(
   localAttribution: string | undefined,
   signal: AbortSignal | undefined,
   fetcher: Fetcher
-): Promise<ResolvedBasemap> {
+): Promise<RasterResolvedBasemap> {
   const attribution = nonEmpty(localAttribution) ?? "本地地图数据 · © OpenStreetMap contributors";
   const style = localStyleUrl
     ? await loadStyle(localStyleUrl, signal, fetcher)
@@ -196,11 +207,31 @@ function validateMapStyle(value: unknown, url: string): MapStyleV8 {
   }
   const style = value as Record<string, unknown>;
   if (style.version !== 8) throw configurationError(`本地地图样式 version 必须为 8（${url}）`);
-  if (!style.sources || typeof style.sources !== "object" || Array.isArray(style.sources)) {
+  if (!isObjectRecord(style.sources)) {
     throw configurationError(`本地地图样式 sources 必须是对象（${url}）`);
   }
   if (!Array.isArray(style.layers)) throw configurationError(`本地地图样式 layers 必须是数组（${url}）`);
+  for (const [name, source] of Object.entries(style.sources)) {
+    if (!isObjectRecord(source)) {
+      throw configurationError(`本地地图样式 sources.${name} 必须是非空对象（${url}）`);
+    }
+  }
+  for (const [index, layer] of style.layers.entries()) {
+    if (!isObjectRecord(layer)) {
+      throw configurationError(`本地地图样式 layers[${index}] 必须是非空对象（${url}）`);
+    }
+    if (typeof layer.id !== "string" || !layer.id.trim()) {
+      throw configurationError(`本地地图样式 layers[${index}].id 必须是非空字符串（${url}）`);
+    }
+    if (typeof layer.type !== "string" || !layer.type.trim()) {
+      throw configurationError(`本地地图样式 layers[${index}].type 必须是非空字符串（${url}）`);
+    }
+  }
   return value as MapStyleV8;
+}
+
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function nonEmpty(value: string | undefined): string | undefined {
