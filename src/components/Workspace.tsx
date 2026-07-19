@@ -300,8 +300,8 @@ export function Workspace({
         <span className="token-status"><i /> {basemap.statusLabel}</span>
         {debugMode ? <span className="debug-badge">调试模式</span> : null}
         <div className="top-actions">
-          <button type="button" className={styleType === "satellite" ? "active" : ""} onClick={() => changeStyle("satellite")}>{basemap.primaryLabel}</button>
-          <button type="button" className={styleType === "light" ? "active" : ""} onClick={() => changeStyle("light")}>{basemap.secondaryLabel}</button>
+          <button type="button" className={styleType === "satellite" ? "active" : ""} onClick={() => changeStyle("satellite")} disabled={status !== "ready"}>{basemap.primaryLabel}</button>
+          <button type="button" className={styleType === "light" ? "active" : ""} onClick={() => changeStyle("light")} disabled={status !== "ready"}>{basemap.secondaryLabel}</button>
           <button type="button" onClick={resetView}>重置三维视角</button>
         </div>
       </header>

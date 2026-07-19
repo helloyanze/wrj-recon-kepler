@@ -2,7 +2,7 @@ import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {StrictMode} from "react";
 import {mapStyleChange, updateMap} from "@kepler.gl/actions";
-import {cleanup, fireEvent, render, screen, waitFor} from "@testing-library/react";
+import {act, cleanup, fireEvent, render, screen, waitFor} from "@testing-library/react";
 import {Provider} from "react-redux";
 import {afterEach, describe, expect, it, vi} from "vitest";
 import {createAppStore} from "../src/app/store";
@@ -32,6 +32,14 @@ function makeBundle(): CaseBundle {
     keplerConfig: {},
     datasets: []
   };
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+  return {promise, resolve};
 }
 
 const MapStub = () => <div data-testid="kepler-map">Kepler map</div>;
@@ -92,6 +100,34 @@ function renderWorkspace(
 }
 
 describe("WRJ workspace", () => {
+  it("prevents basemap changes until the fixed case is ready", async () => {
+    const pendingCase = deferred<CaseBundle>();
+    const store = createAppStore(false);
+    const dispatch = vi.spyOn(store, "dispatch");
+    renderWorkspace(vi.fn(() => pendingCase.promise), undefined, store);
+
+    const primaryButton = screen.getByRole("button", {name: "公共地图"});
+    const secondaryButton = screen.getByRole("button", {name: "OSM 简洁图"});
+    expect(primaryButton).toBeDisabled();
+    expect(secondaryButton).toBeDisabled();
+    fireEvent.click(secondaryButton);
+    expect(dispatch).not.toHaveBeenCalled();
+
+    await act(async () => {
+      pendingCase.resolve(makeBundle());
+      await pendingCase.promise;
+    });
+    expect(await screen.findByText("63.23 km")).toBeInTheDocument();
+    expect(primaryButton).toBeEnabled();
+    expect(secondaryButton).toBeEnabled();
+    fireEvent.click(secondaryButton);
+
+    expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({
+      meta: expect.objectContaining({_addr_: "@@KG_WRJ-MAP"}),
+      payload: expect.objectContaining({type: mapStyleChange("light").type})
+    }));
+  });
+
   it("shows the selected basemap attribution while case data is loading", () => {
     renderWorkspace(vi.fn(() => new Promise<CaseBundle>(() => undefined)));
 

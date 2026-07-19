@@ -51,6 +51,7 @@ button { font: inherit; }
 .top-actions { display: flex; gap: 6px; }
 .top-actions button, .error-state button { border: 1px solid var(--border-strong); padding: 8px 10px; background: var(--bg-panel-strong); color: var(--text-secondary); cursor: pointer; }
 .top-actions button:hover, .top-actions button.active { border-color: var(--accent); color: var(--text); }
+.top-actions button:disabled, .top-actions button:disabled:hover { cursor: not-allowed; opacity: .55; border-color: var(--border-strong); color: var(--text-secondary); }
 
 .metric-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
 .metric-card { display: flex; flex-direction: column; justify-content: center; padding: 10px 14px; border: 1px solid var(--border); background: linear-gradient(120deg, rgba(17,41,65,.96), rgba(12,26,43,.92)); }
