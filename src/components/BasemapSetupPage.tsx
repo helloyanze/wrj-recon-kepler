@@ -6,8 +6,8 @@ interface BasemapSetupPageProps {
 export function BasemapSetupPage({error, onRetry}: BasemapSetupPageProps) {
   if (!error) {
     return (
-      <main className="basemap-setup-page" aria-live="polite" role="status">
-        <section className="basemap-setup-card">
+      <main className="basemap-setup-page">
+        <section className="basemap-setup-card" aria-live="polite" role="status">
           <span className="spinner" aria-hidden="true" />
           <p>正在准备地图底图…</p>
         </section>

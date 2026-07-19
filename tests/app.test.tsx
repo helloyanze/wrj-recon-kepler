@@ -45,6 +45,7 @@ describe("App basemap bootstrap", () => {
     const loader = vi.fn(() => new Promise<ResolvedBasemap>(() => undefined));
     render(<App basemapEnvironment={{mode: "public"}} basemapLoader={loader} />);
 
+    expect(screen.getByRole("main")).not.toHaveAttribute("aria-live");
     expect(screen.getByRole("status")).toHaveTextContent("正在准备地图底图…");
     expect(screen.getByText("正在准备地图底图…").previousElementSibling).toHaveAttribute("aria-hidden", "true");
   });
