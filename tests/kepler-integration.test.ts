@@ -1,7 +1,7 @@
 // @vitest-environment node
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
-import {describe, expect, it} from "vitest";
+import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import {addDataToMap, registerEntry, updateMap, wrapTo} from "@kepler.gl/actions";
 import {createAppStore} from "../src/app/store";
 import {caseManifestSchema, caseSummarySchema} from "../src/data/caseSchema";
@@ -12,15 +12,23 @@ function readJson(path: string): unknown {
   return JSON.parse(readFileSync(resolve(path), "utf8")) as unknown;
 }
 
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
 function readOfflineKeplerConfig(): Record<string, unknown> {
   const saved = readJson("public/config/wrj-kepler-config.json");
   if (!saved || typeof saved !== "object" || !("config" in saved)) {
     throw new Error("测试 Kepler 配置无效");
   }
   const config = saved.config;
-  if (!config || typeof config !== "object") throw new Error("测试地图配置无效");
-  const entries = Object.entries(config).filter(([key]) => key !== "mapStyle");
-  return {...saved, config: Object.fromEntries(entries)};
+  if (!isObjectRecord(config)) throw new Error("测试地图配置无效");
+  if (!isObjectRecord(config.mapStyle)) {
+    throw new Error("测试 Kepler mapStyle 配置无效");
+  }
+  const mapStyle = {...config.mapStyle};
+  delete mapStyle.mapStyles;
+  return {...saved, config: {...config, mapStyle}};
 }
 
 function loadBundleFromDisk(): CaseBundle {
@@ -47,6 +55,19 @@ function loadBundleFromDisk(): CaseBundle {
     datasets
   };
 }
+
+beforeEach(() => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockImplementation(() => Promise.resolve(
+      new Response(JSON.stringify({version: 8, sources: {}, layers: []}), {status: 200})
+    ))
+  );
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("Kepler P0 integration", () => {
   it("removes only saved map styles before configuring the live map", () => {
@@ -162,6 +183,7 @@ describe("Kepler P0 integration", () => {
       pitch: 52,
       bearing: -18
     });
+    expect(mapState.mapStyle.styleType).toBe("satellite");
 
     const savedConfig = readJson("public/config/wrj-kepler-config.json") as {
       config: {
