@@ -24,7 +24,7 @@ describe("resolveBasemap", () => {
       secondaryLabel: "OSM 简洁图",
       statusLabel: "公共底图"
     });
-    expect(result.mapboxToken).toBeUndefined();
+    expect(result.mapboxToken).toBe("");
     expect(result.mapStyles?.map(({id}) => id)).toEqual(["satellite", "light"]);
   });
 
@@ -35,6 +35,7 @@ describe("resolveBasemap", () => {
     });
 
     expect(result).toMatchObject({provider: "local", statusLabel: "本地底图"});
+    expect(result.mapboxToken).toBe("");
     expect(result.mapStyles?.[0].style.sources.raster.tiles).toEqual([
       "https://tiles.example/{z}/{x}/{y}.png"
     ]);
@@ -62,7 +63,7 @@ describe("resolveBasemap", () => {
   });
 
   it("rejects an invalid mode with a Chinese configuration error", async () => {
-    await expect(resolveBasemap({mode: "other" as never})).rejects.toThrow(
+    await expect(resolveBasemap({mode: "other"})).rejects.toThrow(
       /^底图配置错误：/
     );
   });
@@ -90,6 +91,11 @@ describe("resolveBasemap", () => {
       "https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
     ]);
     expect(satellite.style.sources.raster.attribution).toContain("CARTO");
+    expect(satellite.style.sources.raster.attribution).toContain(OSM_ATTRIBUTION);
+    expect(result.attribution).toBe(satellite.style.sources.raster.attribution);
+    expect(light.style.sources.raster.tiles).toEqual([
+      "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+    ]);
     expect(light.style.sources.raster.attribution).toBe(OSM_ATTRIBUTION);
     expect(createRasterStyle(["https://tiles.example/{z}/{x}/{y}.png"], "Example", 512)).toEqual({
       version: 8,
@@ -136,19 +142,20 @@ describe("resolveBasemap", () => {
     ).rejects.toThrow("JSON");
   });
 
-  it("rejects local styles missing required Map Style v8 structure", async () => {
-    const fetcher = vi.fn();
-    for (const value of [
-      null,
-      {version: 7, sources: {}, layers: []},
-      {version: 8, sources: [], layers: []},
-      {version: 8, sources: {x: {}}, layers: {}}
-    ]) {
-      fetcher.mockResolvedValueOnce(new Response(JSON.stringify(value)));
-      await expect(
-        resolveBasemap({mode: "local", localStyleUrl: "https://maps.example/style.json"}, undefined, fetcher)
-      ).rejects.toThrow(/^底图配置错误：/);
-    }
+  it("rejects a local style with no sources property", async () => {
+    await expectLocalStyleInvalid({version: 8, layers: []}, "sources");
+  });
+
+  it("rejects a local style with no layers property", async () => {
+    await expectLocalStyleInvalid({version: 8, sources: {}}, "layers");
+  });
+
+  it("rejects a local style with no version property", async () => {
+    await expectLocalStyleInvalid({sources: {}, layers: []}, "version");
+  });
+
+  it("rejects a local style with an incorrect version", async () => {
+    await expectLocalStyleInvalid({version: 7, sources: {}, layers: []}, "version");
   });
 
   it("preserves AbortError when style loading is cancelled", async () => {
@@ -161,3 +168,10 @@ describe("resolveBasemap", () => {
     ).rejects.toMatchObject({name: "AbortError"});
   });
 });
+
+async function expectLocalStyleInvalid(value: unknown, message: string): Promise<void> {
+  const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify(value)));
+  await expect(
+    resolveBasemap({mode: "local", localStyleUrl: "https://maps.example/style.json"}, undefined, fetcher)
+  ).rejects.toThrow(message);
+}

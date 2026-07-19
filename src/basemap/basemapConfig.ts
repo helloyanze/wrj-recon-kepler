@@ -24,7 +24,7 @@ export interface MapStyleLayer {
 }
 
 export interface BasemapEnvironment {
-  mode?: BasemapMode;
+  mode?: string;
   mapboxToken?: string;
   localStyleUrl?: string;
   localTileUrl?: string;
@@ -38,7 +38,7 @@ export interface BasemapStyle {
 
 export interface ResolvedBasemap {
   provider: BasemapProvider;
-  mapboxToken?: string;
+  mapboxToken: string;
   mapStyles?: BasemapStyle[];
   mapStylesReplaceDefault: boolean;
   primaryLabel: string;
@@ -49,7 +49,7 @@ export interface ResolvedBasemap {
 
 type Fetcher = (input: string, init?: RequestInit) => Promise<Response>;
 
-const OSM_TILES = ["https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png"];
+const OSM_TILES = ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"];
 const OSM_ATTRIBUTION = "© OpenStreetMap contributors";
 const CARTO_TILES = ["a", "b", "c", "d"].map(
   (subdomain) => `https://${subdomain}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png`
@@ -112,6 +112,7 @@ function selectProvider(
 function publicBasemap(): ResolvedBasemap {
   return {
     provider: "public",
+    mapboxToken: "",
     mapStyles: [
       {id: "satellite", style: createRasterStyle(CARTO_TILES, CARTO_ATTRIBUTION)},
       {id: "light", style: createRasterStyle(OSM_TILES, OSM_ATTRIBUTION)}
@@ -150,6 +151,7 @@ async function localBasemap(
 
   return {
     provider: "local",
+    mapboxToken: "",
     mapStyles: [
       {id: "satellite", style},
       {id: "light", style: createRasterStyle(OSM_TILES, OSM_ATTRIBUTION)}
