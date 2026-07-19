@@ -1,0 +1,44 @@
+{
+  "caseId": "riyue-3d",
+  "name": "日月湾真实环境三维侦察演示",
+  "coordinateReference": "EPSG:4326",
+  "basemap": {
+    "provider": "Mapbox",
+    "style": "satellite",
+    "dataNature": "REAL_BASEMAP"
+  },
+  "summaryFile": "/data/riyue-3d/simulated/summary.json",
+  "keplerConfigFile": "/config/wrj-kepler-config.json",
+  "datasets": [
+    {
+      "id": "wrj-real-pois",
+      "file": "/data/riyue-3d/real/real-pois.geojson",
+      "dataNature": "REAL_PUBLIC_GEODATA"
+    },
+    {
+      "id": "wrj-real-context",
+      "file": "/data/riyue-3d/real/real-context.geojson",
+      "dataNature": "REAL_PUBLIC_GEODATA"
+    },
+    {
+      "id": "wrj-simulated-region",
+      "file": "/data/riyue-3d/simulated/region.geojson",
+      "dataNature": "SIMULATED_MISSION_DATA"
+    },
+    {
+      "id": "wrj-simulated-strips",
+      "file": "/data/riyue-3d/simulated/strips.geojson",
+      "dataNature": "SIMULATED_MISSION_DATA"
+    },
+    {
+      "id": "wrj-simulated-planned-routes",
+      "file": "/data/riyue-3d/simulated/planned-routes.geojson",
+      "dataNature": "SIMULATED_MISSION_DATA"
+    },
+    {
+      "id": "wrj-simulated-trips",
+      "file": "/data/riyue-3d/simulated/trips.csv",
+      "dataNature": "SIMULATED_MISSION_DATA"
+    }
+  ]
+}

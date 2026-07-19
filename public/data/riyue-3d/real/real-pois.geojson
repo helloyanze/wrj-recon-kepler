@@ -1,0 +1,4550 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2071546,
+          18.6292474
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "node",
+        "sourceId": "3974753758",
+        "sourceRef": "node/3974753758",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_motorway_junction",
+        "geometryOrigin": "original",
+        "osmTags": {
+          "highway": "motorway_junction"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.209829,
+          18.6304524
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "node",
+        "sourceId": "3974753773",
+        "sourceRef": "node/3974753773",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_motorway_junction",
+        "geometryOrigin": "original",
+        "osmTags": {
+          "highway": "motorway_junction"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2047801,
+          18.6139965
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "node",
+        "sourceId": "5313492616",
+        "sourceRef": "node/5313492616",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "日岛",
+        "category": "place_islet",
+        "geometryOrigin": "original",
+        "osmTags": {
+          "name": "日岛",
+          "place": "islet"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.1916748,
+          18.6235792
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "node",
+        "sourceId": "9552049002",
+        "sourceRef": "node/9552049002",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "新村",
+        "category": "place_village",
+        "geometryOrigin": "original",
+        "osmTags": {
+          "name": "新村",
+          "place": "village"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.185268925,
+          18.619101875
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "389174685",
+        "sourceRef": "way/389174685",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南东环高速线",
+        "category": "named_place",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "alt_name": "海南环岛高铁线东段;海南环岛高铁东段",
+          "electrified": "contact_line",
+          "frequency": "50",
+          "gauge": "1435",
+          "highspeed": "yes",
+          "layer": "-1",
+          "loc_name": "海南东环铁路",
+          "maxspeed": "250",
+          "name": "海南东环高速线",
+          "passenger_lines": "2",
+          "railway": "rail",
+          "railway:traffic_mode": "passenger",
+          "ref": "3018",
+          "start_date": "2010-12-30",
+          "tunnel": "yes",
+          "usage": "main",
+          "voltage": "25000"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21197725652173,
+          18.62904529130435
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "394469820",
+        "sourceRef": "way/394469820",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_tertiary",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "tertiary"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20866104000001,
+          18.63026832
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "394469824",
+        "sourceRef": "way/394469824",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_motorway_link",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "motorway_link",
+          "oneway": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20793802857142,
+          18.629235
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "394469826",
+        "sourceRef": "way/394469826",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_motorway_link",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "motorway_link",
+          "oneway": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20890941428571,
+          18.629548271428572
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "394469831",
+        "sourceRef": "way/394469831",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_motorway_link",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "motorway_link",
+          "oneway": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2017471,
+          18.61858055
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "549923556",
+        "sourceRef": "way/549923556",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_tertiary",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "tertiary",
+          "layer": "1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20439161359998,
+          18.613821750400007
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "549923558",
+        "sourceRef": "way/549923558",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "融创日岛",
+        "category": "natural_coastline",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "name": "融创日岛",
+          "natural": "coastline",
+          "place": "islet"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.18059839999998,
+          18.61691604
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "549932537",
+        "sourceRef": "way/549932537",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.200757,
+          18.62012585
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "550100660",
+        "sourceRef": "way/550100660",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_tertiary",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "tertiary"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20003903250002,
+          18.619590679999998
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "550100661",
+        "sourceRef": "way/550100661",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_tertiary",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "tertiary"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.185241475,
+          18.6191393
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "627788874",
+        "sourceRef": "way/627788874",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南东环高速线",
+        "category": "named_place",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "alt_name": "海南环岛高铁线东段;海南环岛高铁东段",
+          "electrified": "contact_line",
+          "frequency": "50",
+          "gauge": "1435",
+          "highspeed": "yes",
+          "layer": "-1",
+          "loc_name": "海南东环铁路",
+          "maxspeed": "250",
+          "name": "海南东环高速线",
+          "passenger_lines": "2",
+          "railway": "rail",
+          "railway:traffic_mode": "passenger",
+          "ref": "3018",
+          "start_date": "2010-12-30",
+          "tunnel": "yes",
+          "usage": "main",
+          "voltage": "25000"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21584708813558,
+          18.63010177627119
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "844022320",
+        "sourceRef": "way/844022320",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "Wanning Riyue Bay",
+        "category": "natural_beach",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "name": "Wanning Riyue Bay",
+          "natural": "beach"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.19688803421052,
+          18.626947665789476
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "844022331",
+        "sourceRef": "way/844022331",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20478887826089,
+          18.614289404347822
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "844022332",
+        "sourceRef": "way/844022332",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_tertiary",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "tertiary"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.201011,
+          18.628079800000002
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "860387305",
+        "sourceRef": "way/860387305",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南东环高速线",
+        "category": "named_place",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "alt_name": "海南环岛高铁线东段;海南环岛高铁东段",
+          "electrified": "contact_line",
+          "frequency": "50",
+          "gauge": "1435",
+          "highspeed": "yes",
+          "loc_name": "海南东环铁路",
+          "maxspeed": "250",
+          "name": "海南东环高速线",
+          "passenger_lines": "2",
+          "railway": "rail",
+          "railway:traffic_mode": "passenger",
+          "ref": "3018",
+          "start_date": "2010-12-30",
+          "usage": "main",
+          "voltage": "25000"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20103295,
+          18.628039100000002
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "860387306",
+        "sourceRef": "way/860387306",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南东环高速线",
+        "category": "named_place",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "alt_name": "海南环岛高铁线东段;海南环岛高铁东段",
+          "electrified": "contact_line",
+          "frequency": "50",
+          "gauge": "1435",
+          "highspeed": "yes",
+          "loc_name": "海南东环铁路",
+          "maxspeed": "250",
+          "name": "海南东环高速线",
+          "passenger_lines": "2",
+          "railway": "rail",
+          "railway:traffic_mode": "passenger",
+          "ref": "3018",
+          "start_date": "2010-12-30",
+          "usage": "main",
+          "voltage": "25000"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20510531666667,
+          18.627502766666666
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839402",
+        "sourceRef": "way/1036839402",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20372735000001,
+          18.626495900000002
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839403",
+        "sourceRef": "way/1036839403",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_track",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "track"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20380602499999,
+          18.62593005
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839404",
+        "sourceRef": "way/1036839404",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_track",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "track"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20069220769233,
+          18.62403440769231
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839406",
+        "sourceRef": "way/1036839406",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_track",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "track"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.19983571,
+          18.62971545
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839411",
+        "sourceRef": "way/1036839411",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20094325,
+          18.627282100000002
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839412",
+        "sourceRef": "way/1036839412",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2006144,
+          18.62780725
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839413",
+        "sourceRef": "way/1036839413",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified",
+          "layer": "-1",
+          "tunnel": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20134515000001,
+          18.626640350000002
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839414",
+        "sourceRef": "way/1036839414",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "unclassified",
+          "layer": "1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2003256,
+          18.6282685
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839415",
+        "sourceRef": "way/1036839415",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20248195384617,
+          18.623583342307697
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839416",
+        "sourceRef": "way/1036839416",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.19328645,
+          18.6216789
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839417",
+        "sourceRef": "way/1036839417",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.1930964,
+          18.621963100000002
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839418",
+        "sourceRef": "way/1036839418",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "unclassified",
+          "layer": "1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.19243511999998,
+          18.62259846
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839419",
+        "sourceRef": "way/1036839419",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.19738927499999,
+          18.626405025
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839421",
+        "sourceRef": "way/1036839421",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.19748447500001,
+          18.625850925
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839422",
+        "sourceRef": "way/1036839422",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.19749250000001,
+          18.626106999999998
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839423",
+        "sourceRef": "way/1036839423",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified",
+          "layer": "-1",
+          "tunnel": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.19568475,
+          18.625100500000002
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839424",
+        "sourceRef": "way/1036839424",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified",
+          "layer": "-1",
+          "tunnel": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.19559355,
+          18.6252403
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839425",
+        "sourceRef": "way/1036839425",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.19578576666667,
+          18.6248586
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839426",
+        "sourceRef": "way/1036839426",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.1912886,
+          18.62348941666667
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839428",
+        "sourceRef": "way/1036839428",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.18040015,
+          18.61570975
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839442",
+        "sourceRef": "way/1036839442",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified",
+          "layer": "-1",
+          "tunnel": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.18496525,
+          18.61624355
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839443",
+        "sourceRef": "way/1036839443",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.18465210000001,
+          18.615154974999996
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839444",
+        "sourceRef": "way/1036839444",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.1851624,
+          18.61609995
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839445",
+        "sourceRef": "way/1036839445",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified",
+          "layer": "-1",
+          "tunnel": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2082913,
+          18.630471299999996
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1087286920",
+        "sourceRef": "way/1087286920",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_tertiary",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "tertiary"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2082737,
+          18.629759649999997
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1087286921",
+        "sourceRef": "way/1087286921",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_tertiary",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "tertiary",
+          "layer": "1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.19216082,
+          18.62200584
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1178707149",
+        "sourceRef": "way/1178707149",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.19204954000001,
+          18.62164312
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1178707150",
+        "sourceRef": "way/1178707150",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.1925012,
+          18.622041080000002
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1178707151",
+        "sourceRef": "way/1178707151",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.18327280000001,
+          18.61476974
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1178707153",
+        "sourceRef": "way/1178707153",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.18202360000001,
+          18.614317579999998
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1178707155",
+        "sourceRef": "way/1178707155",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.18018714,
+          18.61659196
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1178707157",
+        "sourceRef": "way/1178707157",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.18590077619046,
+          18.617443866666665
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196569292",
+        "sourceRef": "way/1196569292",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.19183975,
+          18.622928549999997
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196569293",
+        "sourceRef": "way/1196569293",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "unclassified",
+          "layer": "1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2099466210526,
+          18.628446910526318
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891176",
+        "sourceRef": "way/1196891176",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2121214682927,
+          18.629417024390243
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196894733",
+        "sourceRef": "way/1196894733",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "natural_wood",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "natural": "wood"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20639785714287,
+          18.629775414285714
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196894734",
+        "sourceRef": "way/1196894734",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "natural_wood",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "natural": "wood"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20167459230768,
+          18.627831307692308
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196894735",
+        "sourceRef": "way/1196894735",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2027335,
+          18.628543020000002
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196894736",
+        "sourceRef": "way/1196894736",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20485181578947,
+          18.62469514736842
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196894737",
+        "sourceRef": "way/1196894737",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "natural_wood",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "natural": "wood"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21304911666665,
+          18.628886216666668
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "844022322",
+        "sourceRef": "way/844022322",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "Sun Moon Bay Supermarket",
+        "category": "named_place",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "name": "Sun Moon Bay Supermarket",
+          "shop": "supermarket"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21282685999999,
+          18.62859436
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "844022323",
+        "sourceRef": "way/844022323",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "amenity_restaurant",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "amenity": "restaurant"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21254069999999,
+          18.628431383333332
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "844022324",
+        "sourceRef": "way/844022324",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "amenity_restaurant",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "amenity": "restaurant",
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2134829142857,
+          18.629946342857146
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196569296",
+        "sourceRef": "way/1196569296",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.213573225,
+          18.629815540000003
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196569301",
+        "sourceRef": "way/1196569301",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2109697,
+          18.62842608333333
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891175",
+        "sourceRef": "way/1196891175",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21084655454547,
+          18.628108418181817
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891177",
+        "sourceRef": "way/1196891177",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes",
+          "layer": "-1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21160284545454,
+          18.6288359
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891178",
+        "sourceRef": "way/1196891178",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "amenity_parking",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "amenity": "parking"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2117762235294,
+          18.628118188235295
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891179",
+        "sourceRef": "way/1196891179",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21285010000001,
+          18.6292162
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891180",
+        "sourceRef": "way/1196891180",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21275619499997,
+          18.62962837
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891181",
+        "sourceRef": "way/1196891181",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "amenity_parking",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "amenity": "parking"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21337751428572,
+          18.62949941428571
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891182",
+        "sourceRef": "way/1196891182",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2087712,
+          18.6410402
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "node",
+        "sourceId": "9552048576",
+        "sourceRef": "node/9552048576",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "田头",
+        "category": "place_village",
+        "geometryOrigin": "original",
+        "osmTags": {
+          "name": "田头",
+          "place": "village"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2062929,
+          18.6441002
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "node",
+        "sourceId": "9552048577",
+        "sourceRef": "node/9552048577",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "谷庭",
+        "category": "place_village",
+        "geometryOrigin": "original",
+        "osmTags": {
+          "name": "谷庭",
+          "place": "village"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2049625,
+          18.6460825
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "node",
+        "sourceId": "9552048578",
+        "sourceRef": "node/9552048578",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "井口园",
+        "category": "place_village",
+        "geometryOrigin": "original",
+        "osmTags": {
+          "name": "井口园",
+          "place": "village"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20921258571427,
+          18.630484885714285
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "394469829",
+        "sourceRef": "way/394469829",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_motorway_link",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "motorway_link",
+          "oneway": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20770282941177,
+          18.637285164705883
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "844022319",
+        "sourceRef": "way/844022319",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified",
+          "source": "maxar"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21061199130433,
+          18.632598978260873
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "844022326",
+        "sourceRef": "way/844022326",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21124461428572,
+          18.652812771428568
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839370",
+        "sourceRef": "way/1036839370",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20889093333334,
+          18.6505844
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839371",
+        "sourceRef": "way/1036839371",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20863445,
+          18.65064685
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839372",
+        "sourceRef": "way/1036839372",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "unclassified",
+          "layer": "1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20463708405796,
+          18.65404118985507
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839373",
+        "sourceRef": "way/1036839373",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20382042083332,
+          18.644588762500003
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839374",
+        "sourceRef": "way/1036839374",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20579573333333,
+          18.645094733333334
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839375",
+        "sourceRef": "way/1036839375",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20489313823528,
+          18.64603480882353
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839376",
+        "sourceRef": "way/1036839376",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20609974999999,
+          18.64295395
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839377",
+        "sourceRef": "way/1036839377",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2079585,
+          18.644471199999998
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839378",
+        "sourceRef": "way/1036839378",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20705190000001,
+          18.64462625
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839379",
+        "sourceRef": "way/1036839379",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "unclassified",
+          "layer": "1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.209478775,
+          18.64254915
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839380",
+        "sourceRef": "way/1036839380",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified",
+          "source": "maxar"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2090472,
+          18.6422808
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839381",
+        "sourceRef": "way/1036839381",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "unclassified",
+          "layer": "1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2069806695652,
+          18.643111656521743
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839382",
+        "sourceRef": "way/1036839382",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20056534,
+          18.640324839999998
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839383",
+        "sourceRef": "way/1036839383",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20543963333333,
+          18.640405133333335
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839384",
+        "sourceRef": "way/1036839384",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20384905,
+          18.636109413043478
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839385",
+        "sourceRef": "way/1036839385",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20339384000002,
+          18.638315719999998
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839386",
+        "sourceRef": "way/1036839386",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "田新小学",
+        "category": "amenity_school",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "amenity": "school",
+          "name": "田新小学"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21109458888888,
+          18.63643341111111
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839389",
+        "sourceRef": "way/1036839389",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_track",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "track"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21012404999999,
+          18.635171512499998
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839401",
+        "sourceRef": "way/1036839401",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20695403333333,
+          18.63033555
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839407",
+        "sourceRef": "way/1036839407",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20788745,
+          18.63051175
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839408",
+        "sourceRef": "way/1036839408",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.205222675,
+          18.631520775000002
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839409",
+        "sourceRef": "way/1036839409",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20595225,
+          18.63080275
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839410",
+        "sourceRef": "way/1036839410",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "unclassified",
+          "layer": "1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21082721875001,
+          18.631912325
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196894727",
+        "sourceRef": "way/1196894727",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "natural_wood",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "natural": "wood"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.20982675999998,
+          18.63095364
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196894732",
+        "sourceRef": "way/1196894732",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.24334696874999,
+          18.651113375
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "131681601",
+        "sourceRef": "way/131681601",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.22769079459458,
+          18.640722864864863
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "274214502",
+        "sourceRef": "way/274214502",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.23867805,
+          18.646701550000003
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "274214503",
+        "sourceRef": "way/274214503",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "unclassified",
+          "layer": "1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21962065,
+          18.634350249999997
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "394469816",
+        "sourceRef": "way/394469816",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_tertiary",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "tertiary",
+          "tunnel": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2197027,
+          18.63413615
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "394469817",
+        "sourceRef": "way/394469817",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_tertiary",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "tertiary"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21918837999999,
+          18.63524834
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "394469828",
+        "sourceRef": "way/394469828",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_tertiary",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "tertiary"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21649986666667,
+          18.636731
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "600385928",
+        "sourceRef": "way/600385928",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南东环高速线",
+        "category": "named_place",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "alt_name": "海南环岛高铁线东段;海南环岛高铁东段",
+          "electrified": "contact_line",
+          "frequency": "50",
+          "gauge": "1435",
+          "highspeed": "yes",
+          "loc_name": "海南东环铁路",
+          "maxspeed": "250",
+          "name": "海南东环高速线",
+          "passenger_lines": "2",
+          "railway": "rail",
+          "railway:traffic_mode": "passenger",
+          "ref": "3018",
+          "start_date": "2010-12-30",
+          "usage": "main",
+          "voltage": "25000"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.23056366666667,
+          18.648157466666664
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "600389189",
+        "sourceRef": "way/600389189",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南东环高速线",
+        "category": "named_place",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "alt_name": "海南环岛高铁线东段;海南环岛高铁东段",
+          "electrified": "contact_line",
+          "frequency": "50",
+          "gauge": "1435",
+          "highspeed": "yes",
+          "loc_name": "海南东环铁路",
+          "maxspeed": "250",
+          "name": "海南东环高速线",
+          "passenger_lines": "2",
+          "railway": "rail",
+          "railway:traffic_mode": "passenger",
+          "ref": "3018",
+          "start_date": "2010-12-30",
+          "usage": "main",
+          "voltage": "25000"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.22356238,
+          18.64176042
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "600389199",
+        "sourceRef": "way/600389199",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南东环高速线",
+        "category": "named_place",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "alt_name": "海南环岛高铁线东段;海南环岛高铁东段",
+          "electrified": "contact_line",
+          "frequency": "50",
+          "gauge": "1435",
+          "highspeed": "yes",
+          "loc_name": "海南东环铁路",
+          "maxspeed": "250",
+          "name": "海南东环高速线",
+          "passenger_lines": "2",
+          "railway": "rail",
+          "railway:traffic_mode": "passenger",
+          "ref": "3018",
+          "start_date": "2010-12-30",
+          "tunnel": "yes",
+          "usage": "main",
+          "voltage": "25000"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21647089999999,
+          18.636767700000004
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "627788875",
+        "sourceRef": "way/627788875",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南东环高速线",
+        "category": "named_place",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "alt_name": "海南环岛高铁线东段;海南环岛高铁东段",
+          "electrified": "contact_line",
+          "frequency": "50",
+          "gauge": "1435",
+          "highspeed": "yes",
+          "loc_name": "海南东环铁路",
+          "maxspeed": "250",
+          "name": "海南东环高速线",
+          "passenger_lines": "2",
+          "railway": "rail",
+          "railway:traffic_mode": "passenger",
+          "ref": "3018",
+          "start_date": "2010-12-30",
+          "usage": "main",
+          "voltage": "25000"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.22353156,
+          18.641795379999998
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "627788876",
+        "sourceRef": "way/627788876",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南东环高速线",
+        "category": "named_place",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "alt_name": "海南环岛高铁线东段;海南环岛高铁东段",
+          "electrified": "contact_line",
+          "frequency": "50",
+          "gauge": "1435",
+          "highspeed": "yes",
+          "loc_name": "海南东环铁路",
+          "maxspeed": "250",
+          "name": "海南东环高速线",
+          "passenger_lines": "2",
+          "railway": "rail",
+          "railway:traffic_mode": "passenger",
+          "ref": "3018",
+          "start_date": "2010-12-30",
+          "tunnel": "yes",
+          "usage": "main",
+          "voltage": "25000"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.23052726666667,
+          18.6481873
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "627788878",
+        "sourceRef": "way/627788878",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南东环高速线",
+        "category": "named_place",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "alt_name": "海南环岛高铁线东段;海南环岛高铁东段",
+          "electrified": "contact_line",
+          "frequency": "50",
+          "gauge": "1435",
+          "highspeed": "yes",
+          "loc_name": "海南东环铁路",
+          "maxspeed": "250",
+          "name": "海南东环高速线",
+          "passenger_lines": "2",
+          "railway": "rail",
+          "railway:traffic_mode": "passenger",
+          "ref": "3018",
+          "start_date": "2010-12-30",
+          "usage": "main",
+          "voltage": "25000"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21771235,
+          18.6374516
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "844022329",
+        "sourceRef": "way/844022329",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified",
+          "tunnel": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2154377,
+          18.642037888888886
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "844022330",
+        "sourceRef": "way/844022330",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21583005714285,
+          18.631866614285716
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "844022333",
+        "sourceRef": "way/844022333",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21702664374999,
+          18.632496000000003
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "844022334",
+        "sourceRef": "way/844022334",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2132592,
+          18.6348966
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "860387307",
+        "sourceRef": "way/860387307",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南东环高速线",
+        "category": "named_place",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "alt_name": "海南环岛高铁线东段;海南环岛高铁东段",
+          "bridge": "yes",
+          "electrified": "contact_line",
+          "frequency": "50",
+          "gauge": "1435",
+          "highspeed": "yes",
+          "layer": "1",
+          "loc_name": "海南东环铁路",
+          "maxspeed": "250",
+          "name": "海南东环高速线",
+          "passenger_lines": "2",
+          "railway": "rail",
+          "railway:traffic_mode": "passenger",
+          "ref": "3018",
+          "start_date": "2010-12-30",
+          "usage": "main",
+          "voltage": "25000"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.213285,
+          18.6348581
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "860387308",
+        "sourceRef": "way/860387308",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南东环高速线",
+        "category": "named_place",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "alt_name": "海南环岛高铁线东段;海南环岛高铁东段",
+          "bridge": "yes",
+          "electrified": "contact_line",
+          "frequency": "50",
+          "gauge": "1435",
+          "highspeed": "yes",
+          "layer": "1",
+          "loc_name": "海南东环铁路",
+          "maxspeed": "250",
+          "name": "海南东环高速线",
+          "passenger_lines": "2",
+          "railway": "rail",
+          "railway:traffic_mode": "passenger",
+          "ref": "3018",
+          "start_date": "2010-12-30",
+          "usage": "main",
+          "voltage": "25000"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21204780000001,
+          18.634484060000002
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839387",
+        "sourceRef": "way/1036839387",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21217227142856,
+          18.63747702857143
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839388",
+        "sourceRef": "way/1036839388",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21301155,
+          18.634964099999998
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839390",
+        "sourceRef": "way/1036839390",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "unclassified",
+          "layer": "1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21351473333334,
+          18.635150566666667
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839391",
+        "sourceRef": "way/1036839391",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21544556250001,
+          18.6335652
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839392",
+        "sourceRef": "way/1036839392",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21708285,
+          18.6327632
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839393",
+        "sourceRef": "way/1036839393",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2148875,
+          18.630983999999998
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839394",
+        "sourceRef": "way/1036839394",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_tertiary",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "tertiary",
+          "layer": "1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21847147142856,
+          18.633024319047617
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839395",
+        "sourceRef": "way/1036839395",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_tertiary",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "tertiary"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21431285,
+          18.63215195
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839396",
+        "sourceRef": "way/1036839396",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南环线高速",
+        "category": "highway_motorway",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "motorway",
+          "lanes": "2",
+          "layer": "1",
+          "name": "海南环线高速",
+          "name:en": "Hainan Ring Expressway",
+          "name:zh": "海南环线高速",
+          "name:zh-Hant": "海南環線高速",
+          "oneway": "yes",
+          "ref": "G98",
+          "source": "survey"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21426885,
+          18.6322548
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839397",
+        "sourceRef": "way/1036839397",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "海南环线高速",
+        "category": "highway_motorway",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "motorway",
+          "lanes": "2",
+          "layer": "1",
+          "name": "海南环线高速",
+          "name:en": "Hainan Ring Expressway",
+          "name:zh": "海南环线高速",
+          "name:zh-Hant": "海南環線高速",
+          "oneway": "yes",
+          "ref": "G98",
+          "source": "survey",
+          "surface": "asphalt"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21332194736841,
+          18.63273041052632
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1036839400",
+        "sourceRef": "way/1036839400",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21591206666665,
+          18.63158255185185
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196569291",
+        "sourceRef": "way/1196569291",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21557705555557,
+          18.63122673333333
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196569294",
+        "sourceRef": "way/1196569294",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21302410120482,
+          18.630508442168672
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196569297",
+        "sourceRef": "way/1196569297",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21323292,
+          18.631246859999997
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196569298",
+        "sourceRef": "way/1196569298",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_commercial",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "commercial"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21399588,
+          18.630986120000003
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196569300",
+        "sourceRef": "way/1196569300",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_commercial",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "commercial"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21256486,
+          18.63031376
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891173",
+        "sourceRef": "way/1196891173",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21233911499999,
+          18.630197939999995
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891174",
+        "sourceRef": "way/1196891174",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21376292,
+          18.63085894
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891183",
+        "sourceRef": "way/1196891183",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "natural_water",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "natural": "water"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21656533333334,
+          18.6324019
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891184",
+        "sourceRef": "way/1196891184",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_house",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "house"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21677973333334,
+          18.632519344444443
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891185",
+        "sourceRef": "way/1196891185",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_house",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "house"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21698769999998,
+          18.632653544444448
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891186",
+        "sourceRef": "way/1196891186",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_house",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "house"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21723081818182,
+          18.63278127272727
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891187",
+        "sourceRef": "way/1196891187",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_house",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "house"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21745850909089,
+          18.63288257272728
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891188",
+        "sourceRef": "way/1196891188",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_house",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "house"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21769384545455,
+          18.6329729
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891189",
+        "sourceRef": "way/1196891189",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_house",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "house"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2179233,
+          18.633054190909096
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891190",
+        "sourceRef": "way/1196891190",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_house",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "house"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21816756363637,
+          18.63312308181818
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891191",
+        "sourceRef": "way/1196891191",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_house",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "house"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21840518181816,
+          18.633195236363633
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891192",
+        "sourceRef": "way/1196891192",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_house",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "house"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21862156363638,
+          18.633283199999997
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891193",
+        "sourceRef": "way/1196891193",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_house",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "house"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21882413636364,
+          18.633392536363633
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891194",
+        "sourceRef": "way/1196891194",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_house",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "house"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21902279999999,
+          18.63352550909091
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891195",
+        "sourceRef": "way/1196891195",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_house",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "house"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21914156,
+          18.633629260000003
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196891196",
+        "sourceRef": "way/1196891196",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "building_yes",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "building": "yes"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21294023888888,
+          18.632688727777772
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196894728",
+        "sourceRef": "way/1196894728",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "natural_water",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "natural": "water",
+          "water": "pond"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21593358571428,
+          18.633717214285717
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1196894730",
+        "sourceRef": "way/1196894730",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "natural_water",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "natural": "water",
+          "water": "pond"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21827416666667,
+          18.636722
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1299932832",
+        "sourceRef": "way/1299932832",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_tertiary",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "tertiary"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.22845401538461,
+          18.653069523076926
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1334391354",
+        "sourceRef": "way/1334391354",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "natural_water",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "natural": "water"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.23853371428571,
+          18.643493995238096
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1429969811",
+        "sourceRef": "way/1429969811",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": "West Coast Beach",
+        "category": "natural_beach",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "name": "West Coast Beach",
+          "natural": "beach"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.24775,
+          18.6503056
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "node",
+        "sourceId": "8813093193",
+        "sourceRef": "node/8813093193",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "seamark_type_light_minor",
+        "geometryOrigin": "original",
+        "osmTags": {
+          "seamark:light:character": "Fl",
+          "seamark:light:colour": "red",
+          "seamark:light:height": "16",
+          "seamark:light:period": "4",
+          "seamark:light:range": "5",
+          "seamark:name": "Huarun Yacht Pier No.2",
+          "seamark:type": "light_minor",
+          "source": "China MSA Notice No. 725/2021"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2476389,
+          18.6490278
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "node",
+        "sourceId": "8813119511",
+        "sourceRef": "node/8813119511",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "seamark_type_light_minor",
+        "geometryOrigin": "original",
+        "osmTags": {
+          "seamark:light:character": "Fl",
+          "seamark:light:colour": "green",
+          "seamark:light:height": "16",
+          "seamark:light:period": "4",
+          "seamark:light:range": "5",
+          "seamark:name": "Huarun Yacht Pier No.1",
+          "seamark:type": "light_minor",
+          "source": "China MSA Notice No. 725/2021"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2464167,
+          18.6490278
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "node",
+        "sourceId": "12089033272",
+        "sourceRef": "node/12089033272",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "seamark_type_buoy_lateral",
+        "geometryOrigin": "original",
+        "osmTags": {
+          "seamark:buoy_lateral:category": "port",
+          "seamark:buoy_lateral:colour": "red",
+          "seamark:buoy_lateral:shape": "pillar",
+          "seamark:buoy_lateral:system": "iala-a",
+          "seamark:light:character": "Q",
+          "seamark:light:colour": "red",
+          "seamark:name": "No.2",
+          "seamark:topmark:colour": "red",
+          "seamark:topmark:shape": "cylinder",
+          "seamark:type": "buoy_lateral"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2479786,
+          18.6554895
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "131681602",
+        "sourceRef": "way/131681602",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "highway": "unclassified"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.24748894999999,
+          18.65536615
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "131681603",
+        "sourceRef": "way/131681603",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "highway_unclassified",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "bridge": "yes",
+          "highway": "unclassified",
+          "layer": "1"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.2491285625,
+          18.650940925
+        ]
+      },
+      "properties": {
+        "dataNature": "REAL_PUBLIC_GEODATA",
+        "sourceName": "OpenStreetMap",
+        "sourceType": "way",
+        "sourceId": "1128013596",
+        "sourceRef": "way/1128013596",
+        "retrievedAt": "2026-07-18T16:53:33.292Z",
+        "name": null,
+        "category": "man_made_breakwater",
+        "geometryOrigin": "center-derived",
+        "osmTags": {
+          "man_made": "breakwater"
+        },
+        "verifiedForDemo": false,
+        "verificationNote": "已完成查询边界与原始标签自动校验，待底图目视复核"
+      }
+    }
+  ]
+}

@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="openstreetmap-cgimap 2.1.0 (908596 spike-06.openstreetmap.org)" copyright="OpenStreetMap and contributors" attribution="http://www.openstreetmap.org/copyright" license="http://opendatacommons.org/licenses/odbl/1-0/">
+ <bounds minlat="18.6000000" minlon="110.2400000" maxlat="18.6300000" maxlon="110.2700000"/>
+ <node id="3672977156" visible="true" version="1" changeset="32972373" timestamp="2015-07-30T08:08:44Z" user="FreedSky" uid="1236135" lat="18.5806113" lon="110.2102169"/>
+ <node id="3672988527" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.6124881" lon="110.2429925"/>
+ <node id="3672988528" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.6215049" lon="110.2589478"/>
+ <node id="3672988529" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.6326018" lon="110.3520448"/>
+ <node id="3672988530" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.6326018" lon="110.3580463"/>
+ <node id="3672988531" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.6327405" lon="110.2835394"/>
+ <node id="3672988532" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.6339888" lon="110.3469215"/>
+ <node id="3672988533" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.6439754" lon="110.3245255"/>
+ <node id="3672988534" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.6439754" lon="110.3372605"/>
+ <node id="3672988535" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.6516729" lon="110.4908853"/>
+ <node id="3672988536" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.6535452" lon="110.4949107"/>
+ <node id="3672988537" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.6561110" lon="110.4959353"/>
+ <node id="3672988538" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.6708112" lon="110.4970332"/>
+ <node id="3672988539" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.6997375" lon="110.4941307"/>
+ <node id="3672988540" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.7218935" lon="110.4933027"/>
+ <node id="3672988541" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.7516916" lon="110.4953728"/>
+ <node id="3672988542" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.7560041" lon="110.5017901"/>
+ <node id="3672988543" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.7658047" lon="110.5417433"/>
+ <node id="3672988544" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.7746248" lon="110.5603743"/>
+ <node id="3672988545" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.7903038" lon="110.5756931"/>
+ <node id="3672988546" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.8057853" lon="110.5823175"/>
+ <node id="3672988547" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.8234208" lon="110.5870787"/>
+ <node id="3672988548" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.8426218" lon="110.5862507"/>
+ <node id="3672988549" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.8825842" lon="110.5816964"/>
+ <node id="3672988550" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.9015825" lon="110.5816964"/>
+ <node id="3672988551" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="18.9450552" lon="110.5901839"/>
+ <node id="3672988552" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135" lat="19.0859697" lon="110.6065378"/>
+ <way id="363094746" visible="true" version="1" changeset="32972500" timestamp="2015-07-30T08:14:49Z" user="FreedSky" uid="1236135">
+  <nd ref="3672977156"/>
+  <nd ref="3672988527"/>
+  <nd ref="3672988528"/>
+  <nd ref="3672988531"/>
+  <nd ref="3672988533"/>
+  <nd ref="3672988534"/>
+  <nd ref="3672988532"/>
+  <nd ref="3672988529"/>
+  <nd ref="3672988530"/>
+  <nd ref="3672988535"/>
+  <nd ref="3672988536"/>
+  <nd ref="3672988537"/>
+  <nd ref="3672988538"/>
+  <nd ref="3672988539"/>
+  <nd ref="3672988540"/>
+  <nd ref="3672988541"/>
+  <nd ref="3672988542"/>
+  <nd ref="3672988543"/>
+  <nd ref="3672988544"/>
+  <nd ref="3672988545"/>
+  <nd ref="3672988546"/>
+  <nd ref="3672988547"/>
+  <nd ref="3672988548"/>
+  <nd ref="3672988549"/>
+  <nd ref="3672988550"/>
+  <nd ref="3672988551"/>
+  <nd ref="3672988552"/>
+ </way>
+ <relation id="2128285" visible="true" version="319" changeset="184007707" timestamp="2026-06-12T09:30:54Z" user="特蕾西娅" uid="17786867">
+  <member type="node" ref="244080519" role="admin_centre"/>
+  <member type="node" ref="244080524" role="label"/>
+  <member type="way" ref="1319181446" role="outer"/>
+  <member type="way" ref="1319181445" role="outer"/>
+  <member type="way" ref="804352180" role="outer"/>
+  <member type="way" ref="288893244" role="outer"/>
+  <member type="way" ref="51743240" role="outer"/>
+  <member type="way" ref="303586691" role="outer"/>
+  <member type="way" ref="630875312" role="outer"/>
+  <member type="way" ref="288893246" role="outer"/>
+  <member type="way" ref="1030038114" role="outer"/>
+  <member type="way" ref="812607356" role="outer"/>
+  <member type="way" ref="1120240958" role="outer"/>
+  <member type="way" ref="1120240957" role="outer"/>
+  <member type="way" ref="159002396" role="outer"/>
+  <member type="way" ref="1120240949" role="outer"/>
+  <member type="way" ref="1120240939" role="outer"/>
+  <member type="way" ref="1120240948" role="outer"/>
+  <member type="way" ref="1120240937" role="outer"/>
+  <member type="way" ref="1120240924" role="outer"/>
+  <member type="way" ref="1120240927" role="outer"/>
+  <member type="way" ref="1120240926" role="outer"/>
+  <member type="way" ref="1120240923" role="outer"/>
+  <member type="way" ref="1120240931" role="outer"/>
+  <member type="way" ref="1120240930" role="outer"/>
+  <member type="way" ref="1120240929" role="outer"/>
+  <member type="way" ref="1274527881" role="outer"/>
+  <member type="way" ref="1120240921" role="outer"/>
+  <member type="relation" ref="2784613" role="subarea"/>
+  <member type="relation" ref="2128284" role="subarea"/>
+  <member type="relation" ref="2833102" role="subarea"/>
+  <member type="relation" ref="2784610" role="subarea"/>
+  <member type="relation" ref="2784622" role="subarea"/>
+  <member type="relation" ref="2784617" role="subarea"/>
+  <member type="relation" ref="2784621" role="subarea"/>
+  <member type="relation" ref="2784620" role="subarea"/>
+  <member type="relation" ref="2784612" role="subarea"/>
+  <member type="relation" ref="2784611" role="subarea"/>
+  <member type="relation" ref="2784619" role="subarea"/>
+  <member type="relation" ref="2784615" role="subarea"/>
+  <member type="relation" ref="2784606" role="subarea"/>
+  <member type="relation" ref="2784609" role="subarea"/>
+  <member type="relation" ref="2784614" role="subarea"/>
+  <member type="relation" ref="2784608" role="subarea"/>
+  <member type="relation" ref="2784616" role="subarea"/>
+  <member type="relation" ref="2784607" role="subarea"/>
+  <member type="relation" ref="2784618" role="subarea"/>
+  <member type="relation" ref="18320786" role="subarea"/>
+  <tag k="admin_level" v="4"/>
+  <tag k="alt_name" v="海南"/>
+  <tag k="alt_name:pt" v="Ainão;Hainão"/>
+  <tag k="boundary" v="administrative"/>
+  <tag k="int_name" v="Hainan"/>
+  <tag k="is_in:country" v="China"/>
+  <tag k="is_in:country_code" v="CN"/>
+  <tag k="ISO3166-2" v="CN-HI"/>
+  <tag k="name" v="海南省"/>
+  <tag k="name:af" v="Hainan"/>
+  <tag k="name:am" v="ሃይናን"/>
+  <tag k="name:ar" v="هاينان"/>
+  <tag k="name:az" v="Haynan"/>
+  <tag k="name:be" v="Хайнань"/>
+  <tag k="name:bg" v="Хайнан"/>
+  <tag k="name:bn" v="হাইনান"/>
+  <tag k="name:bo" v="ཧའེ་ནན་ཞིང་ཆེན།"/>
+  <tag k="name:br" v="Hainan"/>
+  <tag k="name:ca" v="Hainan"/>
+  <tag k="name:ce" v="Хайнань"/>
+  <tag k="name:cs" v="Chaj-nan"/>
+  <tag k="name:cy" v="Hainan"/>
+  <tag k="name:da" v="Hainan"/>
+  <tag k="name:de" v="Hainan"/>
+  <tag k="name:el" v="Χαϊνάν"/>
+  <tag k="name:en" v="Hainan"/>
+  <tag k="name:eo" v="Hajnano"/>
+  <tag k="name:es" v="Hainan"/>
+  <tag k="name:et" v="Hainani provints"/>
+  <tag k="name:eu" v="Hainan"/>
+  <tag k="name:fa" v="هاینان"/>
+  <tag k="name:fi" v="Hainan"/>
+  <tag k="name:fr" v="Hainan"/>
+  <tag k="name:ga" v="Hainan"/>
+  <tag k="name:gd" v="Hainan"/>
+  <tag k="name:gl" v="Hainan"/>
+  <tag k="name:gv" v="Hainan"/>
+  <tag k="name:he" v="האינאן"/>
+  <tag k="name:hi" v="हाइनान"/>
+  <tag k="name:hr" v="Hainan"/>
+  <tag k="name:hu" v="Hajnan"/>
+  <tag k="name:ia" v="Hainan"/>
+  <tag k="name:id" v="Hainan"/>
+  <tag k="name:is" v="Hainan"/>
+  <tag k="name:it" v="Hainan"/>
+  <tag k="name:ja" v="海南省"/>
+  <tag k="name:ka" v="ხაინანი"/>
+  <tag k="name:kg" v="Hainan"/>
+  <tag k="name:kk" v="Хайнань"/>
+  <tag k="name:ko" v="하이난성"/>
+  <tag k="name:la" v="Hainania"/>
+  <tag k="name:lt" v="Hainanas"/>
+  <tag k="name:lv" v="Hainaņa"/>
+  <tag k="name:mg" v="Hainan"/>
+  <tag k="name:mn" v="Хайнань муж"/>
+  <tag k="name:mr" v="हाइनान"/>
+  <tag k="name:ms" v="Hainan"/>
+  <tag k="name:nan" v="Hái-lâm-séng"/>
+  <tag k="name:ne" v="हाइनान"/>
+  <tag k="name:nl" v="Hainan"/>
+  <tag k="name:nn" v="Hainan"/>
+  <tag k="name:no" v="Hainan"/>
+  <tag k="name:oc" v="Hainan"/>
+  <tag k="name:os" v="Хайнань"/>
+  <tag k="name:pa" v="ਹਾਈਨਾਨ"/>
+  <tag k="name:pl" v="Hajnan"/>
+  <tag k="name:pt" v="Hainan"/>
+  <tag k="name:qu" v="Hainan pruwinsya"/>
+  <tag k="name:ro" v="Hainan"/>
+  <tag k="name:ru" v="Хайнань"/>
+  <tag k="name:sk" v="Chaj-nan"/>
+  <tag k="name:sr" v="Хајнан"/>
+  <tag k="name:sv" v="Hainan"/>
+  <tag k="name:sw" v="Hainan"/>
+  <tag k="name:ta" v="ஆய்னான்"/>
+  <tag k="name:tg" v="Хайнан"/>
+  <tag k="name:th" v="มณฑลไหหลำ"/>
+  <tag k="name:tl" v="Hainan"/>
+  <tag k="name:tr" v="Hainan"/>
+  <tag k="name:ug" v="خەينەن ئۆلكىسى"/>
+  <tag k="name:uk" v="Хайнань"/>
+  <tag k="name:ur" v="ہائنان"/>
+  <tag k="name:uz" v="Xaynan"/>
+  <tag k="name:vi" v="Hải Nam"/>
+  <tag k="name:wa" v="Hainan"/>
+  <tag k="name:za" v="Haijnanz"/>
+  <tag k="name:zh" v="海南省"/>
+  <tag k="name:zh-Hans" v="海南省"/>
+  <tag k="name:zh-Hant" v="海南省"/>
+  <tag k="name:zh-Latn-pinyin" v="hǎinán shěng"/>
+  <tag k="population" v="10081232"/>
+  <tag k="population:date" v="2020-11-01"/>
+  <tag k="ref" v="琼"/>
+  <tag k="ref:en" v="HI"/>
+  <tag k="ref:zh" v="琼"/>
+  <tag k="type" v="boundary"/>
+  <tag k="wikidata" v="Q42200"/>
+  <tag k="wikipedia" v="en:Hainan"/>
+ </relation>
+ <relation id="2784620" visible="true" version="20" changeset="183282983" timestamp="2026-05-28T03:30:18Z" user="NyanSten" uid="255936">
+  <member type="way" ref="207148133" role="outer"/>
+  <member type="way" ref="207148125" role="outer"/>
+  <member type="way" ref="207148115" role="outer"/>
+  <member type="way" ref="363094746" role="outer"/>
+  <member type="node" ref="3923323854" role="label"/>
+  <member type="node" ref="244081986" role="admin_centre"/>
+  <tag k="admin_level" v="6"/>
+  <tag k="alt_name" v="万宁"/>
+  <tag k="alt_name:en" v="Wanning"/>
+  <tag k="alt_name:zh" v="万宁"/>
+  <tag k="boundary" v="administrative"/>
+  <tag k="division_code" v="469006"/>
+  <tag k="name" v="万宁市"/>
+  <tag k="name:ar" v="واننينغ"/>
+  <tag k="name:ceb" v="Wanning"/>
+  <tag k="name:cs" v="Wan-ning"/>
+  <tag k="name:da" v="Wanning"/>
+  <tag k="name:de" v="Wanning"/>
+  <tag k="name:en" v="Wanning City"/>
+  <tag k="name:es" v="Wanning"/>
+  <tag k="name:eu" v="Wanning"/>
+  <tag k="name:fr" v="Wanning"/>
+  <tag k="name:it" v="Wanning"/>
+  <tag k="name:ja" v="万寧市"/>
+  <tag k="name:ki" v="Wanning"/>
+  <tag k="name:ko" v="완닝시"/>
+  <tag k="name:mg" v="Wanning"/>
+  <tag k="name:nan" v="Bān-lêng-chhī"/>
+  <tag k="name:nl" v="Wanning"/>
+  <tag k="name:no" v="Wanning"/>
+  <tag k="name:pam" v="Wanning"/>
+  <tag k="name:pl" v="Wanning"/>
+  <tag k="name:sv" v="Wanning"/>
+  <tag k="name:tr" v="Wanning"/>
+  <tag k="name:ur" v="واننینگ"/>
+  <tag k="name:vi" v="Vạn Ninh"/>
+  <tag k="name:yue" v="萬寧"/>
+  <tag k="name:zh" v="万宁市"/>
+  <tag k="name:zh-Hans" v="万宁市"/>
+  <tag k="name:zh-Hant" v="萬寧市"/>
+  <tag k="name:zh-Latn-pinyin" v="Wànníng Shì"/>
+  <tag k="population" v="545992"/>
+  <tag k="population:date" v="2020-11-01"/>
+  <tag k="type" v="boundary"/>
+  <tag k="wikidata" v="Q997593"/>
+  <tag k="wikipedia" v="zh:万宁市"/>
+ </relation>
+</osm>

@@ -1,0 +1,151 @@
+{
+  "version": "v1",
+  "config": {
+    "visState": {
+      "filters": [],
+      "layers": [
+        {
+          "id": "wrj-region-layer",
+          "type": "geojson",
+          "config": {
+            "dataId": "wrj-simulated-region",
+            "label": "模拟任务区域",
+            "color": [53, 197, 255],
+            "highlightColor": [255, 180, 77, 255],
+            "columns": {"geojson": "_geojson"},
+            "isVisible": true,
+            "visConfig": {
+              "opacity": 0.2,
+              "strokeOpacity": 0.9,
+              "thickness": 2,
+              "strokeColor": [53, 197, 255],
+              "colorRange": {"name": "WRJ", "type": "custom", "category": "Custom", "colors": ["#35C5FF"]},
+              "strokeColorRange": {"name": "WRJ", "type": "custom", "category": "Custom", "colors": ["#35C5FF"]},
+              "radius": 10,
+              "sizeRange": [0, 10],
+              "radiusRange": [0, 50],
+              "heightRange": [0, 500],
+              "elevationScale": 1,
+              "enableElevation": false,
+              "stroked": true,
+              "filled": true,
+              "wireframe": false
+            },
+            "hidden": false,
+            "textLabel": []
+          },
+          "visualChannels": {"colorField": null, "colorScale": "quantile", "strokeColorField": null, "strokeColorScale": "quantile", "sizeField": null, "sizeScale": "linear", "heightField": null, "heightScale": "linear", "radiusField": null, "radiusScale": "linear"}
+        },
+        {
+          "id": "wrj-context-layer",
+          "type": "geojson",
+          "config": {
+            "dataId": "wrj-real-context",
+            "label": "真实地理对象",
+            "color": [197, 211, 224],
+            "highlightColor": [255, 180, 77, 255],
+            "columns": {"geojson": "_geojson"},
+            "isVisible": true,
+            "visConfig": {"opacity": 0.18, "strokeOpacity": 0.65, "thickness": 1, "strokeColor": [197, 211, 224], "colorRange": {"name": "Context", "type": "custom", "category": "Custom", "colors": ["#C5D3E0"]}, "strokeColorRange": {"name": "Context", "type": "custom", "category": "Custom", "colors": ["#C5D3E0"]}, "radius": 4, "sizeRange": [0, 10], "radiusRange": [0, 50], "heightRange": [0, 500], "elevationScale": 1, "enableElevation": false, "stroked": true, "filled": false, "wireframe": false},
+            "hidden": false,
+            "textLabel": []
+          },
+          "visualChannels": {"colorField": null, "colorScale": "quantile", "strokeColorField": null, "strokeColorScale": "quantile", "sizeField": null, "sizeScale": "linear", "heightField": null, "heightScale": "linear", "radiusField": null, "radiusScale": "linear"}
+        },
+        {
+          "id": "wrj-pois-layer",
+          "type": "geojson",
+          "config": {
+            "dataId": "wrj-real-pois",
+            "label": "真实公开地理点",
+            "color": [232, 247, 255],
+            "highlightColor": [255, 180, 77, 255],
+            "columns": {"geojson": "_geojson"},
+            "isVisible": true,
+            "visConfig": {"opacity": 0.88, "strokeOpacity": 0.9, "thickness": 1, "strokeColor": [7, 17, 31], "colorRange": {"name": "Real POI", "type": "custom", "category": "Custom", "colors": ["#E8F7FF"]}, "strokeColorRange": {"name": "Real POI", "type": "custom", "category": "Custom", "colors": ["#E8F7FF"]}, "radius": 7, "sizeRange": [0, 10], "radiusRange": [0, 50], "heightRange": [0, 500], "elevationScale": 1, "enableElevation": false, "stroked": true, "filled": true, "wireframe": false},
+            "hidden": false,
+            "textLabel": []
+          },
+          "visualChannels": {"colorField": null, "colorScale": "quantile", "strokeColorField": null, "strokeColorScale": "quantile", "sizeField": null, "sizeScale": "linear", "heightField": null, "heightScale": "linear", "radiusField": null, "radiusScale": "linear"}
+        },
+        {
+          "id": "wrj-strips-layer",
+          "type": "geojson",
+          "config": {
+            "dataId": "wrj-simulated-strips",
+            "label": "模拟侦察条带",
+            "color": [53, 197, 255],
+            "highlightColor": [255, 255, 255, 255],
+            "columns": {"geojson": "_geojson"},
+            "isVisible": true,
+            "visConfig": {"opacity": 0.55, "strokeOpacity": 0.65, "thickness": 1.5, "strokeColor": [53, 197, 255], "colorRange": {"name": "UAV", "type": "custom", "category": "Custom", "colors": ["#35C5FF", "#FFB44D", "#4ED6A0"]}, "strokeColorRange": {"name": "UAV", "type": "custom", "category": "Custom", "colors": ["#35C5FF", "#FFB44D", "#4ED6A0"]}, "radius": 4, "sizeRange": [0, 10], "radiusRange": [0, 50], "heightRange": [0, 500], "elevationScale": 1, "enableElevation": false, "stroked": true, "filled": false, "wireframe": false},
+            "hidden": false,
+            "textLabel": []
+          },
+          "visualChannels": {"colorField": {"name": "uav_id", "type": "string"}, "colorScale": "ordinal", "strokeColorField": {"name": "uav_id", "type": "string"}, "strokeColorScale": "ordinal", "sizeField": null, "sizeScale": "linear", "heightField": null, "heightScale": "linear", "radiusField": null, "radiusScale": "linear"}
+        },
+        {
+          "id": "wrj-routes-layer",
+          "type": "geojson",
+          "config": {
+            "dataId": "wrj-simulated-planned-routes",
+            "label": "模拟静态完整规划航迹",
+            "color": [53, 197, 255],
+            "highlightColor": [255, 255, 255, 255],
+            "columns": {"geojson": "_geojson"},
+            "isVisible": true,
+            "visConfig": {"opacity": 0.28, "strokeOpacity": 0.32, "thickness": 2.5, "strokeColor": [53, 197, 255], "colorRange": {"name": "UAV", "type": "custom", "category": "Custom", "colors": ["#35C5FF", "#FFB44D", "#4ED6A0"]}, "strokeColorRange": {"name": "UAV", "type": "custom", "category": "Custom", "colors": ["#35C5FF", "#FFB44D", "#4ED6A0"]}, "radius": 4, "sizeRange": [0, 10], "radiusRange": [0, 50], "heightRange": [0, 500], "elevationScale": 1, "enableElevation": false, "stroked": true, "filled": false, "wireframe": false},
+            "hidden": false,
+            "textLabel": []
+          },
+          "visualChannels": {"colorField": {"name": "uav_id", "type": "string"}, "colorScale": "ordinal", "strokeColorField": {"name": "uav_id", "type": "string"}, "strokeColorScale": "ordinal", "sizeField": null, "sizeScale": "linear", "heightField": null, "heightScale": "linear", "radiusField": null, "radiusScale": "linear"}
+        },
+        {
+          "id": "wrj-trip-layer",
+          "type": "trip",
+          "config": {
+            "dataId": "wrj-simulated-trips",
+            "label": "动态模拟飞行",
+            "color": [53, 197, 255],
+            "highlightColor": [255, 255, 255, 255],
+            "columns": {"geojson": "_geojson"},
+            "isVisible": true,
+            "visConfig": {"opacity": 0.92, "thickness": 4.5, "colorRange": {"name": "UAV", "type": "custom", "category": "Custom", "colors": ["#35C5FF", "#FFB44D", "#4ED6A0"]}, "trailLength": 1500, "sizeRange": [0, 10]},
+            "hidden": false,
+            "textLabel": []
+          },
+          "visualChannels": {"colorField": {"name": "uav_id", "type": "string"}, "colorScale": "ordinal", "sizeField": null, "sizeScale": "linear"}
+        }
+      ],
+      "interactionConfig": {
+        "tooltip": {
+          "fieldsToShow": {
+            "wrj-real-pois": [{"name": "name", "format": null}, {"name": "category", "format": null}, {"name": "sourceName", "format": null}, {"name": "sourceRef", "format": null}, {"name": "retrievedAt", "format": null}, {"name": "dataNature", "format": null}],
+            "wrj-real-context": [{"name": "name", "format": null}, {"name": "category", "format": null}, {"name": "sourceRef", "format": null}, {"name": "dataNature", "format": null}],
+            "wrj-simulated-region": [{"name": "objectName", "format": null}, {"name": "dataNature", "format": null}, {"name": "operationalUseAllowed", "format": null}],
+            "wrj-simulated-strips": [{"name": "objectName", "format": null}, {"name": "uav_id", "format": null}, {"name": "missionStage", "format": null}, {"name": "altitude_m", "format": null}, {"name": "dataNature", "format": null}],
+            "wrj-simulated-planned-routes": [{"name": "objectName", "format": null}, {"name": "uav_id", "format": null}, {"name": "missionStage", "format": null}, {"name": "total_distance_km", "format": null}, {"name": "dataNature", "format": null}],
+            "wrj-simulated-trips": [{"name": "uav_id", "format": null}, {"name": "missionStage", "format": null}, {"name": "coverage_altitude_m", "format": null}, {"name": "speed_mps", "format": null}, {"name": "start_time", "format": null}, {"name": "dataNature", "format": null}, {"name": "operationalUseAllowed", "format": null}]
+          },
+          "compareMode": false,
+          "compareType": "absolute",
+          "enabled": true
+        },
+        "brush": {"size": 0.5, "enabled": false},
+        "geocoder": {"enabled": false},
+        "coordinate": {"enabled": false}
+      },
+      "layerBlending": "normal",
+      "splitMaps": [],
+      "animationConfig": {"currentTime": null, "speed": 1}
+    },
+    "mapState": {"bearing": -18, "dragRotate": true, "latitude": 18.625, "longitude": 110.235, "pitch": 52, "zoom": 12.7, "isSplit": false},
+    "mapStyle": {
+      "styleType": "satellite",
+      "topLayerGroups": {},
+      "visibleLayerGroups": {"label": true, "road": true, "border": false, "building": true, "water": true, "land": true, "3d building": false},
+      "threeDBuildingColor": [9, 22, 38],
+      "mapStyles": {}
+    }
+  }
+}

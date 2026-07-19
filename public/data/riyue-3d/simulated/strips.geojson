@@ -1,0 +1,377 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            110.228,
+            18.6115
+          ],
+          [
+            110.258,
+            18.6115
+          ]
+        ]
+      },
+      "properties": {
+        "dataNature": "SIMULATED_MISSION_DATA",
+        "sourceName": "WRJ Demo Generator",
+        "caseId": "riyue-3d",
+        "generatedAt": "2026-07-18T18:11:47.919Z",
+        "realLocationContext": true,
+        "operationalUseAllowed": false,
+        "simulationNote": "基于真实地理环境生成的模拟无人机规划数据，不可用于真实飞行",
+        "objectName": "侦察条带 1",
+        "stripId": 1,
+        "uav_id": "UAV-01",
+        "missionStage": "覆盖侦察",
+        "altitude_m": 92,
+        "color": "#35C5FF"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            110.228,
+            18.61405
+          ],
+          [
+            110.258,
+            18.61405
+          ]
+        ]
+      },
+      "properties": {
+        "dataNature": "SIMULATED_MISSION_DATA",
+        "sourceName": "WRJ Demo Generator",
+        "caseId": "riyue-3d",
+        "generatedAt": "2026-07-18T18:11:47.919Z",
+        "realLocationContext": true,
+        "operationalUseAllowed": false,
+        "simulationNote": "基于真实地理环境生成的模拟无人机规划数据，不可用于真实飞行",
+        "objectName": "侦察条带 2",
+        "stripId": 2,
+        "uav_id": "UAV-01",
+        "missionStage": "覆盖侦察",
+        "altitude_m": 92,
+        "color": "#35C5FF"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            110.228,
+            18.6166
+          ],
+          [
+            110.258,
+            18.6166
+          ]
+        ]
+      },
+      "properties": {
+        "dataNature": "SIMULATED_MISSION_DATA",
+        "sourceName": "WRJ Demo Generator",
+        "caseId": "riyue-3d",
+        "generatedAt": "2026-07-18T18:11:47.919Z",
+        "realLocationContext": true,
+        "operationalUseAllowed": false,
+        "simulationNote": "基于真实地理环境生成的模拟无人机规划数据，不可用于真实飞行",
+        "objectName": "侦察条带 3",
+        "stripId": 3,
+        "uav_id": "UAV-01",
+        "missionStage": "覆盖侦察",
+        "altitude_m": 92,
+        "color": "#35C5FF"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            110.228,
+            18.61915
+          ],
+          [
+            110.258,
+            18.61915
+          ]
+        ]
+      },
+      "properties": {
+        "dataNature": "SIMULATED_MISSION_DATA",
+        "sourceName": "WRJ Demo Generator",
+        "caseId": "riyue-3d",
+        "generatedAt": "2026-07-18T18:11:47.919Z",
+        "realLocationContext": true,
+        "operationalUseAllowed": false,
+        "simulationNote": "基于真实地理环境生成的模拟无人机规划数据，不可用于真实飞行",
+        "objectName": "侦察条带 4",
+        "stripId": 4,
+        "uav_id": "UAV-01",
+        "missionStage": "覆盖侦察",
+        "altitude_m": 92,
+        "color": "#35C5FF"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            110.228,
+            18.6217
+          ],
+          [
+            110.258,
+            18.6217
+          ]
+        ]
+      },
+      "properties": {
+        "dataNature": "SIMULATED_MISSION_DATA",
+        "sourceName": "WRJ Demo Generator",
+        "caseId": "riyue-3d",
+        "generatedAt": "2026-07-18T18:11:47.919Z",
+        "realLocationContext": true,
+        "operationalUseAllowed": false,
+        "simulationNote": "基于真实地理环境生成的模拟无人机规划数据，不可用于真实飞行",
+        "objectName": "侦察条带 5",
+        "stripId": 5,
+        "uav_id": "UAV-02",
+        "missionStage": "覆盖侦察",
+        "altitude_m": 100,
+        "color": "#FFB44D"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            110.228,
+            18.62425
+          ],
+          [
+            110.258,
+            18.62425
+          ]
+        ]
+      },
+      "properties": {
+        "dataNature": "SIMULATED_MISSION_DATA",
+        "sourceName": "WRJ Demo Generator",
+        "caseId": "riyue-3d",
+        "generatedAt": "2026-07-18T18:11:47.919Z",
+        "realLocationContext": true,
+        "operationalUseAllowed": false,
+        "simulationNote": "基于真实地理环境生成的模拟无人机规划数据，不可用于真实飞行",
+        "objectName": "侦察条带 6",
+        "stripId": 6,
+        "uav_id": "UAV-02",
+        "missionStage": "覆盖侦察",
+        "altitude_m": 100,
+        "color": "#FFB44D"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            110.228,
+            18.6268
+          ],
+          [
+            110.258,
+            18.6268
+          ]
+        ]
+      },
+      "properties": {
+        "dataNature": "SIMULATED_MISSION_DATA",
+        "sourceName": "WRJ Demo Generator",
+        "caseId": "riyue-3d",
+        "generatedAt": "2026-07-18T18:11:47.919Z",
+        "realLocationContext": true,
+        "operationalUseAllowed": false,
+        "simulationNote": "基于真实地理环境生成的模拟无人机规划数据，不可用于真实飞行",
+        "objectName": "侦察条带 7",
+        "stripId": 7,
+        "uav_id": "UAV-02",
+        "missionStage": "覆盖侦察",
+        "altitude_m": 100,
+        "color": "#FFB44D"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            110.228,
+            18.62935
+          ],
+          [
+            110.258,
+            18.62935
+          ]
+        ]
+      },
+      "properties": {
+        "dataNature": "SIMULATED_MISSION_DATA",
+        "sourceName": "WRJ Demo Generator",
+        "caseId": "riyue-3d",
+        "generatedAt": "2026-07-18T18:11:47.919Z",
+        "realLocationContext": true,
+        "operationalUseAllowed": false,
+        "simulationNote": "基于真实地理环境生成的模拟无人机规划数据，不可用于真实飞行",
+        "objectName": "侦察条带 8",
+        "stripId": 8,
+        "uav_id": "UAV-02",
+        "missionStage": "覆盖侦察",
+        "altitude_m": 100,
+        "color": "#FFB44D"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            110.228,
+            18.631899999999998
+          ],
+          [
+            110.258,
+            18.631899999999998
+          ]
+        ]
+      },
+      "properties": {
+        "dataNature": "SIMULATED_MISSION_DATA",
+        "sourceName": "WRJ Demo Generator",
+        "caseId": "riyue-3d",
+        "generatedAt": "2026-07-18T18:11:47.919Z",
+        "realLocationContext": true,
+        "operationalUseAllowed": false,
+        "simulationNote": "基于真实地理环境生成的模拟无人机规划数据，不可用于真实飞行",
+        "objectName": "侦察条带 9",
+        "stripId": 9,
+        "uav_id": "UAV-03",
+        "missionStage": "覆盖侦察",
+        "altitude_m": 108,
+        "color": "#4ED6A0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            110.228,
+            18.63445
+          ],
+          [
+            110.258,
+            18.63445
+          ]
+        ]
+      },
+      "properties": {
+        "dataNature": "SIMULATED_MISSION_DATA",
+        "sourceName": "WRJ Demo Generator",
+        "caseId": "riyue-3d",
+        "generatedAt": "2026-07-18T18:11:47.919Z",
+        "realLocationContext": true,
+        "operationalUseAllowed": false,
+        "simulationNote": "基于真实地理环境生成的模拟无人机规划数据，不可用于真实飞行",
+        "objectName": "侦察条带 10",
+        "stripId": 10,
+        "uav_id": "UAV-03",
+        "missionStage": "覆盖侦察",
+        "altitude_m": 108,
+        "color": "#4ED6A0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            110.228,
+            18.637
+          ],
+          [
+            110.258,
+            18.637
+          ]
+        ]
+      },
+      "properties": {
+        "dataNature": "SIMULATED_MISSION_DATA",
+        "sourceName": "WRJ Demo Generator",
+        "caseId": "riyue-3d",
+        "generatedAt": "2026-07-18T18:11:47.919Z",
+        "realLocationContext": true,
+        "operationalUseAllowed": false,
+        "simulationNote": "基于真实地理环境生成的模拟无人机规划数据，不可用于真实飞行",
+        "objectName": "侦察条带 11",
+        "stripId": 11,
+        "uav_id": "UAV-03",
+        "missionStage": "覆盖侦察",
+        "altitude_m": 108,
+        "color": "#4ED6A0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            110.228,
+            18.63955
+          ],
+          [
+            110.258,
+            18.63955
+          ]
+        ]
+      },
+      "properties": {
+        "dataNature": "SIMULATED_MISSION_DATA",
+        "sourceName": "WRJ Demo Generator",
+        "caseId": "riyue-3d",
+        "generatedAt": "2026-07-18T18:11:47.919Z",
+        "realLocationContext": true,
+        "operationalUseAllowed": false,
+        "simulationNote": "基于真实地理环境生成的模拟无人机规划数据，不可用于真实飞行",
+        "objectName": "侦察条带 12",
+        "stripId": 12,
+        "uav_id": "UAV-03",
+        "missionStage": "覆盖侦察",
+        "altitude_m": 108,
+        "color": "#4ED6A0"
+      }
+    }
+  ]
+}

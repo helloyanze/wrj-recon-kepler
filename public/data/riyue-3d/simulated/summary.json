@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "riyue-3d",
+  "name": "日月湾三维多无人机静态侦察",
+  "description": "三架轻型固定翼无人机在真实地理环境中协同完成模拟近岸区域侦察。",
+  "status": "FEASIBLE",
+  "demoMock": true,
+  "location": "海南省万宁市日月湾附近海域",
+  "metrics": {
+    "uavCount": 3,
+    "stripCount": 12,
+    "coverageRatio": 0.98,
+    "missionMakespanSec": 980,
+    "totalDistanceKm": 63.23,
+    "totalFuelKg": null
+  },
+  "uavs": [
+    {
+      "uavId": "UAV-01",
+      "callsign": "WRJ01",
+      "stripRange": "1-4",
+      "distanceKm": 22.62,
+      "durationMin": 16.3,
+      "coverageAltitudeM": 92,
+      "transitAltitudeM": 122,
+      "maxAltitudeM": 133.5,
+      "status": "VALID"
+    },
+    {
+      "uavId": "UAV-02",
+      "callsign": "WRJ02",
+      "stripRange": "5-8",
+      "distanceKm": 20.65,
+      "durationMin": 14.6,
+      "coverageAltitudeM": 100,
+      "transitAltitudeM": 128,
+      "maxAltitudeM": 139.5,
+      "status": "VALID"
+    },
+    {
+      "uavId": "UAV-03",
+      "callsign": "WRJ03",
+      "stripRange": "9-12",
+      "distanceKm": 19.96,
+      "durationMin": 13.5,
+      "coverageAltitudeM": 108,
+      "transitAltitudeM": 136,
+      "maxAltitudeM": 147.5,
+      "status": "VALID"
+    }
+  ],
+  "notice": "底图和公共地理对象来自真实地图数据；任务区域、条带和无人机航迹为模拟规划数据；本演示不构成真实飞行计划或空域信息。"
+}

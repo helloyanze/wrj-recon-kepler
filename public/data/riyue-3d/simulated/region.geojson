@@ -1,0 +1,47 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              110.226,
+              18.6095
+            ],
+            [
+              110.26,
+              18.6095
+            ],
+            [
+              110.26,
+              18.6425
+            ],
+            [
+              110.226,
+              18.6425
+            ],
+            [
+              110.226,
+              18.6095
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "dataNature": "SIMULATED_MISSION_DATA",
+        "sourceName": "WRJ Demo Generator",
+        "caseId": "riyue-3d",
+        "generatedAt": "2026-07-18T18:11:47.919Z",
+        "realLocationContext": true,
+        "operationalUseAllowed": false,
+        "simulationNote": "基于真实地理环境生成的模拟无人机规划数据，不可用于真实飞行",
+        "objectName": "日月湾近岸模拟侦察任务区",
+        "missionStage": "任务区域",
+        "areaRole": "SURVEILLANCE_REGION"
+      }
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "source": "OpenStreetMap",
+  "endpoint": "https://api.openstreetmap.org/api/0.6/map",
+  "acquisitionMethod": "OSM_API_BBOX_FALLBACK",
+  "overpassFailures": [
+    "https://overpass-api.de/api/interpreter: 504 Gateway Timeout",
+    "https://overpass.kumi.systems/api/interpreter: The operation was aborted due to timeout",
+    "https://overpass.nchc.org.tw/api/interpreter: fetch failed"
+  ],
+  "queryFile": "scripts/overpass/riyue-real-features.overpass",
+  "normalizedSourceFile": "osm-api-normalized-source.json",
+  "rawSourceFiles": [
+    "osm-api-source-1.xml",
+    "osm-api-source-2.xml",
+    "osm-api-source-3.xml",
+    "osm-api-source-4.xml",
+    "osm-api-source-5.xml",
+    "osm-api-source-6.xml"
+  ],
+  "retrievedAt": "2026-07-18T16:53:33.292Z",
+  "bbox": {
+    "south": 18.6,
+    "west": 110.18,
+    "north": 18.66,
+    "east": 110.27
+  },
+  "featureCount": 318,
+  "pointCount": 164,
+  "contextCount": 154,
+  "license": "ODbL",
+  "attribution": "© OpenStreetMap contributors",
+  "normalizationPolicy": {
+    "requireTargetTag": true,
+    "requireAllGeometryCoordinatesInsideBbox": true,
+    "visualReviewStatus": "PENDING_VISUAL_REVIEW"
+  }
+}
