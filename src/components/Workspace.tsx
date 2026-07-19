@@ -3,6 +3,7 @@ import type {ComponentType} from "react";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useDispatch} from "react-redux";
 import type {AppDispatch} from "../app/store";
+import type {ResolvedBasemap} from "../basemap/basemapConfig";
 import type {CaseSummary, UavSummary} from "../data/caseSchema";
 import {loadCase} from "../data/loadCase";
 import {DEFAULT_MAP_STATE, UAV_COLORS, WRJ_MAP_ID} from "../kepler/constants";
@@ -14,7 +15,7 @@ type CaseLoader = typeof loadCase;
 type KeplerLoader = typeof loadKeplerCase;
 
 export interface WorkspaceProps {
-  mapboxToken: string;
+  basemap: ResolvedBasemap;
   debugMode: boolean;
   dataBase: string;
   caseLoader?: CaseLoader;
@@ -128,16 +129,22 @@ function FixedLegend() {
   );
 }
 
-function Provenance({notice = PERMANENT_NOTICE}: {notice?: string}) {
+function Provenance({
+  attribution,
+  notice = PERMANENT_NOTICE
+}: {
+  attribution: string;
+  notice?: string;
+}) {
   return (
     <div className="provenance">
       <p>{notice}</p>
-      <span>© OpenStreetMap contributors · © Mapbox</span>
+      <span>{attribution}</span>
     </div>
   );
 }
 
-function PendingDetailPanel({status}: {status: LoadStatus}) {
+function PendingDetailPanel({status, attribution}: {status: LoadStatus; attribution: string}) {
   return (
     <aside className="detail-panel panel pending-detail">
       <div className="panel-heading">
@@ -149,12 +156,20 @@ function PendingDetailPanel({status}: {status: LoadStatus}) {
         <p><span>模拟任务</span>任务区域、侦察条带、航迹、高度、速度及时序。</p>
       </div>
       <FixedLegend />
-      <Provenance />
+      <Provenance attribution={attribution} />
     </aside>
   );
 }
 
-function DetailPanel({summary, selected}: {summary: CaseSummary; selected: UavSummary | null}) {
+function DetailPanel({
+  summary,
+  selected,
+  attribution
+}: {
+  summary: CaseSummary;
+  selected: UavSummary | null;
+  attribution: string;
+}) {
   return (
     <aside className="detail-panel panel">
       <div className="panel-heading">
@@ -180,13 +195,13 @@ function DetailPanel({summary, selected}: {summary: CaseSummary; selected: UavSu
         </div>
       )}
       <FixedLegend />
-      <Provenance notice={summary.notice} />
+      <Provenance attribution={attribution} notice={summary.notice} />
     </aside>
   );
 }
 
 export function Workspace({
-  mapboxToken,
+  basemap,
   debugMode,
   dataBase,
   caseLoader = loadCase,
@@ -281,11 +296,11 @@ export function Workspace({
         <div className="brand"><span>WRJ</span><strong>静态侦察规划</strong></div>
         <div className="case-name"><small>当前算例</small><b>日月湾三维多无人机静态侦察</b></div>
         <span className="demo-badge">演示模拟数据</span>
-        <span className="token-status"><i /> Mapbox 已配置</span>
+        <span className="token-status"><i /> {basemap.statusLabel}</span>
         {debugMode ? <span className="debug-badge">调试模式</span> : null}
         <div className="top-actions">
-          <button type="button" className={styleType === "satellite" ? "active" : ""} onClick={() => changeStyle("satellite")}>卫星地图</button>
-          <button type="button" className={styleType === "light" ? "active" : ""} onClick={() => changeStyle("light")}>简洁地图</button>
+          <button type="button" className={styleType === "satellite" ? "active" : ""} onClick={() => changeStyle("satellite")}>{basemap.primaryLabel}</button>
+          <button type="button" className={styleType === "light" ? "active" : ""} onClick={() => changeStyle("light")}>{basemap.secondaryLabel}</button>
           <button type="button" onClick={resetView}>重置三维视角</button>
         </div>
       </header>
@@ -298,7 +313,7 @@ export function Workspace({
         ) : <aside className="uav-panel panel placeholder-panel" />}
 
         <section className="map-panel">
-          <MapView mapboxToken={mapboxToken} />
+          <MapView basemap={basemap} />
           {status === "loading" ? <div className="state-overlay"><span className="spinner" />正在加载算例数据…</div> : null}
           {status === "error" ? (
             <div className="state-overlay error-state">
@@ -311,8 +326,8 @@ export function Workspace({
         </section>
 
         {status === "ready" && summary ? (
-          <DetailPanel summary={summary} selected={selected} />
-        ) : <PendingDetailPanel status={status} />}
+          <DetailPanel summary={summary} selected={selected} attribution={basemap.attribution} />
+        ) : <PendingDetailPanel status={status} attribution={basemap.attribution} />}
       </section>
 
       <footer className="step-indicator" aria-label="任务阶段">

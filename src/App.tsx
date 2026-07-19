@@ -72,5 +72,5 @@ export default function App({
 
   if (error) return <BasemapSetupPage error={error} onRetry={() => setAttempt((value) => value + 1)} />;
   if (!resolvedBasemap) return <BasemapSetupPage />;
-  return <Workspace mapboxToken={resolvedBasemap.mapboxToken} debugMode={debugMode} dataBase={dataBase} />;
+  return <Workspace basemap={resolvedBasemap} debugMode={debugMode} dataBase={dataBase} />;
 }

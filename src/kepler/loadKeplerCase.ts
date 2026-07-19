@@ -12,6 +12,19 @@ function isSavedConfig(value: Record<string, unknown>): value is {
   return "version" in value && "config" in value;
 }
 
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+export function preserveRuntimeMapStyles<T>(parsedConfig: T): T;
+export function preserveRuntimeMapStyles(parsedConfig: unknown): unknown {
+  if (!isObjectRecord(parsedConfig) || !isObjectRecord(parsedConfig.mapStyle)) return parsedConfig;
+
+  const mapStyle = {...parsedConfig.mapStyle};
+  delete mapStyle.mapStyles;
+  return {...parsedConfig, mapStyle};
+}
+
 export function loadKeplerCase(
   dispatch: Dispatch,
   bundle: CaseBundle,
@@ -35,7 +48,7 @@ export function loadKeplerCase(
           keepExistingConfig: false,
           autoCreateLayers: false
         },
-        config: parsedConfig
+        config: preserveRuntimeMapStyles(parsedConfig)
       })
     )
   );

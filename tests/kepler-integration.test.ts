@@ -6,7 +6,7 @@ import {addDataToMap, registerEntry, updateMap, wrapTo} from "@kepler.gl/actions
 import {createAppStore} from "../src/app/store";
 import {caseManifestSchema, caseSummarySchema} from "../src/data/caseSchema";
 import type {CaseBundle, LoadedCaseDataset} from "../src/data/loadCase";
-import {loadKeplerCase} from "../src/kepler/loadKeplerCase";
+import {loadKeplerCase, preserveRuntimeMapStyles} from "../src/kepler/loadKeplerCase";
 
 function readJson(path: string): unknown {
   return JSON.parse(readFileSync(resolve(path), "utf8")) as unknown;
@@ -49,6 +49,40 @@ function loadBundleFromDisk(): CaseBundle {
 }
 
 describe("Kepler P0 integration", () => {
+  it("removes only saved map styles before configuring the live map", () => {
+    const config = {
+      mapStyle: {
+        styleType: "satellite",
+        visibleLayerGroups: {water: true},
+        mapStyles: {},
+        topLevel: "preserved"
+      },
+      mapState: {latitude: 18.625, longitude: 110.235},
+      visState: {layers: [{id: "wrj-region-layer"}]}
+    };
+
+    const preserved = preserveRuntimeMapStyles(config);
+
+    expect(preserved).toEqual({
+      mapStyle: {
+        styleType: "satellite",
+        visibleLayerGroups: {water: true},
+        topLevel: "preserved"
+      },
+      mapState: {latitude: 18.625, longitude: 110.235},
+      visState: {layers: [{id: "wrj-region-layer"}]}
+    });
+    expect(preserved).not.toBe(config);
+    expect(preserved.mapStyle).not.toBe(config.mapStyle);
+  });
+
+  it("returns configs without a map-style object unchanged", () => {
+    const config = {mapState: {latitude: 18.625}};
+
+    expect(preserveRuntimeMapStyles(config)).toBe(config);
+    expect(preserveRuntimeMapStyles(null)).toBeNull();
+  });
+
   it("routes a minimal dataset to a registered map instance", async () => {
     const store = createAppStore(false);
     store.dispatch(registerEntry({id: "wrj-map", mint: true}));
@@ -130,8 +164,13 @@ describe("Kepler P0 integration", () => {
     });
 
     const savedConfig = readJson("public/config/wrj-kepler-config.json") as {
-      config: {visState: {interactionConfig: {tooltip: {fieldsToShow: Record<string, Array<{name: string}>>}}}}
+      config: {
+        mapStyle: {styleType: string; mapStyles: Record<string, unknown>};
+        visState: {interactionConfig: {tooltip: {fieldsToShow: Record<string, Array<{name: string}>>}}};
+      }
     };
+    expect(savedConfig.config.mapStyle.styleType).toBe("satellite");
+    expect(savedConfig.config.mapStyle.mapStyles).toEqual({});
     for (const [datasetId, tooltipFields] of Object.entries(
       savedConfig.config.visState.interactionConfig.tooltip.fieldsToShow
     )) {

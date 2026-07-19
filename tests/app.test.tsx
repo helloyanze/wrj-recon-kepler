@@ -4,10 +4,10 @@ import {afterEach, describe, expect, it, vi} from "vitest";
 import App from "../src/App";
 import {resolveBasemap, type ResolvedBasemap} from "../src/basemap/basemapConfig";
 
-const workspaceProps: Array<{mapboxToken: string; debugMode: boolean; dataBase: string}> = [];
+const workspaceProps: Array<{basemap: ResolvedBasemap; debugMode: boolean; dataBase: string}> = [];
 
 vi.mock("../src/components/Workspace", () => ({
-  Workspace: (props: {mapboxToken: string; debugMode: boolean; dataBase: string}) => {
+  Workspace: (props: {basemap: ResolvedBasemap; debugMode: boolean; dataBase: string}) => {
     workspaceProps.push(props);
     return <div data-testid="workspace">Workspace</div>;
   }
@@ -37,7 +37,11 @@ describe("App basemap bootstrap", () => {
     render(<App basemapEnvironment={{mode: "public"}} />);
 
     expect(await screen.findByTestId("workspace")).toBeInTheDocument();
-    expect(workspaceProps).toEqual([{mapboxToken: "", debugMode: false, dataBase: "/data"}]);
+    expect(workspaceProps[0]).toMatchObject({
+      basemap: {provider: "public", mapboxToken: ""},
+      debugMode: false,
+      dataBase: "/data"
+    });
     expect(screen.queryByRole("heading", {name: "底图配置失败"})).not.toBeInTheDocument();
   });
 
@@ -100,7 +104,11 @@ describe("App basemap bootstrap", () => {
     );
 
     expect(await screen.findByTestId("workspace")).toBeInTheDocument();
-    expect(workspaceProps[0]).toEqual({mapboxToken: "", debugMode: true, dataBase: "/custom-data"});
+    expect(workspaceProps[0]).toMatchObject({
+      basemap: {provider: "public", mapboxToken: ""},
+      debugMode: true,
+      dataBase: "/custom-data"
+    });
   });
 
   it("only accepts the latest request when obsolete loaders ignore cancellation", async () => {
@@ -140,7 +148,11 @@ describe("App basemap bootstrap", () => {
     });
     expect(screen.getByTestId("workspace")).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    expect(workspaceProps.at(-1)).toEqual({mapboxToken: "", debugMode: false, dataBase: "/data"});
+    expect(workspaceProps.at(-1)).toMatchObject({
+      basemap: {provider: "public", mapboxToken: ""},
+      debugMode: false,
+      dataBase: "/data"
+    });
   });
 
   it("does not reload for a semantically identical basemap environment", async () => {

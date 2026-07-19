@@ -1,12 +1,13 @@
 import KeplerGl from "@kepler.gl/components";
+import type {ResolvedBasemap} from "../basemap/basemapConfig";
 import {useContainerSize} from "../hooks/useContainerSize";
 import {WRJ_MAP_ID} from "../kepler/constants";
 
 export interface WrjKeplerMapProps {
-  mapboxToken: string;
+  basemap: ResolvedBasemap;
 }
 
-export function WrjKeplerMap({mapboxToken}: WrjKeplerMapProps) {
+export function WrjKeplerMap({basemap}: WrjKeplerMapProps) {
   const {ref, width, height} = useContainerSize<HTMLDivElement>();
 
   return (
@@ -14,7 +15,9 @@ export function WrjKeplerMap({mapboxToken}: WrjKeplerMapProps) {
       {width > 0 && height > 0 ? (
         <KeplerGl
           id={WRJ_MAP_ID}
-          mapboxApiAccessToken={mapboxToken}
+          mapboxApiAccessToken={basemap.mapboxToken}
+          mapStyles={basemap.mapStyles}
+          mapStylesReplaceDefault={basemap.mapStylesReplaceDefault}
           width={width}
           height={height}
         />

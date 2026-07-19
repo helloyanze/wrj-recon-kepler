@@ -9,6 +9,7 @@ import {createAppStore} from "../src/app/store";
 import {caseManifestSchema, caseSummarySchema} from "../src/data/caseSchema";
 import type {CaseBundle} from "../src/data/loadCase";
 import {Workspace} from "../src/components/Workspace";
+import type {ResolvedBasemap} from "../src/basemap/basemapConfig";
 
 vi.mock("../src/components/WrjKeplerMap", () => ({
   WrjKeplerMap: () => <div data-testid="default-kepler-map">Kepler map</div>
@@ -35,6 +36,20 @@ function makeBundle(): CaseBundle {
 
 const MapStub = () => <div data-testid="kepler-map">Kepler map</div>;
 
+const PUBLIC_BASEMAP: ResolvedBasemap = {
+  provider: "public",
+  mapboxToken: "",
+  mapStyles: [
+    {id: "satellite", style: {version: 8, sources: {}, layers: []}},
+    {id: "light", style: {version: 8, sources: {}, layers: []}}
+  ],
+  mapStylesReplaceDefault: true,
+  primaryLabel: "公共地图",
+  secondaryLabel: "OSM 简洁图",
+  statusLabel: "公共底图",
+  attribution: "© OpenStreetMap contributors · © CARTO"
+};
+
 function renderWorkspace(
   caseLoader = vi.fn().mockResolvedValue(makeBundle()),
   keplerLoader = vi.fn().mockResolvedValue(undefined),
@@ -43,7 +58,7 @@ function renderWorkspace(
   render(
     <Provider store={store}>
       <Workspace
-        mapboxToken="test-token"
+        basemap={PUBLIC_BASEMAP}
         debugMode={false}
         dataBase="/data"
         caseLoader={caseLoader}
@@ -56,6 +71,13 @@ function renderWorkspace(
 }
 
 describe("WRJ workspace", () => {
+  it("shows the selected basemap attribution while case data is loading", () => {
+    renderWorkspace(vi.fn(() => new Promise<CaseBundle>(() => undefined)));
+
+    expect(screen.getByText("正在加载算例数据…")).toBeInTheDocument();
+    expect(screen.getByText("© OpenStreetMap contributors · © CARTO")).toBeInTheDocument();
+  });
+
   it("loads the fixed case and renders metrics, UAVs and permanent provenance", async () => {
     const {caseLoader, keplerLoader} = renderWorkspace();
 
@@ -65,8 +87,10 @@ describe("WRJ workspace", () => {
     expect(screen.getAllByRole("button", {name: /UAV-0[1-3]/})).toHaveLength(3);
     expect(screen.getByTestId("kepler-map")).toBeInTheDocument();
     expect(screen.getByText(/本演示不构成真实飞行计划或空域信息/)).toBeInTheDocument();
-    expect(screen.getByText(/© OpenStreetMap contributors/)).toBeInTheDocument();
-    expect(screen.getByText(/© Mapbox/)).toBeInTheDocument();
+    expect(screen.getByText("公共底图")).toBeInTheDocument();
+    expect(screen.getByText("© OpenStreetMap contributors · © CARTO")).toBeInTheDocument();
+    expect(screen.getByRole("button", {name: "公共地图"})).toBeInTheDocument();
+    expect(screen.getByRole("button", {name: "OSM 简洁图"})).toBeInTheDocument();
     expect(caseLoader).toHaveBeenCalledTimes(1);
     expect(keplerLoader).toHaveBeenCalledTimes(1);
   });
@@ -94,7 +118,7 @@ describe("WRJ workspace", () => {
     expect(await screen.findByText("算例加载失败")).toBeInTheDocument();
     expect(screen.getByText(/network down/)).toBeInTheDocument();
     expect(screen.getByText(/本演示不构成真实飞行计划或空域信息/)).toBeInTheDocument();
-    expect(screen.getByText(/© OpenStreetMap contributors/)).toBeInTheDocument();
+    expect(screen.getByText("© OpenStreetMap contributors · © CARTO")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", {name: "重新加载"}));
 
     expect(await screen.findByText("63.23 km")).toBeInTheDocument();
@@ -107,11 +131,12 @@ describe("WRJ workspace", () => {
     renderWorkspace(undefined, undefined, store);
     await screen.findByText("63.23 km");
 
-    fireEvent.click(screen.getByRole("button", {name: "简洁地图"}));
+    fireEvent.click(screen.getByRole("button", {name: "OSM 简洁图"}));
+    fireEvent.click(screen.getByRole("button", {name: "公共地图"}));
     fireEvent.click(screen.getByRole("button", {name: "重置三维视角"}));
     fireEvent.keyDown(window, {key: "r"});
 
-    await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4));
     const actions = dispatch.mock.calls.map(([action]) => action as unknown as {
       meta: {_addr_: string};
       payload: {type: string};
@@ -119,10 +144,12 @@ describe("WRJ workspace", () => {
     expect(actions.map(({meta}) => meta._addr_)).toEqual([
       "@@KG_WRJ-MAP",
       "@@KG_WRJ-MAP",
+      "@@KG_WRJ-MAP",
       "@@KG_WRJ-MAP"
     ]);
     expect(actions.map(({payload}) => payload.type)).toEqual([
       mapStyleChange("light").type,
+      mapStyleChange("satellite").type,
       updateMap({}).type,
       updateMap({}).type
     ]);
@@ -140,7 +167,7 @@ describe("WRJ workspace", () => {
       <StrictMode>
         <Provider store={store}>
           <Workspace
-            mapboxToken="test-token"
+            basemap={PUBLIC_BASEMAP}
             debugMode={false}
             dataBase="/data"
             caseLoader={caseLoader}
