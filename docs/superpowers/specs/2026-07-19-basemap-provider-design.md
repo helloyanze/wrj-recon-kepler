@@ -40,7 +40,7 @@ VITE_WRJ_DATA_BASE=/data
 - 加载并校验本地 Style JSON；
 - 输出统一的 `ResolvedBasemap`。
 
-`ResolvedBasemap` 包含提供商类型、Mapbox Token、两个工作台按钮的标签、初始样式 ID、按样式归属的 `attributionByStyle`、可选的 Kepler `mapStyles` 以及 `mapStylesReplaceDefault`。
+`ResolvedBasemap` 包含提供商类型、Mapbox Token、两个工作台按钮的标签、两个稳定样式 ID 的按样式归属 `attributionByStyle`、可选的 Kepler `mapStyles` 以及 `mapStylesReplaceDefault`。初始 `satellite` 样式由 `Workspace` 的 state 持有，而非 `ResolvedBasemap` 字段。
 
 Kepler 内部继续使用 `satellite` 和 `light` 两个稳定样式 ID：
 

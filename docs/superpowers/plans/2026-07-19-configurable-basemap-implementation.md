@@ -254,7 +254,7 @@ git commit -m "feat: bootstrap keyless basemaps with retry"
 
 - [ ] **Step 1: Write failing provider-aware Workspace tests**
 
-Create a `PUBLIC_BASEMAP` fixture with labels `公共地图` and `OSM 简洁图`, status `公共底图`, attribution `© OpenStreetMap contributors · © CARTO`. Render Workspace with it and assert the header buttons, status, and footer attribution. Click both buttons and assert the wrapped action payload style IDs remain `satellite` and `light`.
+Create a `PUBLIC_BASEMAP` fixture with labels `公共地图` and `OSM 简洁图`, status `公共底图`, and `attributionByStyle: {satellite: "© OpenStreetMap contributors · © CARTO", light: "© OpenStreetMap contributors"}`. Render Workspace with it and assert the header buttons, status, and footer attribution. Click both buttons, assert the wrapped action payload style IDs remain `satellite` and `light`, and assert the footer updates to the attribution for the selected `styleType`.
 
 - [ ] **Step 2: Write a failing Kepler prop adapter test**
 
@@ -290,7 +290,7 @@ Change `WorkspaceProps` to `basemap: ResolvedBasemap`, pass it to `MapView`, and
 />
 ```
 
-Render dynamic labels/status/attribution from `basemap`. Keep action IDs `satellite` and `light` and keep `styleType` initialized to `satellite`.
+Render dynamic labels/status and `basemap.attributionByStyle[styleType]`. Keep action IDs `satellite` and `light`, keep `styleType` initialized to `satellite`, and update the displayed attribution whenever the selected style changes.
 
 - [ ] **Step 5: Verify custom styles survive case injection**
 
