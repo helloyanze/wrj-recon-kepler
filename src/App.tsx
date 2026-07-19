@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {
   resolveBasemap,
   type BasemapEnvironment,
@@ -36,33 +36,39 @@ export default function App({
   basemapEnvironment = DEFAULT_BASEMAP_ENVIRONMENT,
   basemapLoader = resolveBasemap
 }: AppProps) {
+  const {mode, mapboxToken, localStyleUrl, localTileUrl, localAttribution} = basemapEnvironment;
+  const stableBasemapEnvironment = useMemo(
+    () => ({mode, mapboxToken, localStyleUrl, localTileUrl, localAttribution}),
+    [mode, mapboxToken, localStyleUrl, localTileUrl, localAttribution]
+  );
   const [resolvedBasemap, setResolvedBasemap] = useState<ResolvedBasemap | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const generationRef = useRef(0);
 
   useEffect(() => {
     const controller = new AbortController();
-    let cancelled = false;
+    const generation = ++generationRef.current;
     setResolvedBasemap(null);
     setError(null);
 
     const load = async () => {
       try {
-        const resolved = await basemapLoader(basemapEnvironment, controller.signal);
-        if (cancelled || controller.signal.aborted) return;
+        const resolved = await basemapLoader(stableBasemapEnvironment, controller.signal);
+        if (controller.signal.aborted || generation !== generationRef.current) return;
         setResolvedBasemap(resolved);
       } catch (caught) {
-        if (cancelled || controller.signal.aborted || isAbortError(caught)) return;
+        if (controller.signal.aborted || generation !== generationRef.current || isAbortError(caught)) return;
         setError(errorMessage(caught));
       }
     };
     void load();
 
     return () => {
-      cancelled = true;
       controller.abort();
+      if (generation === generationRef.current) generationRef.current += 1;
     };
-  }, [attempt, basemapEnvironment, basemapLoader]);
+  }, [attempt, basemapLoader, stableBasemapEnvironment]);
 
   if (error) return <BasemapSetupPage error={error} onRetry={() => setAttempt((value) => value + 1)} />;
   if (!resolvedBasemap) return <BasemapSetupPage />;
