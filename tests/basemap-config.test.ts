@@ -90,9 +90,10 @@ describe("resolveBasemap", () => {
       "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
       "https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
     ]);
-    expect(satellite.style.sources.raster.attribution).toContain("CARTO");
-    expect(satellite.style.sources.raster.attribution).toContain(OSM_ATTRIBUTION);
-    expect(result.attribution).toBe(satellite.style.sources.raster.attribution);
+    expect(satellite.style.sources.raster.attribution).toBe(
+      "© OpenStreetMap contributors · © CARTO"
+    );
+    expect(result.attribution).toBe("© OpenStreetMap contributors · © CARTO");
     expect(light.style.sources.raster.tiles).toEqual([
       "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
     ]);

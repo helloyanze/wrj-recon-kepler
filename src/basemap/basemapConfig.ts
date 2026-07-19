@@ -54,7 +54,7 @@ const OSM_ATTRIBUTION = "© OpenStreetMap contributors";
 const CARTO_TILES = ["a", "b", "c", "d"].map(
   (subdomain) => `https://${subdomain}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png`
 );
-const CARTO_ATTRIBUTION = "© OpenStreetMap contributors © CARTO";
+const CARTO_ATTRIBUTION = "© OpenStreetMap contributors · © CARTO";
 
 export function createRasterStyle(
   tiles: string[],
