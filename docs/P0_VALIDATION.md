@@ -42,6 +42,8 @@
 | `npm run test:run` | 通过 | 12 个测试文件、69 个测试全部通过，0 失败 |
 | `npm run build` | 通过 | 5272 个模块完成转换，Vite 生产构建成功（24.72 s）；保留既有依赖外部化和大 chunk 警告 |
 
+质量复核时重新执行完整 Vitest，最终原始汇总为 `Test Files 12 passed (12)`、`Tests 69 passed (69)`，退出码 0；测试数以该命令最终汇总为准。
+
 改造后的自动化测试覆盖 public、local、mapbox 的配置解析、显式模式错误、本地 Style 加载与取消、provider 感知的标签/逐样式归属，以及 Kepler 自定义样式接入。数据与既有 P0 测试还覆盖 HTTP 错误、非法 JSON、schema、OSM 规范化与 XML 回退、模拟标记、坐标顺序、时间单调性、3 架 UAV、12 条条带、摘要一致性、Trip CSV BOM 回归、Kepler 六 Dataset/六图层注入、加载失败重试、UAV 选择、视角重置、底图切换、快捷键和永久声明。
 
 ## Kepler P0 集成
@@ -75,7 +77,7 @@
 
 - [x] 显式 `public`、无 `VITE_MAPBOX_TOKEN` 的 Vite 开发服务可在 `127.0.0.1:4173` 启动；`GET /` 返回 HTTP 200，HTML 含 `#root` 与 `/src/main.tsx`
 - [x] 公共模式在 Codex 应用内浏览器真实打开，未出现 Token 阻断页；DOM 含 6 项指标、3 架 UAV、六类固定图例、Trip 时间轴、地图 canvas 以及真实/模拟数据声明
-- [x] 公共主底图真实请求 `https://a-d.basemaps.cartocdn.com/rastertiles/voyager/...`，按钮“公共地图”为 active，页脚同时显示 OSM 与 CARTO 归属；切换“OSM 简洁图”后真实请求 `https://tile.openstreetmap.org/...`，按钮为 active，页脚仅显示 OSM 归属；切回公共主底图也已验证
+- [x] 公共主底图真实请求 CARTO 的 `a`、`b`、`c`、`d` 四个子域（`https://{a,b,c,d}.basemaps.cartocdn.com/rastertiles/voyager/...`），按钮“公共地图”为 active，页脚同时显示 OSM 与 CARTO 归属；切换“OSM 简洁图”后真实请求 `https://tile.openstreetmap.org/...`，按钮为 active，页脚仅显示 OSM 归属；切回公共主底图也已验证
 - [x] Trip 播放时进度条从 `width: 0%` 推进到 `21.1667%`，图标由 play 变为 pause；停止后恢复，证明播放时间实际推进
 - [x] 1920×1080 下文档 `scroll/client` 均为 1920×1080，左栏 230 px、右栏 300 px、地图区 1390 px，6 项指标均在视口；1366×768 下文档 `scroll/client` 均为 1366×768，左栏 230 px、右栏 300 px、地图区 836 px，6 项指标均在视口
 - [x] 本地 XYZ 模式在 `127.0.0.1:4174` 打开，标题为“本地底图”，按钮为“本地地图/公共备用”；浏览器资源清单观察到多条 `http://127.0.0.1:4190/14/...png` 请求，页脚显示“本地验收瓦片”。切换公共备用后 OSM 按钮为 active、归属仅 OSM，切回后恢复本地归属
