@@ -93,7 +93,10 @@ describe("resolveBasemap", () => {
     expect(satellite.style.sources.raster.attribution).toBe(
       "© OpenStreetMap contributors · © CARTO"
     );
-    expect(result.attribution).toBe("© OpenStreetMap contributors · © CARTO");
+    expect(result.attributionByStyle).toEqual({
+      satellite: "© OpenStreetMap contributors · © CARTO",
+      light: OSM_ATTRIBUTION
+    });
     expect(light.style.sources.raster.tiles).toEqual([
       "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
     ]);
@@ -143,6 +146,19 @@ describe("resolveBasemap", () => {
     expect(result).toMatchObject({provider: "local", primaryLabel: "本地地图", secondaryLabel: "公共备用"});
     expect(result.mapStyles?.[0].style).toBe(style);
     expect(result.mapStyles?.[1].style.sources.raster.attribution).toBe(OSM_ATTRIBUTION);
+    expect(result.attributionByStyle).toEqual({
+      satellite: "本地地图数据 · © OpenStreetMap contributors",
+      light: OSM_ATTRIBUTION
+    });
+  });
+
+  it("provides accurate attribution for both Mapbox style choices", async () => {
+    const result = await resolveBasemap({mode: "mapbox", mapboxToken: "token"});
+
+    expect(result.attributionByStyle).toEqual({
+      satellite: "© Mapbox © OpenStreetMap contributors",
+      light: "© Mapbox © OpenStreetMap contributors"
+    });
   });
 
   it("reports local style HTTP and JSON failures precisely", async () => {

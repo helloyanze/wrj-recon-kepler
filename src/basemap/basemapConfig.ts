@@ -36,12 +36,14 @@ export interface BasemapStyle {
   style: MapStyleV8;
 }
 
+export type BasemapAttributionByStyle = Record<BasemapStyle["id"], string>;
+
 interface ResolvedBasemapBase {
   mapboxToken: string;
   primaryLabel: string;
   secondaryLabel: string;
   statusLabel: string;
-  attribution: string;
+  attributionByStyle: BasemapAttributionByStyle;
 }
 
 export interface RasterResolvedBasemap extends ResolvedBasemapBase {
@@ -132,7 +134,7 @@ function publicBasemap(): RasterResolvedBasemap {
     primaryLabel: "公共地图",
     secondaryLabel: "OSM 简洁图",
     statusLabel: "公共底图",
-    attribution: CARTO_ATTRIBUTION
+    attributionByStyle: {satellite: CARTO_ATTRIBUTION, light: OSM_ATTRIBUTION}
   };
 }
 
@@ -144,7 +146,10 @@ function mapboxBasemap(mapboxToken: string): MapboxResolvedBasemap {
     primaryLabel: "卫星地图",
     secondaryLabel: "简洁地图",
     statusLabel: "Mapbox 已配置",
-    attribution: "© Mapbox © OpenStreetMap contributors"
+    attributionByStyle: {
+      satellite: "© Mapbox © OpenStreetMap contributors",
+      light: "© Mapbox © OpenStreetMap contributors"
+    }
   };
 }
 
@@ -171,7 +176,7 @@ async function localBasemap(
     primaryLabel: "本地地图",
     secondaryLabel: "公共备用",
     statusLabel: "本地底图",
-    attribution
+    attributionByStyle: {satellite: attribution, light: OSM_ATTRIBUTION}
   };
 }
 

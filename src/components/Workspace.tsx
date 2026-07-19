@@ -289,6 +289,7 @@ export function Workspace({
   const retry = () => {
     setAttempt((value) => value + 1);
   };
+  const attribution = basemap.attributionByStyle[styleType];
 
   return (
     <main className="workspace">
@@ -326,8 +327,8 @@ export function Workspace({
         </section>
 
         {status === "ready" && summary ? (
-          <DetailPanel summary={summary} selected={selected} attribution={basemap.attribution} />
-        ) : <PendingDetailPanel status={status} attribution={basemap.attribution} />}
+          <DetailPanel summary={summary} selected={selected} attribution={attribution} />
+        ) : <PendingDetailPanel status={status} attribution={attribution} />}
       </section>
 
       <footer className="step-indicator" aria-label="任务阶段">

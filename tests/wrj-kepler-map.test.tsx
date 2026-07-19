@@ -27,7 +27,10 @@ const PUBLIC_BASEMAP: ResolvedBasemap = {
   primaryLabel: "公共地图",
   secondaryLabel: "OSM 简洁图",
   statusLabel: "公共底图",
-  attribution: "© OpenStreetMap contributors · © CARTO"
+  attributionByStyle: {
+    satellite: "© OpenStreetMap contributors · © CARTO",
+    light: "© OpenStreetMap contributors"
+  }
 };
 
 const MAPBOX_BASEMAP: ResolvedBasemap = {
@@ -37,7 +40,10 @@ const MAPBOX_BASEMAP: ResolvedBasemap = {
   primaryLabel: "卫星地图",
   secondaryLabel: "简洁地图",
   statusLabel: "Mapbox 已配置",
-  attribution: "© Mapbox © OpenStreetMap contributors"
+  attributionByStyle: {
+    satellite: "© Mapbox © OpenStreetMap contributors",
+    light: "© Mapbox © OpenStreetMap contributors"
+  }
 };
 
 afterEach(() => {

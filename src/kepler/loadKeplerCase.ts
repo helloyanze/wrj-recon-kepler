@@ -16,9 +16,10 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-export function preserveRuntimeMapStyles<T>(parsedConfig: T): T;
-export function preserveRuntimeMapStyles(parsedConfig: unknown): unknown {
-  if (!isObjectRecord(parsedConfig) || !isObjectRecord(parsedConfig.mapStyle)) return parsedConfig;
+export function preserveRuntimeMapStyles(
+  parsedConfig: Record<string, unknown>
+): Record<string, unknown> {
+  if (!isObjectRecord(parsedConfig.mapStyle)) return parsedConfig;
 
   const mapStyle = {...parsedConfig.mapStyle};
   delete mapStyle.mapStyles;

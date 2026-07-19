@@ -47,18 +47,39 @@ const PUBLIC_BASEMAP: ResolvedBasemap = {
   primaryLabel: "公共地图",
   secondaryLabel: "OSM 简洁图",
   statusLabel: "公共底图",
-  attribution: "© OpenStreetMap contributors · © CARTO"
+  attributionByStyle: {
+    satellite: "© OpenStreetMap contributors · © CARTO",
+    light: "© OpenStreetMap contributors"
+  }
+};
+
+const LOCAL_BASEMAP: ResolvedBasemap = {
+  provider: "local",
+  mapboxToken: "",
+  mapStyles: [
+    {id: "satellite", style: {version: 8, sources: {}, layers: []}},
+    {id: "light", style: {version: 8, sources: {}, layers: []}}
+  ],
+  mapStylesReplaceDefault: true,
+  primaryLabel: "本地地图",
+  secondaryLabel: "公共备用",
+  statusLabel: "本地底图",
+  attributionByStyle: {
+    satellite: "© 本地测绘数据",
+    light: "© OpenStreetMap contributors"
+  }
 };
 
 function renderWorkspace(
   caseLoader = vi.fn().mockResolvedValue(makeBundle()),
   keplerLoader = vi.fn().mockResolvedValue(undefined),
-  store = createAppStore(false)
+  store = createAppStore(false),
+  basemap = PUBLIC_BASEMAP
 ) {
   render(
     <Provider store={store}>
       <Workspace
-        basemap={PUBLIC_BASEMAP}
+        basemap={basemap}
         debugMode={false}
         dataBase="/data"
         caseLoader={caseLoader}
@@ -93,6 +114,27 @@ describe("WRJ workspace", () => {
     expect(screen.getByRole("button", {name: "OSM 简洁图"})).toBeInTheDocument();
     expect(caseLoader).toHaveBeenCalledTimes(1);
     expect(keplerLoader).toHaveBeenCalledTimes(1);
+  });
+
+  it("switches public attribution from CARTO to OSM for the light style", async () => {
+    renderWorkspace();
+    await screen.findByText("63.23 km");
+
+    fireEvent.click(screen.getByRole("button", {name: "OSM 简洁图"}));
+
+    expect(screen.getByText("© OpenStreetMap contributors")).toBeInTheDocument();
+    expect(screen.queryByText("© OpenStreetMap contributors · © CARTO")).not.toBeInTheDocument();
+  });
+
+  it("switches local attribution to OSM for the public fallback style", async () => {
+    renderWorkspace(undefined, undefined, undefined, LOCAL_BASEMAP);
+    await screen.findByText("63.23 km");
+
+    expect(screen.getByText("© 本地测绘数据")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", {name: "公共备用"}));
+
+    expect(screen.getByText("© OpenStreetMap contributors")).toBeInTheDocument();
+    expect(screen.queryByText("© 本地测绘数据")).not.toBeInTheDocument();
   });
 
   it("updates UAV details and clears selection with Escape", async () => {

@@ -8,6 +8,16 @@ import {caseManifestSchema, caseSummarySchema} from "../src/data/caseSchema";
 import type {CaseBundle, LoadedCaseDataset} from "../src/data/loadCase";
 import {loadKeplerCase, preserveRuntimeMapStyles} from "../src/kepler/loadKeplerCase";
 
+const DEFAULT_MAPLIBRE_STYLE_URL =
+  "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
+const MAPBOX_SATELLITE_STYLE_URL =
+  "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11?pluginName=Keplergl&access_token=null";
+const ALLOWED_MAP_STYLE_URLS = new Set([
+  DEFAULT_MAPLIBRE_STYLE_URL,
+  MAPBOX_SATELLITE_STYLE_URL
+]);
+const mapStyleFetch = vi.fn();
+
 function readJson(path: string): unknown {
   return JSON.parse(readFileSync(resolve(path), "utf8")) as unknown;
 }
@@ -57,11 +67,18 @@ function loadBundleFromDisk(): CaseBundle {
 }
 
 beforeEach(() => {
+  mapStyleFetch.mockReset();
+  mapStyleFetch.mockImplementation((input: RequestInfo | URL) => {
+    if (!ALLOWED_MAP_STYLE_URLS.has(String(input))) {
+      return Promise.resolve(new Response("unexpected map style URL", {status: 404}));
+    }
+    return Promise.resolve(
+      new Response(JSON.stringify({version: 8, sources: {}, layers: []}), {status: 200})
+    );
+  });
   vi.stubGlobal(
     "fetch",
-    vi.fn().mockImplementation(() => Promise.resolve(
-      new Response(JSON.stringify({version: 8, sources: {}, layers: []}), {status: 200})
-    ))
+    mapStyleFetch
   );
 });
 
@@ -98,10 +115,9 @@ describe("Kepler P0 integration", () => {
   });
 
   it("returns configs without a map-style object unchanged", () => {
-    const config = {mapState: {latitude: 18.625}};
+    const config = {mapStyle: null, mapState: {latitude: 18.625}};
 
     expect(preserveRuntimeMapStyles(config)).toBe(config);
-    expect(preserveRuntimeMapStyles(null)).toBeNull();
   });
 
   it("routes a minimal dataset to a registered map instance", async () => {
@@ -184,6 +200,10 @@ describe("Kepler P0 integration", () => {
       bearing: -18
     });
     expect(mapState.mapStyle.styleType).toBe("satellite");
+    expect(mapStyleFetch.mock.calls.map(([url]) => String(url))).toEqual([
+      DEFAULT_MAPLIBRE_STYLE_URL,
+      MAPBOX_SATELLITE_STYLE_URL
+    ]);
 
     const savedConfig = readJson("public/config/wrj-kepler-config.json") as {
       config: {
