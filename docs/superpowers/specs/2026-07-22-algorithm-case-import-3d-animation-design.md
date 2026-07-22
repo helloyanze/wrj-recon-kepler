@@ -74,7 +74,7 @@ UI 不写死 UAV 数量、出动次数、批次数或条带数。
 - `mission_plan.json`：必需，且必须恰好一个；
 - `region_profile.json`：可选，用于原始任务区边界；
 - `validation_report.json`：可选，用于补充验证信息和一致性复核；
-- `score.json`：可选，用于补充评分信息和一致性复核；
+- `score_report.json`：可选，用于补充评分信息和一致性复核；
 - `trajectories.geojson`：可选，只用于一致性复核。
 
 找到零个或多个 `mission_plan.json` 均拒绝导入。一个 ZIP 不支持多个算例。
