@@ -15,6 +15,8 @@ describe("UAV Deck.gl marker asset", () => {
     expect(document.querySelector("parsererror")).toBeNull();
     expect(document.documentElement.localName).toBe("svg");
     expect(document.documentElement.getAttribute("viewBox")).toBe("0 0 64 64");
+    expect(document.documentElement.getAttribute("width")).toBe("64");
+    expect(document.documentElement.getAttribute("height")).toBe("64");
     expect(svg).toMatch(/fill=["']#ffffff["']/i);
     expect(svg).not.toMatch(/#35c5ff|#ffb44d|#4ed6a0/i);
     expect(document.querySelector("script, foreignObject")).toBeNull();
