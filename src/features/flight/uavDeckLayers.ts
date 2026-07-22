@@ -1,7 +1,7 @@
 import {IconLayer} from "@deck.gl/layers";
 import {UAV_COLORS} from "../../kepler/constants";
 import {interpolateFlight, type InterpolatedFlight} from "./flightInterpolation";
-import type {UavFlightPath} from "./flightPaths";
+import type {UavFlightId, UavFlightPath} from "./flightPaths";
 
 export type UavMarkerColor = [red: number, green: number, blue: number, alpha: number];
 
@@ -23,6 +23,12 @@ const DEFAULT_PALETTE = [
   UAV_COLORS["UAV-03"]
 ] as const;
 
+const PALETTE_INDEX_BY_UAV_ID: Record<UavFlightId, number> = {
+  "UAV-01": 0,
+  "UAV-02": 1,
+  "UAV-03": 2
+};
+
 const UAV_ICON = {
   url: "/assets/uav-fixed-wing-mask.svg",
   width: 64,
@@ -41,9 +47,10 @@ function hexToRgba(hex: string): UavMarkerColor {
   ];
 }
 
-function paletteColor(palette: readonly string[] | undefined, index: number): UavMarkerColor {
+function paletteColor(palette: readonly string[] | undefined, uavId: UavFlightId): UavMarkerColor {
+  const index = PALETTE_INDEX_BY_UAV_ID[uavId];
   const candidate = palette?.[index];
-  const fallback = DEFAULT_PALETTE[index] ?? DEFAULT_PALETTE[index % DEFAULT_PALETTE.length];
+  const fallback = DEFAULT_PALETTE[index];
   return hexToRgba(typeof candidate === "string" && /^#[0-9a-f]{6}$/i.test(candidate) ? candidate : fallback);
 }
 
@@ -56,10 +63,10 @@ export function createUavDeckLayers({
 }: CreateUavDeckLayersOptions) {
   if (!visible) return [];
 
-  const markers = paths.flatMap((path, index) => {
+  const markers = paths.flatMap((path) => {
     const pathTime = time ?? path.coordinates[0]?.[3] ?? Number.NaN;
     const flight = interpolateFlight(path, pathTime);
-    return flight ? [{...flight, color: paletteColor(palette, index)}] : [];
+    return flight ? [{...flight, color: paletteColor(palette, path.uavId)}] : [];
   });
 
   if (markers.length === 0) return [];

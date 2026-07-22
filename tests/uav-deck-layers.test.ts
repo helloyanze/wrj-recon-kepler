@@ -115,4 +115,22 @@ describe("createUavDeckLayers", () => {
     ]);
     expect(getSize(markers[0])).toBe(32);
   });
+
+  it("keeps the UAV-02 palette color when UAV-01 has no valid path", () => {
+    const [layer] = createUavDeckLayers({
+      paths: paths.slice(1),
+      time: 30,
+      visible: true,
+      palette: ["#111111", "#223344", "#556677"]
+    });
+    const markers = layer.props.data as ReadonlyArray<{
+      uavId: UavFlightId;
+      color: readonly [number, number, number, number];
+    }>;
+    const getColor = layer.props.getColor as unknown as (marker: (typeof markers)[number]) =>
+      readonly [number, number, number, number];
+
+    expect(markers[0].uavId).toBe("UAV-02");
+    expect(getColor(markers[0])).toEqual([34, 51, 68, 255]);
+  });
 });
