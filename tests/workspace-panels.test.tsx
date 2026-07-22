@@ -23,22 +23,29 @@ const layerNames = [
   "模拟 Trip"
 ] as const;
 
+const layerIds = [
+  "layer-1",
+  "layer-2",
+  "layer-3",
+  "wrj-strips-layer",
+  "wrj-routes-layer",
+  "wrj-trip-layer"
+] as const;
+
 function makeLayers(): LayerViewModel[] {
   return layerNames.map((label, index) => ({
-    id: index === 4
-      ? "wrj-routes-layer"
-      : index === 5
-        ? "wrj-trip-layer"
-        : `layer-${index + 1}`,
+    id: layerIds[index],
     label,
     visible: index !== 1,
     definition: {
-      mode: index === 4 ? "uav" : "single",
+      mode: index >= 3 ? "uav" : "single",
       capabilities: index === 0
         ? ["radius", "filled"]
-        : index === 4
-          ? ["thickness", "trailLength", "stroked"]
-          : []
+        : index === 3 || index === 4
+          ? ["thickness"]
+          : index === 5
+            ? ["thickness", "trailLength"]
+            : []
     },
     appearance: {
       color: "#123456",
@@ -198,11 +205,9 @@ describe("LayerSidebar", () => {
     expect(screen.getByLabelText("模拟规划航迹 UAV-01 颜色")).toHaveValue("#ff0000");
     expect(screen.getByLabelText("模拟规划航迹 UAV-02 颜色")).toHaveValue("#00ff00");
     expect(screen.getByLabelText("模拟规划航迹 UAV-03 颜色")).toHaveValue("#0000ff");
-    expect(screen.queryByLabelText("模拟规划航迹 线宽")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", {name: "展开 模拟规划航迹 高级设置"}));
     expect(screen.getByLabelText("模拟规划航迹 线宽")).toBeInTheDocument();
-    expect(screen.getByLabelText("模拟规划航迹 轨迹长度")).toBeInTheDocument();
-    expect(screen.getByLabelText("模拟规划航迹 描边")).not.toBeChecked();
+    expect(screen.queryByRole("button", {name: "展开 模拟规划航迹 高级设置"}))
+      .not.toBeInTheDocument();
     expect(screen.queryByLabelText("模拟规划航迹 半径")).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("模拟规划航迹 UAV-02 颜色"), {
@@ -218,6 +223,30 @@ describe("LayerSidebar", () => {
 
     fireEvent.click(screen.getByRole("button", {name: "恢复全部图层默认设置"}));
     expect(props.onRestoreDefaults).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows a base line-width range for strips, routes, and Trip", () => {
+    const props = makeSidebarProps();
+    render(<LayerSidebar {...props} />);
+
+    const routeWidth = screen.getByLabelText("模拟规划航迹 线宽");
+    expect(routeWidth).toHaveAttribute("type", "range");
+    expect(routeWidth).toHaveAttribute("min", "0.5");
+    expect(routeWidth).toHaveAttribute("max", "20");
+    expect(routeWidth).toHaveAttribute("step", "0.5");
+    expect(screen.getByLabelText("模拟规划航迹 线宽值")).toHaveTextContent("3 px");
+
+    fireEvent.change(routeWidth, {target: {value: "6.5"}});
+    expect(props.onLayerChange).toHaveBeenCalledWith("wrj-routes-layer", {thickness: 6.5});
+
+    fireEvent.click(screen.getByRole("button", {name: "编辑 模拟侦察条带"}));
+    expect(screen.getByLabelText("模拟侦察条带 线宽")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", {name: "编辑 模拟 Trip"}));
+    expect(screen.getByLabelText("模拟 Trip 线宽")).toBeInTheDocument();
+    expect(screen.queryByLabelText("模拟 Trip 轨迹长度")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", {name: "展开 模拟 Trip 高级设置"}));
+    expect(screen.getByLabelText("模拟 Trip 轨迹长度")).toBeInTheDocument();
   });
 
   it("offers a runtime-tintable marker size control only for the Trip layer", () => {

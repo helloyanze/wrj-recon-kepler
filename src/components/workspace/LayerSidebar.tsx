@@ -54,9 +54,16 @@ export interface LayerSidebarProps {
 }
 
 const UAV_IDS: readonly UavId[] = ["UAV-01", "UAV-02", "UAV-03"];
+const MIN_LINE_WIDTH = 0.5;
+const MAX_LINE_WIDTH = 20;
 
 function numericValue(value: string): number {
   return Number(value);
+}
+
+function clampLineWidth(value: number | undefined): number {
+  if (value === undefined || !Number.isFinite(value)) return MIN_LINE_WIDTH;
+  return Math.min(MAX_LINE_WIDTH, Math.max(MIN_LINE_WIDTH, value));
 }
 
 function nonNegativeValue(input: HTMLInputElement): number | undefined {
@@ -79,7 +86,10 @@ function AdvancedControls({
   const has = (capability: LayerCapability) => definition.capabilities.includes(capability);
   const hasIconSize = layer.id === "wrj-trip-layer";
 
-  if (definition.capabilities.length === 0 && !hasIconSize) return null;
+  if (
+    !hasIconSize
+    && definition.capabilities.every((capability) => capability === "thickness")
+  ) return null;
 
   return (
     <fieldset>
@@ -95,21 +105,6 @@ function AdvancedControls({
             onChange={(event) => {
               const value = nonNegativeValue(event.currentTarget);
               if (value !== undefined) onChange({radius: value});
-            }}
-          />
-        </label>
-      ) : null}
-      {has("thickness") ? (
-        <label>
-          线宽
-          <input
-            aria-label={`${label} 线宽`}
-            type="number"
-            min="0"
-            value={appearance.thickness ?? 0}
-            onChange={(event) => {
-              const value = nonNegativeValue(event.currentTarget);
-              if (value !== undefined) onChange({thickness: value});
             }}
           />
         </label>
@@ -184,7 +179,11 @@ function LayerEditor({
 }) {
   const {appearance, definition, label} = layer;
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const hasAdvancedControls = definition.capabilities.length > 0 || layer.id === "wrj-trip-layer";
+  const hasThickness = definition.capabilities.includes("thickness");
+  const hasAdvancedControls = definition.capabilities.some(
+    (capability) => capability !== "thickness"
+  ) || layer.id === "wrj-trip-layer";
+  const thickness = clampLineWidth(appearance.thickness);
 
   return (
     <section aria-label={`${label} 设置`}>
@@ -228,6 +227,25 @@ function LayerEditor({
             onChange={(event) => onChange({opacity: numericValue(event.currentTarget.value)})}
           />
         </label>
+        {hasThickness ? (
+          <label>
+            线宽
+            <span className="layer-range-input">
+              <input
+                aria-label={`${label} 线宽`}
+                type="range"
+                min={MIN_LINE_WIDTH}
+                max={MAX_LINE_WIDTH}
+                step="0.5"
+                value={thickness}
+                onChange={(event) => onChange({
+                  thickness: numericValue(event.currentTarget.value)
+                })}
+              />
+              <output aria-label={`${label} 线宽值`}>{thickness} px</output>
+            </span>
+          </label>
+        ) : null}
       </fieldset>
       {hasAdvancedControls ? (
         <div className="layer-advanced">
