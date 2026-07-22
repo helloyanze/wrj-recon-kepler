@@ -54,6 +54,13 @@ function paletteColor(palette: readonly string[] | undefined, uavId: UavFlightId
   return hexToRgba(typeof candidate === "string" && /^#[0-9a-f]{6}$/i.test(candidate) ? candidate : fallback);
 }
 
+function tripAnimationTime(time: number, path: UavFlightPath): number {
+  const firstPathTime = path.coordinates[0]?.[3];
+  const animationUsesMilliseconds = Math.abs(time) >= 100_000_000_000;
+  const pathUsesSeconds = firstPathTime !== undefined && Math.abs(firstPathTime) < 100_000_000_000;
+  return animationUsesMilliseconds && pathUsesSeconds ? time / 1_000 : time;
+}
+
 export function createUavDeckLayers({
   paths,
   time,
@@ -64,7 +71,9 @@ export function createUavDeckLayers({
   if (!visible) return [];
 
   const markers = paths.flatMap((path) => {
-    const pathTime = time ?? path.coordinates[0]?.[3] ?? Number.NaN;
+    const pathTime = time === null
+      ? path.coordinates[0]?.[3] ?? Number.NaN
+      : tripAnimationTime(time, path);
     const flight = interpolateFlight(path, pathTime);
     return flight ? [{...flight, color: paletteColor(palette, path.uavId)}] : [];
   });

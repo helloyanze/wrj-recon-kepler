@@ -1,6 +1,6 @@
 # P0 技术验证记录
 
-验证日期：2026-07-19  
+验证日期：2026-07-22
 验证环境：Windows、Node.js 20.19.3、npm 10.8.2、Kepler.gl 3.2.6
 
 ## 结论
@@ -39,10 +39,10 @@
 | `npm run data:validate` | 通过 | 164 POI、154 上下文、12 条带、3 架 UAV；边界、来源与安全契约通过 |
 | `npm run lint` | 通过 | ESLint 退出码 0，无错误输出 |
 | `npm run typecheck` | 通过 | `tsc -b --pretty false` 退出码 0 |
-| `npm run test:run` | 通过 | 12 个测试文件、69 个测试全部通过，0 失败 |
-| `npm run build` | 通过 | 5272 个模块完成转换，Vite 生产构建成功（24.72 s）；保留既有依赖外部化和大 chunk 警告 |
+| `npm run test:run` | 通过 | 18 个测试文件、144 个测试全部通过，0 失败 |
+| `npm run build` | 通过 | 5246 个模块完成转换，Vite 生产构建成功（22.50 s）；保留既有依赖外部化和大 chunk 警告 |
 
-质量复核时重新执行完整 Vitest，最终原始汇总为 `Test Files 12 passed (12)`、`Tests 69 passed (69)`，退出码 0；测试数以该命令最终汇总为准。
+2026-07-22 质量复核时重新执行完整 Vitest，最终原始汇总为 `Test Files 18 passed (18)`、`Tests 144 passed (144)`，退出码 0；测试数以该命令最终汇总为准。
 
 改造后的自动化测试覆盖 public、local、mapbox 的配置解析、显式模式错误、本地 Style 加载与取消、provider 感知的标签/逐样式归属，以及 Kepler 自定义样式接入。数据与既有 P0 测试还覆盖 HTTP 错误、非法 JSON、schema、OSM 规范化与 XML 回退、模拟标记、坐标顺序、时间单调性、3 架 UAV、12 条条带、摘要一致性、Trip CSV BOM 回归、Kepler 六 Dataset/六图层注入、加载失败重试、UAV 选择、视角重置、底图切换、快捷键和永久声明。
 
@@ -61,6 +61,17 @@
 曾发现 Trip 图层缺失。根因是生成器向 CSV 首字段写入 BOM，Kepler 将字段识别为 `﻿_geojson`，与配置的 `_geojson` 不匹配。现已移除 BOM，并增加序列化和六图层集成回归测试。
 
 ## 浏览器验证
+
+### 2026-07-22 简化工作台与三机动画验收
+
+- [x] Chrome Headless 以无 Token 的公共底图模式打开生产预览，1920×1080 与 1366×768 均正常渲染紧凑顶栏、300 px 图层侧栏、全幅地图、Trip 时间轴和 UAV 列表，无横向滚动或白屏。
+- [x] `wrj-uav-flight-markers` 已作为第八个 Deck 图层注入现有 Kepler 画布；浏览器成功加载 `/assets/uav-fixed-wing-mask.svg`，同一帧存在 UAV-01、UAV-02、UAV-03 三条 marker。
+- [x] 播放 8 秒后时间轴从 01:00:00 推进到 01:01:52；三架 marker 分别位于不同经纬度与高度，航向随相邻采样点更新。
+- [x] Trip 的 UAV-01/UAV-02/UAV-03 色带与 marker RGBA 严格对应蓝、橙、绿；更改色带无需重新注入 Dataset，Trip `currentTime` 保持不变。
+- [x] Trip 高级设置的“无人机图标大小”可在 16–64 px 调整；浏览器实测设为 64 px 后立即生效，并写入 `wrj-layer-preferences:v1:riyue-3d`。
+- [x] 隐藏 Trip 时不创建无人机 marker 图层；恢复显示后按当前时间继续，不重置播放进度。
+
+浏览器验收期间发现 Kepler `animationConfig.currentTime` 使用 Unix 毫秒，而生成的四维 Trip 坐标按规范保存 Unix 秒。修复前会把三架图标钳制在各自终点；现已在 Deck marker 边界按路径时间单位归一化，并增加“毫秒动画时间对应秒级路径中点”的回归测试。运行时证据显示修复后 UAV-01 在 `1784509312699.9944 ms` 对应位置为 `[110.22072552712939, 18.624583904803753, 122]`，不再停留于终点。
 
 以下为改造前已观察到的浏览器证据；旧的 Token 缺失页已被新的启动流程取代，不能作为当前验收项：
 

@@ -116,6 +116,24 @@ describe("createUavDeckLayers", () => {
     expect(getSize(markers[0])).toBe(32);
   });
 
+  it("converts Kepler millisecond animation time to Trip path seconds", () => {
+    const startTime = 1_784_509_200;
+    const [layer] = createUavDeckLayers({
+      paths: [path(
+        "UAV-01",
+        [110, 18, 100, startTime],
+        [112, 20, 300, startTime + 20]
+      )],
+      time: (startTime + 10) * 1_000,
+      visible: true
+    });
+    const markers = layer.props.data as ReadonlyArray<{
+      position: readonly [number, number, number];
+    }>;
+
+    expect(markers[0].position).toEqual([111, 19, 200]);
+  });
+
   it("keeps the UAV-02 palette color when UAV-01 has no valid path", () => {
     const [layer] = createUavDeckLayers({
       paths: paths.slice(1),
