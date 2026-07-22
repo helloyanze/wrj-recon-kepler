@@ -20,6 +20,7 @@ type UavId = (typeof UAV_IDS)[number];
 export interface LayerPreference {
   visible?: boolean;
   opacity?: number;
+  iconSize?: number;
   color?: string;
   uavColors?: Partial<Record<UavId, string>>;
   radius?: number;
@@ -83,6 +84,14 @@ function sanitizeLayerPreference(value: unknown, layerId: LayerId): LayerPrefere
 
   const uavColors = sanitizeUavColors(value.uavColors);
   if (definition.colorMode === "uav" && uavColors) result.uavColors = uavColors;
+
+  if (
+    layerId === "wrj-trip-layer" &&
+    typeof value.iconSize === "number" &&
+    Number.isInteger(value.iconSize) &&
+    value.iconSize >= 16 &&
+    value.iconSize <= 64
+  ) result.iconSize = value.iconSize;
 
   if (supports("radius") && isBoundedFiniteNumber(value.radius, ADVANCED_LIMITS.radius)) {
     result.radius = value.radius;

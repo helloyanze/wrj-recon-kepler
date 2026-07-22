@@ -32,6 +32,7 @@ describe("layer preferences", () => {
         "wrj-trip-layer": {
           thickness: 2.5,
           trailLength: 120,
+          iconSize: 48,
           uavColors: {
             "UAV-01": "#FF0000",
             "UAV-02": "#00FF00",
@@ -179,6 +180,38 @@ describe("layer preferences", () => {
         "wrj-region-layer": {color: "#778899", filled: false, stroked: true},
         "wrj-trip-layer": {uavColors: {"UAV-02": "#DDEEFF"}}
       }
+    });
+  });
+
+  it("accepts only integer Trip icon sizes from 16 through 64", () => {
+    saveLayerPreferences({
+      version: 1,
+      caseId: "riyue-3d",
+      layers: {
+        "wrj-pois-layer": {iconSize: 48},
+        "wrj-trip-layer": {iconSize: 16}
+      }
+    });
+    expect(loadLayerPreferences().layers).toEqual({
+      "wrj-trip-layer": {iconSize: 16}
+    });
+
+    for (const iconSize of [15, 65, Number.NaN, 32.5]) {
+      saveLayerPreferences({
+        version: 1,
+        caseId: "riyue-3d",
+        layers: {"wrj-trip-layer": {iconSize}}
+      });
+      expect(loadLayerPreferences().layers).toEqual({});
+    }
+
+    saveLayerPreferences({
+      version: 1,
+      caseId: "riyue-3d",
+      layers: {"wrj-trip-layer": {iconSize: 64}}
+    });
+    expect(loadLayerPreferences().layers).toEqual({
+      "wrj-trip-layer": {iconSize: 64}
     });
   });
 

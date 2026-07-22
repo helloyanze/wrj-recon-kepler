@@ -20,12 +20,16 @@ const layerNames = [
   "模拟任务区域",
   "模拟侦察条带",
   "模拟规划航迹",
-  "动态模拟飞行"
+  "模拟 Trip"
 ] as const;
 
 function makeLayers(): LayerViewModel[] {
   return layerNames.map((label, index) => ({
-    id: index === 4 ? "wrj-routes-layer" : `layer-${index + 1}`,
+    id: index === 4
+      ? "wrj-routes-layer"
+      : index === 5
+        ? "wrj-trip-layer"
+        : `layer-${index + 1}`,
     label,
     visible: index !== 1,
     definition: {
@@ -44,6 +48,7 @@ function makeLayers(): LayerViewModel[] {
       trailLength: 120,
       filled: true,
       stroked: false,
+      iconSize: index === 5 ? 32 : undefined,
       uavColors: {
         "UAV-01": "#ff0000",
         "UAV-02": "#00ff00",
@@ -213,6 +218,26 @@ describe("LayerSidebar", () => {
 
     fireEvent.click(screen.getByRole("button", {name: "恢复全部图层默认设置"}));
     expect(props.onRestoreDefaults).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers a runtime-tintable marker size control only for the Trip layer", () => {
+    const props = makeSidebarProps();
+    render(<LayerSidebar {...props} />);
+
+    expect(screen.queryByLabelText("模拟 Trip 无人机图标大小")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", {name: "编辑 模拟 Trip"}));
+    fireEvent.click(screen.getByRole("button", {name: "展开 模拟 Trip 高级设置"}));
+
+    const iconSize = screen.getByLabelText("模拟 Trip 无人机图标大小");
+    expect(iconSize).toHaveAttribute("type", "range");
+    expect(iconSize).toHaveAttribute("min", "16");
+    expect(iconSize).toHaveAttribute("max", "64");
+    expect(iconSize).toHaveAttribute("step", "1");
+    expect(iconSize).toHaveValue("32");
+
+    fireEvent.change(iconSize, {target: {value: "48"}});
+    expect(props.onLayerChange).toHaveBeenCalledWith("wrj-trip-layer", {iconSize: 48});
+    expect(screen.getAllByLabelText(/无人机图标大小/)).toHaveLength(1);
   });
 
   it("keeps the UAV roster at the bottom and reports selection", () => {

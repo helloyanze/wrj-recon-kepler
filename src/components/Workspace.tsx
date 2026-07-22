@@ -6,6 +6,7 @@ import type {AppDispatch, RootState} from "../app/store";
 import type {ResolvedBasemap} from "../basemap/basemapConfig";
 import type {CaseSummary} from "../data/caseSchema";
 import {loadCase} from "../data/loadCase";
+import {extractFlightPaths, type UavFlightPath} from "../features/flight/flightPaths";
 import {
   controlledLayerViewModelsFromLayers,
   selectControlledLayerViewModels,
@@ -59,6 +60,8 @@ const SINGLE_COLOR_FALLBACKS: Record<string, string> = {
   "wrj-region-layer": "#35C5FF"
 };
 
+const DEFAULT_UAV_ICON_SIZE = 32;
+
 const ADVANCED_CAPABILITIES: readonly LayerAdvancedCapability[] = [
   "radius",
   "thickness",
@@ -75,7 +78,10 @@ function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === "AbortError";
 }
 
-function toLayerViewModel(layer: ControlledLayerViewModel): LayerViewModel {
+function toLayerViewModel(
+  layer: ControlledLayerViewModel,
+  uavIconSize = DEFAULT_UAV_ICON_SIZE
+): LayerViewModel {
   const palette = layer.uavPalette ?? [
     UAV_COLORS["UAV-01"],
     UAV_COLORS["UAV-02"],
@@ -94,6 +100,7 @@ function toLayerViewModel(layer: ControlledLayerViewModel): LayerViewModel {
     appearance: {
       color: layer.singleColor ?? SINGLE_COLOR_FALLBACKS[layer.id] ?? "#35C5FF",
       opacity: layer.opacity,
+      iconSize: layer.id === "wrj-trip-layer" ? uavIconSize : undefined,
       uavColors: {
         "UAV-01": palette[0],
         "UAV-02": palette[1],
@@ -129,10 +136,14 @@ function preferenceFromModel(layer: ControlledLayerViewModel): LayerPreference {
   return preference;
 }
 
-function preferencesFromState(state: RootState): LayerPreferencesV1 {
+function preferencesFromState(state: RootState, iconSize: number): LayerPreferencesV1 {
   const layers: LayerPreferencesV1["layers"] = {};
   for (const model of selectControlledLayerViewModels(state)) {
-    if (model.available) layers[model.id] = preferenceFromModel(model);
+    if (model.available) {
+      const preference = preferenceFromModel(model);
+      if (model.id === "wrj-trip-layer") preference.iconSize = iconSize;
+      layers[model.id] = preference;
+    }
   }
   return {version: 1, caseId: "riyue-3d", layers};
 }
@@ -162,11 +173,6 @@ export function Workspace({
     () => controlledLayerViewModelsFromLayers(keplerLayers ?? []),
     [keplerLayers]
   );
-  const sidebarLayers = useMemo(
-    () => controlledModels.map(toLayerViewModel),
-    [controlledModels]
-  );
-
   const [status, setStatus] = useState<LoadStatus>("loading");
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<CaseSummary | null>(null);
@@ -174,6 +180,12 @@ export function Workspace({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [styleType, setStyleType] = useState<"satellite" | "light">("satellite");
+  const [flightPaths, setFlightPaths] = useState<readonly UavFlightPath[]>([]);
+  const [uavIconSize, setUavIconSize] = useState(DEFAULT_UAV_ICON_SIZE);
+  const sidebarLayers = useMemo(
+    () => controlledModels.map((model) => toLayerViewModel(model, uavIconSize)),
+    [controlledModels, uavIconSize]
+  );
   const loadedCaseRef = useRef<string | null>(null);
   const injectionRef = useRef<{key: string; promise: Promise<void>} | null>(null);
   const generationRef = useRef(0);
@@ -193,9 +205,12 @@ export function Workspace({
     [dispatch]
   );
 
-  const persistCurrentLayers = useCallback(() => {
-    saveLayerPreferences(preferencesFromState(store.getState()));
-  }, [store]);
+  const persistCurrentLayers = useCallback((nextIconSize?: number) => {
+    saveLayerPreferences(preferencesFromState(
+      store.getState(),
+      nextIconSize ?? uavIconSize
+    ));
+  }, [store, uavIconSize]);
 
   const dispatchAppearance = useCallback((layerId: string, changes: Partial<LayerAppearance>) => {
     if (changes.color !== undefined) {
@@ -235,6 +250,7 @@ export function Workspace({
     const defaults = defaultLayersRef.current;
     if (!defaults) return;
     clearLayerPreferences();
+    setUavIconSize(DEFAULT_UAV_ICON_SIZE);
     defaults.forEach(restoreModel);
   }, [restoreModel]);
 
@@ -259,6 +275,8 @@ export function Workspace({
     setError(null);
     setSummary(null);
     setDrawerContent(null);
+    setFlightPaths([]);
+    setUavIconSize(DEFAULT_UAV_ICON_SIZE);
     preferencesAppliedRef.current = null;
     defaultLayersRef.current = null;
 
@@ -266,6 +284,12 @@ export function Workspace({
       try {
         const bundle = await caseLoader("riyue-3d", dataBase, controller.signal);
         if (controller.signal.aborted || generationRef.current !== generation) return;
+        const tripDataset = bundle.datasets.find((dataset) => (
+          dataset.id === "wrj-simulated-trips" && dataset.format === "csv"
+        ));
+        const nextFlightPaths = tripDataset?.format === "csv"
+          ? extractFlightPaths(tripDataset.raw)
+          : [];
         if (loadedCaseRef.current !== injectionKey) {
           let injection = injectionRef.current;
           if (!injection || injection.key !== injectionKey) {
@@ -283,6 +307,7 @@ export function Workspace({
           if (injectionRef.current === injection) injectionRef.current = null;
         }
         if (controller.signal.aborted || generationRef.current !== generation) return;
+        setFlightPaths(nextFlightPaths);
         setSummary(bundle.summary);
         setStatus("ready");
       } catch (caught) {
@@ -312,13 +337,18 @@ export function Workspace({
     defaultLayersRef.current = cloneModels(controlledModels);
     preferencesAppliedRef.current = injectionKey;
     const preferences = loadLayerPreferences();
+    setUavIconSize(
+      preferences.layers["wrj-trip-layer"]?.iconSize ?? DEFAULT_UAV_ICON_SIZE
+    );
     for (const [layerId, preference] of Object.entries(preferences.layers)) {
       if (!preference) continue;
       if (preference.visible !== undefined) {
         const action = createLayerVisibilityAction(store.getState(), layerId, preference.visible);
         if (action) dispatch(action);
       }
-      dispatchAppearance(layerId, preference);
+      const keplerPreference = {...preference};
+      delete keplerPreference.iconSize;
+      dispatchAppearance(layerId, keplerPreference);
     }
   }, [controlledModels, dispatch, dispatchAppearance, injectionKey, status, store]);
 
@@ -360,8 +390,14 @@ export function Workspace({
               persistCurrentLayers();
             }}
             onLayerChange={(layerId, changes) => {
-              dispatchAppearance(layerId, changes);
-              persistCurrentLayers();
+              const nextIconSize = layerId === "wrj-trip-layer"
+                ? changes.iconSize
+                : undefined;
+              if (nextIconSize !== undefined) setUavIconSize(nextIconSize);
+              const keplerChanges = {...changes};
+              delete keplerChanges.iconSize;
+              dispatchAppearance(layerId, keplerChanges);
+              persistCurrentLayers(nextIconSize);
             }}
             onRestoreDefaults={restoreAllDefaults}
             onSelectUav={(uavId) => setDrawerContent({type: "uav", uavId})}
@@ -370,7 +406,11 @@ export function Workspace({
         </div>
 
         <section className="map-panel">
-          <MapView basemap={basemap} />
+          <MapView
+            basemap={basemap}
+            flightPaths={flightPaths}
+            uavIconSize={uavIconSize}
+          />
           {status === "loading" ? <div className="state-overlay"><span className="spinner" />正在加载算例数据…</div> : null}
           {status === "error" ? (
             <div className="state-overlay error-state">

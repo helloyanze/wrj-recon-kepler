@@ -18,6 +18,7 @@ export interface LayerDefinition {
 export interface LayerAppearance {
   color: string;
   opacity: number;
+  iconSize?: number;
   radius?: number;
   thickness?: number;
   trailLength?: number;
@@ -76,8 +77,9 @@ function AdvancedControls({
 }) {
   const {appearance, definition, label} = layer;
   const has = (capability: LayerCapability) => definition.capabilities.includes(capability);
+  const hasIconSize = layer.id === "wrj-trip-layer";
 
-  if (definition.capabilities.length === 0) return null;
+  if (definition.capabilities.length === 0 && !hasIconSize) return null;
 
   return (
     <fieldset>
@@ -127,6 +129,20 @@ function AdvancedControls({
           />
         </label>
       ) : null}
+      {hasIconSize ? (
+        <label>
+          无人机图标大小
+          <input
+            aria-label={`${label} 无人机图标大小`}
+            type="range"
+            min="16"
+            max="64"
+            step="1"
+            value={appearance.iconSize ?? 32}
+            onChange={(event) => onChange({iconSize: numericValue(event.currentTarget.value)})}
+          />
+        </label>
+      ) : null}
       {has("filled") ? (
         <label>
           <input
@@ -168,6 +184,7 @@ function LayerEditor({
 }) {
   const {appearance, definition, label} = layer;
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const hasAdvancedControls = definition.capabilities.length > 0 || layer.id === "wrj-trip-layer";
 
   return (
     <section aria-label={`${label} 设置`}>
@@ -212,7 +229,7 @@ function LayerEditor({
           />
         </label>
       </fieldset>
-      {definition.capabilities.length > 0 ? (
+      {hasAdvancedControls ? (
         <div className="layer-advanced">
           <button
             type="button"

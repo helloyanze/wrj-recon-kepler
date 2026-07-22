@@ -1,21 +1,28 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {StrictMode} from "react";
-import {mapStyleChange, updateMap} from "@kepler.gl/actions";
+import {mapStyleChange, registerEntry, updateMap} from "@kepler.gl/actions";
 import {act, cleanup, fireEvent, render, screen, waitFor} from "@testing-library/react";
 import {Provider} from "react-redux";
 import {afterEach, describe, expect, it, vi} from "vitest";
 import {createAppStore} from "../src/app/store";
 import {caseManifestSchema, caseSummarySchema} from "../src/data/caseSchema";
-import type {CaseBundle} from "../src/data/loadCase";
+import type {CaseBundle, LoadedCaseDataset} from "../src/data/loadCase";
 import {Workspace} from "../src/components/Workspace";
 import type {ResolvedBasemap} from "../src/basemap/basemapConfig";
+import type {WrjKeplerMapProps} from "../src/components/WrjKeplerMap";
+import {loadKeplerCase} from "../src/kepler/loadKeplerCase";
 
 vi.mock("../src/components/WrjKeplerMap", () => ({
   WrjKeplerMap: () => <div data-testid="default-kepler-map">Kepler map</div>
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  latestMapProps = undefined;
+  window.localStorage.clear();
+  vi.unstubAllGlobals();
+});
 
 function readJson(path: string): unknown {
   return JSON.parse(readFileSync(resolve(path), "utf8")) as unknown;
@@ -34,6 +41,25 @@ function makeBundle(): CaseBundle {
   };
 }
 
+function makeIntegratedBundle(): CaseBundle {
+  const manifest = caseManifestSchema.parse(
+    readJson("public/data/riyue-3d/case-manifest.json")
+  );
+  const datasets: LoadedCaseDataset[] = manifest.datasets.map((dataset) => (
+    dataset.file.endsWith(".csv")
+      ? {...dataset, format: "csv", raw: readFileSync(resolve(`public${dataset.file}`), "utf8")}
+      : {...dataset, format: "geojson", raw: readJson(`public${dataset.file}`)}
+  ));
+  return {
+    manifest,
+    summary: caseSummarySchema.parse(
+      readJson("public/data/riyue-3d/simulated/summary.json")
+    ),
+    keplerConfig: readJson("public/config/wrj-kepler-config.json") as Record<string, unknown>,
+    datasets
+  };
+}
+
 function deferred<T>() {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>((resolvePromise) => {
@@ -42,12 +68,17 @@ function deferred<T>() {
   return {promise, resolve};
 }
 
-const MapStub = () => (
-  <div data-testid="kepler-map">
-    Kepler map
-    <input aria-label="地图输入控件" />
-  </div>
-);
+let latestMapProps: WrjKeplerMapProps | undefined;
+
+const MapStub = (props: WrjKeplerMapProps) => {
+  latestMapProps = props;
+  return (
+    <div data-testid="kepler-map">
+      Kepler map
+      <input aria-label="地图输入控件" />
+    </div>
+  );
+};
 
 const PUBLIC_BASEMAP: ResolvedBasemap = {
   provider: "public",
@@ -186,6 +217,40 @@ describe("WRJ workspace", () => {
     expect(screen.getByRole("button", {name: "公共地图"})).toBeInTheDocument();
     expect(screen.getByRole("button", {name: "OSM 简洁图"})).toBeInTheDocument();
     expect(caseLoader).toHaveBeenCalledTimes(1);
+    expect(keplerLoader).toHaveBeenCalledTimes(1);
+  });
+
+  it("passes extracted Trip paths and persists marker size changes without reinjecting data", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(
+      new Response(JSON.stringify({version: 8, sources: {}, layers: []}), {status: 200})
+    )));
+    const caseLoader = vi.fn().mockResolvedValue(makeIntegratedBundle());
+    const keplerLoader = vi.fn(loadKeplerCase);
+    const store = createAppStore(false);
+    store.dispatch(registerEntry({id: "wrj-map", mint: true}));
+    renderWorkspace(caseLoader, keplerLoader, store);
+
+    expect(await screen.findByText("方案可行")).toBeInTheDocument();
+    await waitFor(() => expect(latestMapProps?.flightPaths).toHaveLength(3));
+    await waitFor(() => expect(
+      store.getState().keplerGl["wrj-map"]?.visState.layers
+    ).toHaveLength(6));
+    expect(latestMapProps?.uavIconSize).toBe(32);
+
+    fireEvent.click(screen.getByRole("button", {name: "编辑 模拟 Trip"}));
+    fireEvent.click(screen.getByRole("button", {name: "展开 模拟 Trip 高级设置"}));
+    fireEvent.change(screen.getByLabelText("模拟 Trip 无人机图标大小"), {
+      target: {value: "48"}
+    });
+
+    await waitFor(() => expect(latestMapProps?.uavIconSize).toBe(48));
+    expect(JSON.parse(window.localStorage.getItem("wrj-layer-preferences:v1:riyue-3d")!))
+      .toMatchObject({layers: {"wrj-trip-layer": {iconSize: 48}}});
+    expect(keplerLoader).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole("button", {name: "恢复全部图层默认设置"}));
+    await waitFor(() => expect(latestMapProps?.uavIconSize).toBe(32));
+    expect(window.localStorage.getItem("wrj-layer-preferences:v1:riyue-3d")).toBeNull();
     expect(keplerLoader).toHaveBeenCalledTimes(1);
   });
 
