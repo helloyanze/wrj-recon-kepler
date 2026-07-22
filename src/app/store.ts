@@ -13,7 +13,7 @@ function createKeplerReducer(debugMode: boolean) {
       currentModal: null,
       mapControls: {
         visibleLayers: {show: debugMode, active: false},
-        mapLegend: {show: true, active: true},
+        mapLegend: {show: debugMode, active: debugMode},
         toggle3d: {show: true},
         splitMap: {show: false}
       }

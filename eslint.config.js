@@ -4,7 +4,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  {ignores: ["dist", "coverage", "public/data/riyue-3d/real/overpass-source.json"]},
+  {ignores: ["dist", "coverage", "traccar-web", "public/data/riyue-3d/real/overpass-source.json"]},
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

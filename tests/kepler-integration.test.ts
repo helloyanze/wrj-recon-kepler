@@ -6,6 +6,13 @@ import {addDataToMap, registerEntry, updateMap, wrapTo} from "@kepler.gl/actions
 import {createAppStore} from "../src/app/store";
 import {caseManifestSchema, caseSummarySchema} from "../src/data/caseSchema";
 import type {CaseBundle, LoadedCaseDataset} from "../src/data/loadCase";
+import {
+  createLayerAdvancedAction,
+  createLayerOpacityAction,
+  createLayerVisibilityAction,
+  createSingleLayerColorAction,
+  createUavPaletteAction
+} from "../src/features/layers/keplerLayerActions";
 import {loadKeplerCase, preserveRuntimeMapStyles} from "../src/kepler/loadKeplerCase";
 
 const DEFAULT_MAPLIBRE_STYLE_URL =
@@ -87,6 +94,23 @@ afterEach(() => {
 });
 
 describe("Kepler P0 integration", () => {
+  it("keeps native layer controls hidden normally and available in debug mode", () => {
+    const normalStore = createAppStore(false);
+    const debugStore = createAppStore(true);
+
+    normalStore.dispatch(registerEntry({id: "wrj-map", mint: true}));
+    debugStore.dispatch(registerEntry({id: "wrj-map", mint: true}));
+
+    expect(normalStore.getState().keplerGl["wrj-map"].uiState.mapControls).toMatchObject({
+      visibleLayers: {show: false},
+      mapLegend: {show: false}
+    });
+    expect(debugStore.getState().keplerGl["wrj-map"].uiState.mapControls).toMatchObject({
+      visibleLayers: {show: true},
+      mapLegend: {show: true}
+    });
+  });
+
   it("removes only saved map styles before configuring the live map", () => {
     const config = {
       mapStyle: {
@@ -221,5 +245,44 @@ describe("Kepler P0 integration", () => {
       );
       for (const {name} of tooltipFields) expect(actualFields.has(name)).toBe(true);
     }
+
+    const animationTime = mapState.visState.animationConfig.currentTime;
+    const actions = [
+      createLayerVisibilityAction(store.getState(), "wrj-pois-layer", false),
+      createLayerOpacityAction(store.getState(), "wrj-routes-layer", 0.41),
+      createSingleLayerColorAction(store.getState(), "wrj-region-layer", "#123ABC"),
+      createUavPaletteAction(store.getState(), "wrj-trip-layer", [
+        "#102030",
+        "#405060",
+        "#708090"
+      ]),
+      createLayerAdvancedAction(store.getState(), "wrj-trip-layer", "trailLength", 900)
+    ];
+    for (const action of actions) {
+      expect(action).not.toBeNull();
+      if (action) store.dispatch(action);
+    }
+
+    const updatedLayers = store.getState().keplerGl["wrj-map"].visState.layers;
+    const updated = (id: string) => updatedLayers.find((layer) => layer.id === id)!;
+    expect(updated("wrj-pois-layer").config.isVisible).toBe(false);
+    expect(updated("wrj-routes-layer").config.visConfig).toMatchObject({
+      opacity: 0.41,
+      strokeOpacity: 0.41
+    });
+    expect(updated("wrj-region-layer").config).toMatchObject({
+      color: [18, 58, 188],
+      visConfig: {strokeColor: [18, 58, 188]}
+    });
+    expect(updated("wrj-trip-layer").config.visConfig.colorRange.colors).toEqual([
+      "#102030",
+      "#405060",
+      "#708090"
+    ]);
+    expect(updated("wrj-trip-layer").config.visConfig.trailLength).toBe(900);
+    expect(updated("wrj-trip-layer").config.colorScale).toBe("ordinal");
+    expect(updated("wrj-trip-layer").config.colorField?.name).toBe("uav_id");
+    expect(store.getState().keplerGl["wrj-map"].visState.animationConfig.currentTime)
+      .toBe(animationTime);
   });
 });
