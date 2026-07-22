@@ -44,7 +44,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 const ADVANCED_LIMITS: Readonly<Record<"radius" | "thickness" | "trailLength", number>> = {
   radius: 100,
-  thickness: 50,
+  thickness: 20,
   trailLength: 3600
 };
 
@@ -96,7 +96,11 @@ function sanitizeLayerPreference(value: unknown, layerId: LayerId): LayerPrefere
   if (supports("radius") && isBoundedFiniteNumber(value.radius, ADVANCED_LIMITS.radius)) {
     result.radius = value.radius;
   }
-  if (supports("thickness") && isBoundedFiniteNumber(value.thickness, ADVANCED_LIMITS.thickness)) {
+  if (
+    supports("thickness")
+    && isBoundedFiniteNumber(value.thickness, ADVANCED_LIMITS.thickness)
+    && value.thickness >= 0.5
+  ) {
     result.thickness = value.thickness;
   }
   if (supports("trailLength") && isBoundedFiniteNumber(value.trailLength, ADVANCED_LIMITS.trailLength)) {

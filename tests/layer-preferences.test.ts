@@ -183,6 +183,20 @@ describe("layer preferences", () => {
     });
   });
 
+  it("loads persisted line widths only within the control range", () => {
+    const loadThickness = (thickness: number) => {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        version: 1,
+        caseId: "riyue-3d",
+        layers: {"wrj-routes-layer": {thickness}}
+      }));
+      return loadLayerPreferences().layers["wrj-routes-layer"]?.thickness;
+    };
+
+    expect([loadThickness(0), loadThickness(20.5), loadThickness(0.5), loadThickness(20)])
+      .toEqual([undefined, undefined, 0.5, 20]);
+  });
+
   it("accepts only integer Trip icon sizes from 16 through 64", () => {
     saveLayerPreferences({
       version: 1,
