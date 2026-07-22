@@ -1,0 +1,81 @@
+import {IconLayer} from "@deck.gl/layers";
+import {UAV_COLORS} from "../../kepler/constants";
+import {interpolateFlight, type InterpolatedFlight} from "./flightInterpolation";
+import type {UavFlightPath} from "./flightPaths";
+
+export type UavMarkerColor = [red: number, green: number, blue: number, alpha: number];
+
+export interface UavDeckMarker extends InterpolatedFlight {
+  color: UavMarkerColor;
+}
+
+export interface CreateUavDeckLayersOptions {
+  paths: readonly UavFlightPath[];
+  time: number | null;
+  visible: boolean;
+  palette?: readonly string[];
+  iconSize?: number;
+}
+
+const DEFAULT_PALETTE = [
+  UAV_COLORS["UAV-01"],
+  UAV_COLORS["UAV-02"],
+  UAV_COLORS["UAV-03"]
+] as const;
+
+const UAV_ICON = {
+  url: "/assets/uav-fixed-wing-mask.svg",
+  width: 64,
+  height: 64,
+  anchorY: 32,
+  mask: true
+} as const;
+
+function hexToRgba(hex: string): UavMarkerColor {
+  const normalized = hex.slice(1);
+  return [
+    Number.parseInt(normalized.slice(0, 2), 16),
+    Number.parseInt(normalized.slice(2, 4), 16),
+    Number.parseInt(normalized.slice(4, 6), 16),
+    255
+  ];
+}
+
+function paletteColor(palette: readonly string[] | undefined, index: number): UavMarkerColor {
+  const candidate = palette?.[index];
+  const fallback = DEFAULT_PALETTE[index] ?? DEFAULT_PALETTE[index % DEFAULT_PALETTE.length];
+  return hexToRgba(typeof candidate === "string" && /^#[0-9a-f]{6}$/i.test(candidate) ? candidate : fallback);
+}
+
+export function createUavDeckLayers({
+  paths,
+  time,
+  visible,
+  palette,
+  iconSize = 32
+}: CreateUavDeckLayersOptions) {
+  if (!visible) return [];
+
+  const markers = paths.flatMap((path, index) => {
+    const pathTime = time ?? path.coordinates[0]?.[3] ?? Number.NaN;
+    const flight = interpolateFlight(path, pathTime);
+    return flight ? [{...flight, color: paletteColor(palette, index)}] : [];
+  });
+
+  if (markers.length === 0) return [];
+
+  return [
+    new IconLayer<UavDeckMarker>({
+      id: "wrj-uav-flight-markers",
+      data: markers,
+      pickable: false,
+      billboard: true,
+      sizeUnits: "pixels",
+      getPosition: (marker) => [marker.position[0], marker.position[1], marker.position[2]],
+      getAngle: (marker) => marker.heading,
+      getColor: (marker) => [...marker.color],
+      getSize: () => iconSize,
+      getIcon: () => UAV_ICON
+    })
+  ];
+}
