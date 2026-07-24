@@ -164,6 +164,18 @@ Chrome 实际验收过程发现并推动修复了启动底图和初始视角问�
 - [ ] ZIP 导入、刷新恢复、切换和删除的完整浏览器流程。
 - [ ] 慢网、连续刷新 10 次和内存稳定性。
 
+## 2026-07-25 深色/亮色公共底图浏览器验收
+
+本节记录 Chrome DevTools Protocol 会话中的本次定向证据；页面未使用 `VITE_MAPBOX_TOKEN`。
+
+- [x] 默认 R10 加载后，“深色地图”为 active，CARTO Dark Matter 底图完整可见。
+- [x] 从页面源内分别 fetch `https://a.basemaps.cartocdn.com/dark_all/6/51/28.png` 和 `https://a.basemaps.cartocdn.com/light_all/6/51/28.png`，均返回 HTTP 200、允许 CORS，内容类型为 `image/png`。
+- [x] 任务暂停在 `200.000 s`，算例 key 为 `R10-LONG-TRANSIT-01:PLAN-002:built-in`。点击“亮色地图”并等待瓦片稳定后，active 状态切换为亮色，亮色底图完整可见；任务时间仍为 `200.000 s`，算例 key 未变。
+- [x] 点击“深色地图”切回后，深色底图完整可见；任务时间和算例 key 仍未改变。
+- [x] 两次底图切换期间，蓝/橙任务标记及尾迹持续可见。
+
+同一提交状态下，`npm run lint` 与 `npm run typecheck` 均以退出码 0 完成且无诊断；`npm run test:run` 最终为 33 个测试文件、402 个测试全部通过；`npm run build` 转换 5247 个模块并在 41.37 s 内完成。主 JS 为 11669.40 kB、gzip 3084.82 kB。构建仍有既有的 `assert`/`events` 浏览器 externalized、`react-virtualized` Flow directive 被忽略及 chunk 超过 500 kB 警告，均未阻断本次构建。
+
 ## 已知依赖说明
 
 Kepler.gl 3.2.6 的传递依赖 `react-palm@3.3.11`、`react-sortable-hoc` 和 `react-vis` 仍声明 React 16 peer。应用实际固定并成功构建于 React 18.2.0；为避免 React Palm 多实例造成异步 Dataset 任务队列分裂，项目显式固定单实例 `react-palm@3.3.11`。安装使用：
