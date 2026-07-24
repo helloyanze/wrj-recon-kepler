@@ -61,6 +61,10 @@ export function createMissionDeckLayers({
   const tripPreference = preferences.layers.trips;
   const colorForUav = (uavId: string): DeckColor =>
     hexToRgba(preferences.uavColors[uavId] ?? FALLBACK_UAV_COLOR);
+  const uavColorKey = Object.entries(preferences.uavColors)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([id, color]) => `${id}:${color}`)
+    .join("|");
   const selectable = <T extends {assignmentId: string}>() =>
     selectionProps<T>(onSelectSortie);
 
@@ -110,6 +114,7 @@ export function createMissionDeckLayers({
       getWidth: stripPreference.width ?? 2,
       getPath: ({line}) => line.map(seaLevelPoint),
       getColor: ({uavId}) => colorForUav(uavId),
+      updateTriggers: {getColor: uavColorKey},
       ...selectable<StripDatum>()
     }),
     new PathLayer<NormalizedSortie>({
@@ -124,6 +129,7 @@ export function createMissionDeckLayers({
         scalePoint(point, verticalScale)
       ),
       getColor: ({uavId}) => colorForUav(uavId),
+      updateTriggers: {getColor: uavColorKey},
       ...selectable<NormalizedSortie>()
     }),
     new TripsLayer<NormalizedSortie>({
@@ -141,6 +147,7 @@ export function createMissionDeckLayers({
       ),
       getTimestamps: ({trip}) => trip.map(point => point[3]),
       getColor: ({uavId}) => colorForUav(uavId),
+      updateTriggers: {getColor: uavColorKey},
       ...selectable<NormalizedSortie>()
     }),
     new IconLayer<MarkerDatum>({
