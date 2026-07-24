@@ -1,0 +1,16 @@
+{
+  "planId": "PLAN-001",
+  "caseId": "R09-MULTI-OBSTACLE-01",
+  "feasible": false,
+  "failureCodes": [
+    "E401_STRIPS_UNASSIGNED",
+    "E511_TRANSIT_SMOOTHING_FAILED",
+    "E509_TRANSIT_NO_DETOUR_PATH"
+  ],
+  "failureMessages": [
+    "条带无法全部分配",
+    "E511_TRANSIT_SMOOTHING_FAILED",
+    "E509_TRANSIT_NO_DETOUR_PATH"
+  ],
+  "validationChecks": []
+}

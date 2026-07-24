@@ -1,0 +1,135 @@
+{
+  "planId": "PLAN-001",
+  "caseId": "R07-MULTI-BASE-01",
+  "feasible": true,
+  "finalScore": 11.94033990210406,
+  "dimensionScores": {
+    "sStrip": 15.0,
+    "sParameter": 17.8038,
+    "sResource": 11.6084,
+    "sAssignment": 18.75,
+    "sRoute": 7.5533,
+    "weightedRaw": 13.9403,
+    "riskPenalty": 2.0,
+    "finalScore": 11.94,
+    "gHard": 1.0,
+    "weights": {
+      "sStrip": 0.2,
+      "sParameter": 0.2,
+      "sResource": 0.15,
+      "sAssignment": 0.2,
+      "sRoute": 0.25
+    },
+    "subDetails": {
+      "sStrip": {
+        "coverage": 8.0,
+        "countRationality": null,
+        "turnEfficiency": 0.0,
+        "completeness": 4.0
+      },
+      "sParameter": {
+        "heightAdapt": 3.5526,
+        "speedAdapt": 4.2512,
+        "sensorAccuracy": 5.0,
+        "turnRadiusMatch": 5.0
+      },
+      "sResource": {
+        "uavCount": 3.0,
+        "fuelUtilization": 5.0,
+        "redundancy": 3.6084
+      },
+      "sAssignment": {
+        "contiguity": 8.0,
+        "loadBalance": 7.0,
+        "makespan": 3.75
+      },
+      "sRoute": {
+        "distanceEfficiency": 1.3914,
+        "fuelEfficiency": 0.0,
+        "obstacleClearance": 4.0,
+        "turnQuality": 0.0,
+        "fuelSafety": 2.1619
+      }
+    }
+  },
+  "perUavDetails": [
+    {
+      "uavId": "UAV-04",
+      "sStrip": 3.75,
+      "sParameter": 4.451,
+      "sResource": 2.9264,
+      "sAssignment": 4.6875,
+      "sRoute": 1.9071,
+      "finalScore": 17.72,
+      "totalDistanceM": 256512.17,
+      "totalDurationSec": 1168.96,
+      "totalFuelKg": 85.1807,
+      "remainingFuelRatio": 0.290161,
+      "stripCount": 6,
+      "makespanSec": 1168.96,
+      "contributionPct": 25.25
+    },
+    {
+      "uavId": "UAV-03",
+      "sStrip": 3.75,
+      "sParameter": 4.451,
+      "sResource": 2.9083,
+      "sAssignment": 4.6875,
+      "sRoute": 1.8931,
+      "finalScore": 17.69,
+      "totalDistanceM": 254622.5,
+      "totalDurationSec": 1160.43,
+      "totalFuelKg": 84.6516,
+      "remainingFuelRatio": 0.216189,
+      "stripCount": 6,
+      "makespanSec": 1160.43,
+      "contributionPct": 25.06
+    },
+    {
+      "uavId": "UAV-03",
+      "sStrip": 3.75,
+      "sParameter": 4.451,
+      "sResource": 2.8929,
+      "sAssignment": 4.6875,
+      "sRoute": 1.8812,
+      "finalScore": 17.66,
+      "totalDistanceM": 253028.65,
+      "totalDurationSec": 1153.23,
+      "totalFuelKg": 84.2053,
+      "remainingFuelRatio": 0.220321,
+      "stripCount": 6,
+      "makespanSec": 2333.83,
+      "contributionPct": 24.91
+    },
+    {
+      "uavId": "UAV-04",
+      "sStrip": 3.75,
+      "sParameter": 4.451,
+      "sResource": 2.8808,
+      "sAssignment": 4.6875,
+      "sRoute": 1.8718,
+      "finalScore": 17.64,
+      "totalDistanceM": 251765.59,
+      "totalDurationSec": 1147.53,
+      "totalFuelKg": 83.8517,
+      "remainingFuelRatio": 0.301236,
+      "stripCount": 6,
+      "makespanSec": 2328.13,
+      "contributionPct": 24.78
+    }
+  ],
+  "aggregated": {
+    "coverageRatio": 1.0,
+    "missionMakespanSec": 2333.83,
+    "totalDistanceM": 1015928.9,
+    "totalFuelKg": 337.8893,
+    "totalInitialFuelKg": 420.0,
+    "usedUavCount": 4,
+    "availableUavCount": 4,
+    "obstacleClearanceMarginM": null,
+    "multiAircraftConflictCount": 4,
+    "minRemainingFuelRatio": 0.216189,
+    "validationPassed": true,
+    "failureCodes": ""
+  }
+}

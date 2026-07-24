@@ -1,0 +1,167 @@
+{
+  "valid": true,
+  "checks": [
+    {
+      "name": "STRIP_ASSIGNMENT",
+      "status": "PASS",
+      "message": "所有条带已全部分配",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "COVERAGE_RATIO",
+      "status": "PASS",
+      "message": "覆盖率=1.0000",
+      "value": 0.9999999998692092,
+      "threshold": 0.95
+    },
+    {
+      "name": "RECON_ACCURACY",
+      "status": "PASS",
+      "message": "所有飞行候选的传感器分辨率均满足要求",
+      "value": true,
+      "threshold": true
+    },
+    {
+      "name": "OBSTACLE_CROSSING",
+      "status": "PASS",
+      "message": "所有航段均未穿越障碍",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "TURN_RADIUS",
+      "status": "PASS",
+      "message": "所有掉头段均满足规划转弯半径",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "ALTITUDE_SPEED",
+      "status": "PASS",
+      "message": "????????????",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "RANGE_UAV-04",
+      "status": "PASS",
+      "message": "UAV-04 航程=260678m / 上限=297500m",
+      "value": 260677.712473017,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-04",
+      "status": "PASS",
+      "message": "UAV-04 油耗=81.89kg / 初始=120.00kg",
+      "value": 81.88919068574285,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-04",
+      "status": "PASS",
+      "message": "UAV-04 余油比=0.3176 >= 要求=0.1500",
+      "value": 0.3175900776188096,
+      "threshold": 0.15
+    },
+    {
+      "name": "RANGE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 航程=260824m / 上限=272000m",
+      "value": 260824.00277738538,
+      "threshold": 272000.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 油耗=81.93kg / 初始=111.00kg",
+      "value": 81.930151970966,
+      "threshold": 111.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 余油比=0.2619 >= 要求=0.1500",
+      "value": 0.26189052278409014,
+      "threshold": 0.15
+    },
+    {
+      "name": "RANGE_UAV-04",
+      "status": "PASS",
+      "message": "UAV-04 航程=261036m / 上限=297500m",
+      "value": 261035.84372432088,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-04",
+      "status": "PASS",
+      "message": "UAV-04 油耗=81.99kg / 初始=120.00kg",
+      "value": 81.98946743610794,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-04",
+      "status": "PASS",
+      "message": "UAV-04 余油比=0.3168 >= 要求=0.1500",
+      "value": 0.3167544380324338,
+      "threshold": 0.15
+    },
+    {
+      "name": "RANGE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 航程=261313m / 上限=272000m",
+      "value": 261312.9267446524,
+      "threshold": 272000.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 油耗=82.07kg / 初始=111.00kg",
+      "value": 82.06705068180074,
+      "threshold": 111.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 余油比=0.2607 >= 要求=0.1500",
+      "value": 0.26065720106485823,
+      "threshold": 0.15
+    },
+    {
+      "name": "RANGE_UAV-04",
+      "status": "PASS",
+      "message": "UAV-04 航程=261655m / 上限=297500m",
+      "value": 261654.85115093613,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-04",
+      "status": "PASS",
+      "message": "UAV-04 油耗=82.16kg / 初始=120.00kg",
+      "value": 82.1627895155602,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-04",
+      "status": "PASS",
+      "message": "UAV-04 余油比=0.3153 >= 要求=0.1500",
+      "value": 0.3153100873703316,
+      "threshold": 0.15
+    },
+    {
+      "name": "MULTI_AIRCRAFT_CONFLICT",
+      "status": "WARNING",
+      "message": "检测到 4 处多机航迹潜在空间冲突",
+      "value": 4.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "TRAJECTORY_FEASIBILITY",
+      "status": "PASS",
+      "message": "所有航迹可行",
+      "value": true,
+      "threshold": true
+    }
+  ],
+  "failureCodes": []
+}

@@ -1,0 +1,188 @@
+{
+  "valid": true,
+  "checks": [
+    {
+      "name": "STRIP_ASSIGNMENT",
+      "status": "PASS",
+      "message": "所有条带已全部分配",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "COVERAGE_RATIO",
+      "status": "PASS",
+      "message": "覆盖率=1.0000",
+      "value": 0.99999999991283,
+      "threshold": 0.95
+    },
+    {
+      "name": "RECON_ACCURACY",
+      "status": "PASS",
+      "message": "所有飞行候选的传感器分辨率均满足要求",
+      "value": true,
+      "threshold": true
+    },
+    {
+      "name": "OBSTACLE_CROSSING",
+      "status": "PASS",
+      "message": "所有航段均未穿越障碍",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "TURN_RADIUS",
+      "status": "PASS",
+      "message": "所有掉头段均满足规划转弯半径",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "ALTITUDE_SPEED",
+      "status": "PASS",
+      "message": "????????????",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "RANGE_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 航程=283808m / 上限=297500m",
+      "value": 283807.7482763502,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 油耗=91.14kg / 初始=120.00kg",
+      "value": 91.13783202913261,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 余油比=0.2405 >= 要求=0.1500",
+      "value": 0.24051806642389492,
+      "threshold": 0.15
+    },
+    {
+      "name": "RANGE_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 航程=282728m / 上限=297500m",
+      "value": 282728.09683033946,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 油耗=90.84kg / 初始=120.00kg",
+      "value": 90.83552962424962,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 余油比=0.2430 >= 要求=0.1500",
+      "value": 0.24303725313125318,
+      "threshold": 0.15
+    },
+    {
+      "name": "RANGE_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 航程=292336m / 上限=297500m",
+      "value": 292335.8270369472,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 油耗=94.70kg / 初始=120.00kg",
+      "value": 94.69784571648634,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 余油比=0.2109 >= 要求=0.1500",
+      "value": 0.21085128569594716,
+      "threshold": 0.15
+    },
+    {
+      "name": "RANGE_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 航程=293068m / 上限=297500m",
+      "value": 293068.31473084097,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 油耗=95.06kg / 初始=120.00kg",
+      "value": 95.06423893364294,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 余油比=0.2078 >= 要求=0.1500",
+      "value": 0.20779800888630884,
+      "threshold": 0.15
+    },
+    {
+      "name": "RANGE_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 航程=291952m / 上限=297500m",
+      "value": 291951.60924474,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 油耗=94.75kg / 初始=120.00kg",
+      "value": 94.75156139753466,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 余油比=0.2104 >= 要求=0.1500",
+      "value": 0.2104036550205445,
+      "threshold": 0.15
+    },
+    {
+      "name": "RANGE_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 航程=278986m / 上限=297500m",
+      "value": 278985.92490004556,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 油耗=89.79kg / 初始=120.00kg",
+      "value": 89.78772148376731,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-05",
+      "status": "PASS",
+      "message": "UAV-05 余油比=0.2518 >= 要求=0.1500",
+      "value": 0.2517689876352724,
+      "threshold": 0.15
+    },
+    {
+      "name": "MULTI_AIRCRAFT_CONFLICT",
+      "status": "PASS",
+      "message": "多机航迹无空间冲突",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "TRAJECTORY_FEASIBILITY",
+      "status": "PASS",
+      "message": "所有航迹可行",
+      "value": true,
+      "threshold": true
+    }
+  ],
+  "failureCodes": []
+}

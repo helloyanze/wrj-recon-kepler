@@ -1,0 +1,27 @@
+{
+  "planId": "PLAN-001",
+  "caseId": "R01-BASELINE-01",
+  "feasible": false,
+  "finalScore": 0.0,
+  "dimensionScores": {
+    "sStrip": 0.0,
+    "sParameter": 0.0,
+    "sResource": 0.0,
+    "sAssignment": 0.0,
+    "sRoute": 0.0,
+    "weightedRaw": 0.0,
+    "riskPenalty": 0.0,
+    "finalScore": 0.0,
+    "gHard": 0.0,
+    "weights": {
+      "sStrip": 0.2,
+      "sParameter": 0.2,
+      "sResource": 0.15,
+      "sAssignment": 0.2,
+      "sRoute": 0.25
+    },
+    "subDetails": {}
+  },
+  "perUavDetails": [],
+  "aggregated": {}
+}

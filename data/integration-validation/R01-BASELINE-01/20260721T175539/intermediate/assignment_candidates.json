@@ -1,0 +1,3329 @@
+[
+  {
+    "assignmentPlanId": "AP-0013-MAX_CAPACITY",
+    "stripPlanId": "SP-0016",
+    "assignments": [
+      {
+        "assignmentId": "ASG-0013-001",
+        "uavId": "UAV-03",
+        "baseId": "",
+        "flightCandidateId": "FPC-00392",
+        "stripStartIndex": 0,
+        "stripEndIndex": 8,
+        "stripIds": [
+          "ST-0001",
+          "ST-0002",
+          "ST-0003",
+          "ST-0004",
+          "ST-0005",
+          "ST-0006",
+          "ST-0007",
+          "ST-0008",
+          "ST-0009"
+        ],
+        "entryVariant": "FIRST_END",
+        "plannedLaunchTimeSec": 0.0,
+        "batchIndex": 0,
+        "routeEstimateId": "EST-UAV-03-SP-0016-FPC-00392-000000-000008-FIRST_END",
+        "coverageRouteId": null
+      },
+      {
+        "assignmentId": "ASG-0013-002",
+        "uavId": "UAV-02",
+        "baseId": "",
+        "flightCandidateId": "FPC-00252",
+        "stripStartIndex": 9,
+        "stripEndIndex": 14,
+        "stripIds": [
+          "ST-0010",
+          "ST-0011",
+          "ST-0012",
+          "ST-0013",
+          "ST-0014",
+          "ST-0015"
+        ],
+        "entryVariant": "FIRST_START",
+        "plannedLaunchTimeSec": 0.0,
+        "batchIndex": 0,
+        "routeEstimateId": "EST-UAV-02-SP-0016-FPC-00252-000009-000014-FIRST_START",
+        "coverageRouteId": null
+      }
+    ],
+    "usedUavCount": 2,
+    "unassignedStripIds": [],
+    "estimatedMakespanSec": 1313.2531347724162,
+    "batchCount": 1,
+    "score": 9767.974658697067,
+    "stripPlanSnapshot": {
+      "stripPlanId": "SP-0016",
+      "flightCandidateId": "FPC-00106",
+      "regionId": "REG-001",
+      "scanAngleDeg": 12.852416196078096,
+      "swathWidthM": 375.0,
+      "stripSpacingM": 337.5,
+      "stripCount": 15,
+      "strips": [
+        {
+          "stripId": "ST-0001",
+          "index": 0,
+          "start": {
+            "xM": 11996.969111964014,
+            "yM": 6810.186052299472
+          },
+          "end": {
+            "xM": 17099.3411360156,
+            "yM": 7974.326326700459
+          },
+          "lengthM": 5233.490503507833,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  17099.3411360156,
+                  7974.3263267004595
+                ],
+                [
+                  12266.307,
+                  6679.319
+                ],
+                [
+                  11996.969111964014,
+                  6810.186052299471
+                ],
+                [
+                  11955.261517137218,
+                  6992.988477156923
+                ],
+                [
+                  17057.633541188803,
+                  8157.12875155791
+                ],
+                [
+                  17099.3411360156,
+                  7974.3263267004595
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0002",
+          "index": 1,
+          "start": {
+            "xM": 11523.93527910594,
+            "yM": 7040.025766999344
+          },
+          "end": {
+            "xM": 19201.356011039465,
+            "yM": 8791.680612125267
+          },
+          "lengthM": 7874.711664027822,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19201.356011039465,
+                  8791.680612125268
+                ],
+                [
+                  19073.475803721976,
+                  8570.185596921074
+                ],
+                [
+                  11793.273167141924,
+                  6909.158714699872
+                ],
+                [
+                  11523.93527910594,
+                  7040.025766999342
+                ],
+                [
+                  11482.227684279143,
+                  7222.828191856795
+                ],
+                [
+                  19159.64841621267,
+                  8974.483036982718
+                ],
+                [
+                  19201.356011039465,
+                  8791.680612125268
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0003",
+          "index": 2,
+          "start": {
+            "xM": 11050.90144624786,
+            "yM": 7269.865481699215
+          },
+          "end": {
+            "xM": 19425.949977581568,
+            "yM": 9180.68877122614
+          },
+          "lengthM": 8590.2667913164,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19425.949977581568,
+                  9180.688771226138
+                ],
+                [
+                  19298.069770264083,
+                  8959.193756021947
+                ],
+                [
+                  11320.23933428385,
+                  7138.998429399742
+                ],
+                [
+                  11050.90144624786,
+                  7269.865481699214
+                ],
+                [
+                  11009.193851421065,
+                  7452.667906556666
+                ],
+                [
+                  19384.242382754772,
+                  9363.49119608359
+                ],
+                [
+                  19425.949977581568,
+                  9180.688771226138
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0004",
+          "index": 3,
+          "start": {
+            "xM": 10577.867613389786,
+            "yM": 7499.705196399085
+          },
+          "end": {
+            "xM": 19650.543944123674,
+            "yM": 9569.696930327013
+          },
+          "lengthM": 9305.82191860498,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19650.543944123674,
+                  9569.696930327014
+                ],
+                [
+                  19522.663736806186,
+                  9348.20191512282
+                ],
+                [
+                  10847.205501425775,
+                  7368.838144099613
+                ],
+                [
+                  10577.867613389786,
+                  7499.705196399084
+                ],
+                [
+                  10536.16001856299,
+                  7682.507621256536
+                ],
+                [
+                  19608.83634929688,
+                  9752.499355184464
+                ],
+                [
+                  19650.543944123674,
+                  9569.696930327014
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0005",
+          "index": 4,
+          "start": {
+            "xM": 10495.050646463358,
+            "yM": 7818.5754967246685
+          },
+          "end": {
+            "xM": 19875.13791066578,
+            "yM": 9958.705089427884
+          },
+          "lengthM": 9621.13256106663,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19875.13791066578,
+                  9958.70508942789
+                ],
+                [
+                  19747.25770334829,
+                  9737.210074223689
+                ],
+                [
+                  10536.758241290154,
+                  7635.773071867218
+                ],
+                [
+                  10495.050646463358,
+                  7818.575496724669
+                ],
+                [
+                  10505.145187491218,
+                  8013.196925050335
+                ],
+                [
+                  19833.430315838985,
+                  10141.507514285335
+                ],
+                [
+                  19875.13791066578,
+                  9958.70508942789
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0006",
+          "index": 5,
+          "start": {
+            "xM": 10512.779527714238,
+            "yM": 8160.386004219636
+          },
+          "end": {
+            "xM": 20080.08652555662,
+            "yM": 10343.231030267485
+          },
+          "lengthM": 9813.163383879108,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  20084.91800728196,
+                  10322.05487329381
+                ],
+                [
+                  19971.851669890395,
+                  10126.218233324564
+                ],
+                [
+                  10554.487122541033,
+                  7977.5835793621845
+                ],
+                [
+                  10512.779527714236,
+                  8160.386004219642
+                ],
+                [
+                  10522.874068742098,
+                  8355.007432545302
+                ],
+                [
+                  19985.325915741345,
+                  10513.929055223212
+                ],
+                [
+                  20080.08652555662,
+                  10343.23103026748
+                ],
+                [
+                  20084.91800728196,
+                  10322.05487329381
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0007",
+          "index": 6,
+          "start": {
+            "xM": 10530.508408965115,
+            "yM": 8502.196511714603
+          },
+          "end": {
+            "xM": 19913.6599793631,
+            "yM": 10643.025246353869
+          },
+          "lengthM": 9624.275612435427,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19955.367574189895,
+                  10460.222821496418
+                ],
+                [
+                  10572.216003791911,
+                  8319.394086857152
+                ],
+                [
+                  10530.508408965114,
+                  8502.196511714608
+                ],
+                [
+                  10540.602949992975,
+                  8696.81794004027
+                ],
+                [
+                  19818.89936954782,
+                  10813.723271309596
+                ],
+                [
+                  19913.659979363103,
+                  10643.025246353855
+                ],
+                [
+                  19955.367574189895,
+                  10460.222821496418
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0008",
+          "index": 7,
+          "start": {
+            "xM": 10548.237290215993,
+            "yM": 8844.007019209566
+          },
+          "end": {
+            "xM": 19747.233433169575,
+            "yM": 10942.81946244025
+          },
+          "lengthM": 9435.387840991743,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19788.94102799637,
+                  10760.017037582798
+                ],
+                [
+                  10589.944885042789,
+                  8661.204594352115
+                ],
+                [
+                  10548.237290215991,
+                  8844.007019209572
+                ],
+                [
+                  10558.331831243853,
+                  9038.628447535233
+                ],
+                [
+                  19652.4728233543,
+                  11113.517487395977
+                ],
+                [
+                  19747.233433169575,
+                  10942.819462440244
+                ],
+                [
+                  19788.94102799637,
+                  10760.017037582798
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0009",
+          "index": 8,
+          "start": {
+            "xM": 10565.966171466871,
+            "yM": 9185.817526704534
+          },
+          "end": {
+            "xM": 19580.80688697605,
+            "yM": 11242.613678526634
+          },
+          "lengthM": 9246.500069548058,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19622.514481802846,
+                  11059.811253669182
+                ],
+                [
+                  10607.673766293667,
+                  9003.015101847082
+                ],
+                [
+                  10565.966171466871,
+                  9185.817526704537
+                ],
+                [
+                  10576.060712494731,
+                  9380.4389550302
+                ],
+                [
+                  19486.046277160774,
+                  11413.31170348236
+                ],
+                [
+                  19580.80688697605,
+                  11242.61367852663
+                ],
+                [
+                  19622.514481802846,
+                  11059.811253669182
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0010",
+          "index": 9,
+          "start": {
+            "xM": 10583.69505271775,
+            "yM": 9527.6280341995
+          },
+          "end": {
+            "xM": 19414.380340782525,
+            "yM": 11542.407894613016
+          },
+          "lengthM": 9057.612298104372,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19456.08793560932,
+                  11359.605469755565
+                ],
+                [
+                  10625.402647544546,
+                  9344.82560934205
+                ],
+                [
+                  10583.695052717749,
+                  9527.62803419951
+                ],
+                [
+                  10593.789593745609,
+                  9722.249462525167
+                ],
+                [
+                  19319.619730967253,
+                  11713.105919568743
+                ],
+                [
+                  19414.380340782525,
+                  11542.407894613018
+                ],
+                [
+                  19456.08793560932,
+                  11359.605469755565
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0011",
+          "index": 10,
+          "start": {
+            "xM": 10601.423933968628,
+            "yM": 9869.438541694468
+          },
+          "end": {
+            "xM": 19247.953794589,
+            "yM": 11842.2021106994
+          },
+          "lengthM": 8868.724526660688,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19289.661389415796,
+                  11659.399685841949
+                ],
+                [
+                  10643.131528795424,
+                  9686.636116837017
+                ],
+                [
+                  10601.423933968626,
+                  9869.438541694475
+                ],
+                [
+                  10611.518474996486,
+                  10064.059970020135
+                ],
+                [
+                  19153.19318477373,
+                  12012.900135655127
+                ],
+                [
+                  19247.953794589,
+                  11842.202110699403
+                ],
+                [
+                  19289.661389415796,
+                  11659.399685841949
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0012",
+          "index": 11,
+          "start": {
+            "xM": 10619.152815219506,
+            "yM": 10211.249049189431
+          },
+          "end": {
+            "xM": 19081.527248395476,
+            "yM": 12141.99632678578
+          },
+          "lengthM": 8679.836755217002,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19123.23484322227,
+                  11959.193901928329
+                ],
+                [
+                  10660.860410046302,
+                  10028.44662433198
+                ],
+                [
+                  10619.152815219504,
+                  10211.249049189439
+                ],
+                [
+                  10629.247356247364,
+                  10405.870477515098
+                ],
+                [
+                  18986.766638580204,
+                  12312.69435174151
+                ],
+                [
+                  19081.527248395472,
+                  12141.996326785793
+                ],
+                [
+                  19123.23484322227,
+                  11959.193901928329
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0013",
+          "index": 12,
+          "start": {
+            "xM": 10636.881696470384,
+            "yM": 10553.0595566844
+          },
+          "end": {
+            "xM": 18915.10070220196,
+            "yM": 12441.790542872164
+          },
+          "lengthM": 8490.948983773325,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  18956.808297028754,
+                  12258.988118014713
+                ],
+                [
+                  10678.58929129718,
+                  10370.25713182695
+                ],
+                [
+                  10636.881696470382,
+                  10553.059556684406
+                ],
+                [
+                  10646.976237498244,
+                  10747.680985010067
+                ],
+                [
+                  18820.340092386683,
+                  12612.488567827892
+                ],
+                [
+                  18915.10070220196,
+                  12441.790542872157
+                ],
+                [
+                  18956.808297028754,
+                  12258.988118014713
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0014",
+          "index": 13,
+          "start": {
+            "xM": 10654.610577721263,
+            "yM": 10894.870064179366
+          },
+          "end": {
+            "xM": 18748.67415600843,
+            "yM": 12741.584758958546
+          },
+          "lengthM": 8302.061212329636,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  18790.381750835226,
+                  12558.782334101095
+                ],
+                [
+                  10696.318172548059,
+                  10712.067639321915
+                ],
+                [
+                  10654.61057772126,
+                  10894.870064179378
+                ],
+                [
+                  10664.705118749122,
+                  11089.491492505033
+                ],
+                [
+                  18653.91354619316,
+                  12912.282783914276
+                ],
+                [
+                  18748.674156008427,
+                  12741.584758958556
+                ],
+                [
+                  18790.381750835226,
+                  12558.782334101095
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0015",
+          "index": 14,
+          "start": {
+            "xM": 10672.33945897214,
+            "yM": 11236.680571674333
+          },
+          "end": {
+            "xM": 18582.24760981491,
+            "yM": 13041.378975044929
+          },
+          "lengthM": 8113.173440885957,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  18623.955204641705,
+                  12858.576550187478
+                ],
+                [
+                  10714.047053798935,
+                  11053.878146816882
+                ],
+                [
+                  10672.339458972137,
+                  11236.680571674337
+                ],
+                [
+                  10682.434,
+                  11431.302
+                ],
+                [
+                  18487.487,
+                  13212.077
+                ],
+                [
+                  18582.24760981491,
+                  13041.378975044932
+                ],
+                [
+                  18623.955204641705,
+                  12858.576550187478
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "estimatedCoverageRatio": 0.9917758808093791,
+      "generationWarnings": [
+        "COVERAGE_METRICS|coverage_ratio=0.991776|missed_area_m2=353308.15|overlap_area_m2=5499631.72|redundant_area_m2=740092.77|min_boundary_margin_m=-136.12"
+      ],
+      "compatibleFlightCandidates": [
+        {
+          "candidateId": "FPC-00106",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 201.64,
+          "coverageSpeedMach": 0.61,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 201.64,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2487.857,
+          "planningTurnRadiusM": 2736.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00107",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 204.946,
+          "coverageSpeedMach": 0.62,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 204.946,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2537.857,
+          "planningTurnRadiusM": 2791.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00108",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 208.251,
+          "coverageSpeedMach": 0.63,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 208.251,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2587.857,
+          "planningTurnRadiusM": 2846.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00109",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 211.557,
+          "coverageSpeedMach": 0.64,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 211.557,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2637.857,
+          "planningTurnRadiusM": 2901.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00110",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 214.863,
+          "coverageSpeedMach": 0.65,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 214.863,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2687.857,
+          "planningTurnRadiusM": 2956.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00111",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 218.168,
+          "coverageSpeedMach": 0.66,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 218.168,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2737.857,
+          "planningTurnRadiusM": 3011.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00112",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 221.474,
+          "coverageSpeedMach": 0.67,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 221.474,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2787.857,
+          "planningTurnRadiusM": 3066.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00246",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 201.64,
+          "coverageSpeedMach": 0.61,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 201.64,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2487.857,
+          "planningTurnRadiusM": 2736.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00247",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 204.946,
+          "coverageSpeedMach": 0.62,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 204.946,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2537.857,
+          "planningTurnRadiusM": 2791.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00248",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 208.251,
+          "coverageSpeedMach": 0.63,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 208.251,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2587.857,
+          "planningTurnRadiusM": 2846.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00249",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 211.557,
+          "coverageSpeedMach": 0.64,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 211.557,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2637.857,
+          "planningTurnRadiusM": 2901.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00250",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 214.863,
+          "coverageSpeedMach": 0.65,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 214.863,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2687.857,
+          "planningTurnRadiusM": 2956.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00251",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 218.168,
+          "coverageSpeedMach": 0.66,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 218.168,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2737.857,
+          "planningTurnRadiusM": 3011.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00252",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 221.474,
+          "coverageSpeedMach": 0.67,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 221.474,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2787.857,
+          "planningTurnRadiusM": 3066.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00386",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 201.64,
+          "coverageSpeedMach": 0.61,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 201.64,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2487.857,
+          "planningTurnRadiusM": 2736.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00387",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 204.946,
+          "coverageSpeedMach": 0.62,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 204.946,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2537.857,
+          "planningTurnRadiusM": 2791.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00388",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 208.251,
+          "coverageSpeedMach": 0.63,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 208.251,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2587.857,
+          "planningTurnRadiusM": 2846.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00389",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 211.557,
+          "coverageSpeedMach": 0.64,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 211.557,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2637.857,
+          "planningTurnRadiusM": 2901.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00390",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 214.863,
+          "coverageSpeedMach": 0.65,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 214.863,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2687.857,
+          "planningTurnRadiusM": 2956.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00391",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 218.168,
+          "coverageSpeedMach": 0.66,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 218.168,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2737.857,
+          "planningTurnRadiusM": 3011.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00392",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2500.0,
+          "coverageSpeedMps": 221.474,
+          "coverageSpeedMach": 0.67,
+          "transitHeightM": 2500.0,
+          "transitSpeedMps": 221.474,
+          "swathWidthM": 375.0,
+          "stripSpacingM": 337.5,
+          "minTurnRadiusM": 2787.857,
+          "planningTurnRadiusM": 3066.6427000000003,
+          "resolutionValue": 0.5,
+          "resolutionFeasible": true
+        }
+      ]
+    }
+  },
+  {
+    "assignmentPlanId": "AP-0010-MAX_CAPACITY",
+    "stripPlanId": "SP-0017",
+    "assignments": [
+      {
+        "assignmentId": "ASG-0010-001",
+        "uavId": "UAV-03",
+        "baseId": "",
+        "flightCandidateId": "FPC-00399",
+        "stripStartIndex": 0,
+        "stripEndIndex": 8,
+        "stripIds": [
+          "ST-0001",
+          "ST-0002",
+          "ST-0003",
+          "ST-0004",
+          "ST-0005",
+          "ST-0006",
+          "ST-0007",
+          "ST-0008",
+          "ST-0009"
+        ],
+        "entryVariant": "FIRST_END",
+        "plannedLaunchTimeSec": 0.0,
+        "batchIndex": 0,
+        "routeEstimateId": "EST-UAV-03-SP-0017-FPC-00399-000000-000008-FIRST_END",
+        "coverageRouteId": null
+      },
+      {
+        "assignmentId": "ASG-0010-002",
+        "uavId": "UAV-02",
+        "baseId": "",
+        "flightCandidateId": "FPC-00259",
+        "stripStartIndex": 9,
+        "stripEndIndex": 14,
+        "stripIds": [
+          "ST-0010",
+          "ST-0011",
+          "ST-0012",
+          "ST-0013",
+          "ST-0014",
+          "ST-0015"
+        ],
+        "entryVariant": "LAST_START",
+        "plannedLaunchTimeSec": 0.0,
+        "batchIndex": 0,
+        "routeEstimateId": "EST-UAV-02-SP-0017-FPC-00259-000009-000014-LAST_START",
+        "coverageRouteId": null
+      }
+    ],
+    "usedUavCount": 2,
+    "unassignedStripIds": [],
+    "estimatedMakespanSec": 1324.1603030018014,
+    "batchCount": 1,
+    "score": 9767.731209589401,
+    "stripPlanSnapshot": {
+      "stripPlanId": "SP-0017",
+      "flightCandidateId": "FPC-00113",
+      "regionId": "REG-001",
+      "scanAngleDeg": 12.852416196078096,
+      "swathWidthM": 390.0,
+      "stripSpacingM": 351.0,
+      "stripCount": 15,
+      "strips": [
+        {
+          "stripId": "ST-0001",
+          "index": 0,
+          "start": {
+            "xM": 11986.195596442574,
+            "yM": 6815.420734391451
+          },
+          "end": {
+            "xM": 17292.662501456223,
+            "yM": 8026.126619768476
+          },
+          "lengthM": 5442.830123648147,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  17292.662501456223,
+                  8026.126619768477
+                ],
+                [
+                  12266.307,
+                  6679.319
+                ],
+                [
+                  11986.195596442574,
+                  6815.42073439145
+                ],
+                [
+                  11942.819697822708,
+                  7005.5352562432
+                ],
+                [
+                  17249.286602836357,
+                  8216.241141620225
+                ],
+                [
+                  17292.662501456223,
+                  8026.126619768477
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0002",
+          "index": 1,
+          "start": {
+            "xM": 11514.700837230417,
+            "yM": 7044.512637363896
+          },
+          "end": {
+            "xM": 19205.74047529035,
+            "yM": 8799.274726932266
+          },
+          "lengthM": 7888.680542726737,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19205.74047529035,
+                  8799.274726932268
+                ],
+                [
+                  19072.74505968016,
+                  8568.919911119907
+                ],
+                [
+                  11794.812240787845,
+                  6908.410902972446
+                ],
+                [
+                  11514.700837230417,
+                  7044.512637363897
+                ],
+                [
+                  11471.32493861055,
+                  7234.6271592156445
+                ],
+                [
+                  19162.364576670483,
+                  8989.389248784015
+                ],
+                [
+                  19205.74047529035,
+                  8799.274726932268
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0003",
+          "index": 2,
+          "start": {
+            "xM": 11043.206078018258,
+            "yM": 7273.604540336342
+          },
+          "end": {
+            "xM": 19429.60369779064,
+            "yM": 9187.017200231974
+          },
+          "lengthM": 8601.9075235655,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19429.60369779064,
+                  9187.017200231976
+                ],
+                [
+                  19296.608282180452,
+                  8956.662384419615
+                ],
+                [
+                  11323.317481575687,
+                  7137.502805944892
+                ],
+                [
+                  11043.206078018258,
+                  7273.604540336343
+                ],
+                [
+                  10999.830179398392,
+                  7463.719062188091
+                ],
+                [
+                  19386.227799170774,
+                  9377.131722083723
+                ],
+                [
+                  19429.60369779064,
+                  9187.017200231976
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0004",
+          "index": 3,
+          "start": {
+            "xM": 10571.711318806107,
+            "yM": 7502.696443308789
+          },
+          "end": {
+            "xM": 19653.46692029093,
+            "yM": 9574.75967353168
+          },
+          "lengthM": 9315.134504404255,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19653.46692029093,
+                  9574.759673531682
+                ],
+                [
+                  19520.471504680743,
+                  9344.404857719319
+                ],
+                [
+                  10851.822722363531,
+                  7366.594708917338
+                ],
+                [
+                  10571.711318806107,
+                  7502.696443308786
+                ],
+                [
+                  10528.33542018624,
+                  7692.810965160537
+                ],
+                [
+                  19610.091021671065,
+                  9764.874195383429
+                ],
+                [
+                  19653.46692029093,
+                  9574.759673531682
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0005",
+          "index": 4,
+          "start": {
+            "xM": 10495.223695738123,
+            "yM": 7821.911864067395
+          },
+          "end": {
+            "xM": 19877.330142791223,
+            "yM": 9962.502146831384
+          },
+          "lengthM": 9623.203631977189,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19877.330142791223,
+                  9962.502146831388
+                ],
+                [
+                  19744.334727181034,
+                  9732.147331019023
+                ],
+                [
+                  10538.59959435799,
+                  7631.7973422156465
+                ],
+                [
+                  10495.223695738121,
+                  7821.911864067401
+                ],
+                [
+                  10505.722018407097,
+                  8024.318149526089
+                ],
+                [
+                  19833.954244171357,
+                  10152.616668683133
+                ],
+                [
+                  19877.330142791223,
+                  9962.502146831388
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0006",
+          "index": 5,
+          "start": {
+            "xM": 10512.894893897414,
+            "yM": 8162.610249114785
+          },
+          "end": {
+            "xM": 20079.003547158733,
+            "yM": 10345.181864838409
+          },
+          "lengthM": 9811.934244773734,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  20084.460802528873,
+                  10321.26297143612
+                ],
+                [
+                  19968.197949681326,
+                  10119.889804318731
+                ],
+                [
+                  10556.27079251728,
+                  7972.495727263036
+                ],
+                [
+                  10512.894893897412,
+                  8162.610249114793
+                ],
+                [
+                  10523.393216566386,
+                  8365.016534573479
+                ],
+                [
+                  19980.452512950844,
+                  10522.707810792364
+                ],
+                [
+                  20079.003547158736,
+                  10345.1818648384
+                ],
+                [
+                  20084.460802528873,
+                  10321.26297143612
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0007",
+          "index": 6,
+          "start": {
+            "xM": 10530.566092056704,
+            "yM": 8503.308634162178
+          },
+          "end": {
+            "xM": 19913.11849016415,
+            "yM": 10644.00066363933
+          },
+          "lengthM": 9623.661042882733,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19956.494388784016,
+                  10453.886141787581
+                ],
+                [
+                  10573.94199067657,
+                  8313.19411231043
+                ],
+                [
+                  10530.566092056702,
+                  8503.308634162187
+                ],
+                [
+                  10541.064414725677,
+                  8705.714919620872
+                ],
+                [
+                  19814.567455956265,
+                  10821.526609593286
+                ],
+                [
+                  19913.11849016415,
+                  10644.000663639332
+                ],
+                [
+                  19956.494388784016,
+                  10453.886141787581
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0008",
+          "index": 7,
+          "start": {
+            "xM": 10548.237290215993,
+            "yM": 8844.007019209566
+          },
+          "end": {
+            "xM": 19747.233433169575,
+            "yM": 10942.81946244025
+          },
+          "lengthM": 9435.387840991743,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19790.60933178944,
+                  10752.7049405885
+                ],
+                [
+                  10591.61318883586,
+                  8653.892497357818
+                ],
+                [
+                  10548.237290215991,
+                  8844.007019209572
+                ],
+                [
+                  10558.735612884968,
+                  9046.41330466826
+                ],
+                [
+                  19648.68239896169,
+                  11120.345408394205
+                ],
+                [
+                  19747.233433169575,
+                  10942.819462440244
+                ],
+                [
+                  19790.60933178944,
+                  10752.7049405885
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0009",
+          "index": 8,
+          "start": {
+            "xM": 10565.908488375284,
+            "yM": 9184.705404256958
+          },
+          "end": {
+            "xM": 19581.348376174992,
+            "yM": 11241.638261241173
+          },
+          "lengthM": 9247.114639100742,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19624.72427479486,
+                  11051.523739389424
+                ],
+                [
+                  10609.28438699515,
+                  8994.59088240521
+                ],
+                [
+                  10565.908488375282,
+                  9184.705404256965
+                ],
+                [
+                  10576.406811044259,
+                  9387.111689715652
+                ],
+                [
+                  19482.797341967107,
+                  11419.164207195128
+                ],
+                [
+                  19581.348376174992,
+                  11241.638261241176
+                ],
+                [
+                  19624.72427479486,
+                  11051.523739389424
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0010",
+          "index": 9,
+          "start": {
+            "xM": 10583.579686534576,
+            "yM": 9525.40378930435
+          },
+          "end": {
+            "xM": 19415.463319180413,
+            "yM": 11540.457060042092
+          },
+          "lengthM": 9058.841437209743,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19458.83921780028,
+                  11350.342538190343
+                ],
+                [
+                  10626.955585154443,
+                  9335.289267452601
+                ],
+                [
+                  10583.579686534573,
+                  9525.403789304364
+                ],
+                [
+                  10594.078009203547,
+                  9727.810074763041
+                ],
+                [
+                  19316.91228497253,
+                  11717.983005996048
+                ],
+                [
+                  19415.463319180413,
+                  11540.4570600421
+                ],
+                [
+                  19458.83921780028,
+                  11350.342538190343
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0011",
+          "index": 10,
+          "start": {
+            "xM": 10601.250884693865,
+            "yM": 9866.102174351741
+          },
+          "end": {
+            "xM": 19249.57826218583,
+            "yM": 11839.275858843015
+          },
+          "lengthM": 8870.568235318746,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19292.954160805697,
+                  11649.161336991267
+                ],
+                [
+                  10644.626783313732,
+                  9675.987652499993
+                ],
+                [
+                  10601.250884693864,
+                  9866.10217435175
+                ],
+                [
+                  10611.749207362838,
+                  10068.508459810435
+                ],
+                [
+                  19151.02722797795,
+                  12016.801804796973
+                ],
+                [
+                  19249.578262185827,
+                  11839.27585884303
+                ],
+                [
+                  19292.954160805697,
+                  11649.161336991267
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0012",
+          "index": 11,
+          "start": {
+            "xM": 10618.922082853156,
+            "yM": 10206.800559399133
+          },
+          "end": {
+            "xM": 19083.693205191255,
+            "yM": 12138.094657643938
+          },
+          "lengthM": 8682.295033427752,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19127.06910381112,
+                  11947.98013579219
+                ],
+                [
+                  10662.297981473022,
+                  10016.686037547384
+                ],
+                [
+                  10618.922082853154,
+                  10206.800559399144
+                ],
+                [
+                  10629.420405522129,
+                  10409.206844857827
+                ],
+                [
+                  18985.14217098337,
+                  12315.620603597894
+                ],
+                [
+                  19083.693205191255,
+                  12138.09465764394
+                ],
+                [
+                  19127.06910381112,
+                  11947.98013579219
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0013",
+          "index": 12,
+          "start": {
+            "xM": 10636.593281012447,
+            "yM": 10547.498944446525
+          },
+          "end": {
+            "xM": 18917.808148196676,
+            "yM": 12436.913456444858
+          },
+          "lengthM": 8494.021831536757,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  18961.184046816543,
+                  12246.79893459311
+                ],
+                [
+                  10679.969179632313,
+                  10357.384422594776
+                ],
+                [
+                  10636.593281012443,
+                  10547.498944446537
+                ],
+                [
+                  10647.09160368142,
+                  10749.905229905218
+                ],
+                [
+                  18819.257113988795,
+                  12614.439402398813
+                ],
+                [
+                  18917.808148196676,
+                  12436.913456444863
+                ],
+                [
+                  18961.184046816543,
+                  12246.79893459311
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0014",
+          "index": 13,
+          "start": {
+            "xM": 10654.264479171736,
+            "yM": 10888.197329493913
+          },
+          "end": {
+            "xM": 18751.923091202098,
+            "yM": 12735.732255245777
+          },
+          "lengthM": 8305.748629645761,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  18795.298989821964,
+                  12545.617733394029
+                ],
+                [
+                  10697.640377791602,
+                  10698.082807642164
+                ],
+                [
+                  10654.264479171734,
+                  10888.197329493922
+                ],
+                [
+                  10664.762801840709,
+                  11090.603614952606
+                ],
+                [
+                  18653.372056994216,
+                  12913.258201199733
+                ],
+                [
+                  18751.923091202094,
+                  12735.732255245786
+                ],
+                [
+                  18795.298989821964,
+                  12545.617733394029
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0015",
+          "index": 14,
+          "start": {
+            "xM": 10671.935677331026,
+            "yM": 11228.895714541306
+          },
+          "end": {
+            "xM": 18586.038034207522,
+            "yM": 13034.5510540467
+          },
+          "lengthM": 8117.475427754767,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  18629.41393282739,
+                  12844.436532194952
+                ],
+                [
+                  10715.311575950893,
+                  11038.781192689557
+                ],
+                [
+                  10671.935677331025,
+                  11228.895714541317
+                ],
+                [
+                  10682.434,
+                  11431.302
+                ],
+                [
+                  10689.457472396132,
+                  11432.904452162236
+                ],
+                [
+                  18487.487,
+                  13212.077
+                ],
+                [
+                  18586.038034207522,
+                  13034.551054046695
+                ],
+                [
+                  18629.41393282739,
+                  12844.436532194952
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "estimatedCoverageRatio": 0.9928319897262344,
+      "generationWarnings": [
+        "COVERAGE_METRICS|coverage_ratio=0.992832|missed_area_m2=307937.71|overlap_area_m2=7450097.45|redundant_area_m2=800175.09|min_boundary_margin_m=-128.31"
+      ],
+      "compatibleFlightCandidates": [
+        {
+          "candidateId": "FPC-00113",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 201.399,
+          "coverageSpeedMach": 0.61,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 201.399,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2511.3,
+          "planningTurnRadiusM": 2762.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00114",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 204.701,
+          "coverageSpeedMach": 0.62,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 204.701,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2561.3,
+          "planningTurnRadiusM": 2817.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00115",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 208.002,
+          "coverageSpeedMach": 0.63,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 208.002,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2611.3,
+          "planningTurnRadiusM": 2872.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00116",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 211.304,
+          "coverageSpeedMach": 0.64,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 211.304,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2661.3,
+          "planningTurnRadiusM": 2927.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00117",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 214.606,
+          "coverageSpeedMach": 0.65,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 214.606,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2711.3,
+          "planningTurnRadiusM": 2982.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00118",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 217.907,
+          "coverageSpeedMach": 0.66,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 217.907,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2761.3,
+          "planningTurnRadiusM": 3037.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00119",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 221.209,
+          "coverageSpeedMach": 0.67,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 221.209,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2811.3,
+          "planningTurnRadiusM": 3092.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00253",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 201.399,
+          "coverageSpeedMach": 0.61,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 201.399,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2511.3,
+          "planningTurnRadiusM": 2762.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00254",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 204.701,
+          "coverageSpeedMach": 0.62,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 204.701,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2561.3,
+          "planningTurnRadiusM": 2817.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00255",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 208.002,
+          "coverageSpeedMach": 0.63,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 208.002,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2611.3,
+          "planningTurnRadiusM": 2872.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00256",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 211.304,
+          "coverageSpeedMach": 0.64,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 211.304,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2661.3,
+          "planningTurnRadiusM": 2927.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00257",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 214.606,
+          "coverageSpeedMach": 0.65,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 214.606,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2711.3,
+          "planningTurnRadiusM": 2982.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00258",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 217.907,
+          "coverageSpeedMach": 0.66,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 217.907,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2761.3,
+          "planningTurnRadiusM": 3037.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00259",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 221.209,
+          "coverageSpeedMach": 0.67,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 221.209,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2811.3,
+          "planningTurnRadiusM": 3092.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00393",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 201.399,
+          "coverageSpeedMach": 0.61,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 201.399,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2511.3,
+          "planningTurnRadiusM": 2762.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00394",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 204.701,
+          "coverageSpeedMach": 0.62,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 204.701,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2561.3,
+          "planningTurnRadiusM": 2817.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00395",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 208.002,
+          "coverageSpeedMach": 0.63,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 208.002,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2611.3,
+          "planningTurnRadiusM": 2872.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00396",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 211.304,
+          "coverageSpeedMach": 0.64,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 211.304,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2661.3,
+          "planningTurnRadiusM": 2927.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00397",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 214.606,
+          "coverageSpeedMach": 0.65,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 214.606,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2711.3,
+          "planningTurnRadiusM": 2982.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00398",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 217.907,
+          "coverageSpeedMach": 0.66,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 217.907,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2761.3,
+          "planningTurnRadiusM": 3037.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00399",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2600.0,
+          "coverageSpeedMps": 221.209,
+          "coverageSpeedMach": 0.67,
+          "transitHeightM": 2600.0,
+          "transitSpeedMps": 221.209,
+          "swathWidthM": 390.0,
+          "stripSpacingM": 351.0,
+          "minTurnRadiusM": 2811.3,
+          "planningTurnRadiusM": 3092.4300000000003,
+          "resolutionValue": 0.52,
+          "resolutionFeasible": true
+        }
+      ]
+    }
+  },
+  {
+    "assignmentPlanId": "AP-0004-MAX_CAPACITY",
+    "stripPlanId": "SP-0019",
+    "assignments": [
+      {
+        "assignmentId": "ASG-0004-001",
+        "uavId": "UAV-03",
+        "baseId": "",
+        "flightCandidateId": "FPC-00412",
+        "stripStartIndex": 0,
+        "stripEndIndex": 8,
+        "stripIds": [
+          "ST-0001",
+          "ST-0002",
+          "ST-0003",
+          "ST-0004",
+          "ST-0005",
+          "ST-0006",
+          "ST-0007",
+          "ST-0008",
+          "ST-0009"
+        ],
+        "entryVariant": "LAST_START",
+        "plannedLaunchTimeSec": 0.0,
+        "batchIndex": 0,
+        "routeEstimateId": "EST-UAV-03-SP-0019-FPC-00412-000000-000008-LAST_START",
+        "coverageRouteId": null
+      },
+      {
+        "assignmentId": "ASG-0004-002",
+        "uavId": "UAV-02",
+        "baseId": "",
+        "flightCandidateId": "FPC-00273",
+        "stripStartIndex": 9,
+        "stripEndIndex": 13,
+        "stripIds": [
+          "ST-0010",
+          "ST-0011",
+          "ST-0012",
+          "ST-0013",
+          "ST-0014"
+        ],
+        "entryVariant": "FIRST_START",
+        "plannedLaunchTimeSec": 0.0,
+        "batchIndex": 0,
+        "routeEstimateId": "EST-UAV-02-SP-0019-FPC-00273-000009-000013-FIRST_START",
+        "coverageRouteId": null
+      }
+    ],
+    "usedUavCount": 2,
+    "unassignedStripIds": [],
+    "estimatedMakespanSec": 1333.1681781662944,
+    "batchCount": 1,
+    "score": 9767.86079101474,
+    "stripPlanSnapshot": {
+      "stripPlanId": "SP-0019",
+      "flightCandidateId": "FPC-00127",
+      "regionId": "REG-001",
+      "scanAngleDeg": 12.852416196078096,
+      "swathWidthM": 420.0,
+      "stripSpacingM": 378.0,
+      "stripCount": 14,
+      "strips": [
+        {
+          "stripId": "ST-0001",
+          "index": 0,
+          "start": {
+            "xM": 11964.648565399697,
+            "yM": 6825.890098575408
+          },
+          "end": {
+            "xM": 17679.305232337472,
+            "yM": 8129.7272059045135
+          },
+          "lengthM": 5861.509363928773,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  17679.305232337472,
+                  8129.727205904514
+                ],
+                [
+                  12266.307,
+                  6679.319
+                ],
+                [
+                  11964.648565399697,
+                  6825.890098575407
+                ],
+                [
+                  11917.936059193686,
+                  7030.6288144157525
+                ],
+                [
+                  17632.59272613146,
+                  8334.465921744859
+                ],
+                [
+                  17679.305232337472,
+                  8129.727205904514
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0002",
+          "index": 1,
+          "start": {
+            "xM": 11460.199906408585,
+            "yM": 7070.993784209742
+          },
+          "end": {
+            "xM": 19231.61722951648,
+            "yM": 8844.094579753759
+          },
+          "lengthM": 7971.123737658342,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19231.61722951648,
+                  8844.09457975376
+                ],
+                [
+                  19088.39139732089,
+                  8596.020162725063
+                ],
+                [
+                  11761.85834100889,
+                  6924.422685634334
+                ],
+                [
+                  11460.199906408585,
+                  7070.993784209741
+                ],
+                [
+                  11413.487400202574,
+                  7275.732500050087
+                ],
+                [
+                  19184.90472331047,
+                  9048.833295594104
+                ],
+                [
+                  19231.61722951648,
+                  8844.09457975376
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0003",
+          "index": 2,
+          "start": {
+            "xM": 10955.751247417476,
+            "yM": 7316.097469844073
+          },
+          "end": {
+            "xM": 19471.126789657497,
+            "yM": 9258.93730465862
+          },
+          "lengthM": 8734.19986313124,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19471.126789657497,
+                  9258.93730465862
+                ],
+                [
+                  19327.900957461912,
+                  9010.862887629924
+                ],
+                [
+                  11257.409682017782,
+                  7169.526371268665
+                ],
+                [
+                  10955.751247417476,
+                  7316.097469844072
+                ],
+                [
+                  10909.038741211465,
+                  7520.836185684418
+                ],
+                [
+                  19424.414283451486,
+                  9463.676020498966
+                ],
+                [
+                  19471.126789657497,
+                  9258.93730465862
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0004",
+          "index": 3,
+          "start": {
+            "xM": 10482.065308152178,
+            "yM": 7568.219875558816
+          },
+          "end": {
+            "xM": 19710.636349798522,
+            "yM": 9673.780029563484
+          },
+          "lengthM": 9465.722742233984,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19710.636349798522,
+                  9673.780029563488
+                ],
+                [
+                  19567.410517602933,
+                  9425.705612534786
+                ],
+                [
+                  10752.96102302667,
+                  7414.630056902998
+                ],
+                [
+                  10487.701812116593,
+                  7543.515344005448
+                ],
+                [
+                  10482.065308152176,
+                  7568.219875558826
+                ],
+                [
+                  10493.37119410338,
+                  7786.195875283563
+                ],
+                [
+                  19663.92384359251,
+                  9878.51874540383
+                ],
+                [
+                  19710.636349798522,
+                  9673.780029563488
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0005",
+          "index": 4,
+          "start": {
+            "xM": 10500.97158874184,
+            "yM": 7932.730488030458
+          },
+          "end": {
+            "xM": 19950.145909939543,
+            "yM": 10088.622754468346
+          },
+          "lengthM": 9691.99498642404,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19950.145909939543,
+                  10088.622754468352
+                ],
+                [
+                  19806.920077743955,
+                  9840.548337439648
+                ],
+                [
+                  10547.684094947852,
+                  7727.991772190114
+                ],
+                [
+                  10500.971588741837,
+                  7932.730488030471
+                ],
+                [
+                  10512.27747469304,
+                  8150.706487755205
+                ],
+                [
+                  19903.433403733532,
+                  10293.361470308691
+                ],
+                [
+                  19950.145909939543,
+                  10088.622754468352
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0006",
+          "index": 5,
+          "start": {
+            "xM": 10519.8778693315,
+            "yM": 8297.241100502102
+          },
+          "end": {
+            "xM": 20013.45217551807,
+            "yM": 10463.263520222561
+          },
+          "lengthM": 9737.535942414665,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  20056.78675220246,
+                  10273.330110468885
+                ],
+                [
+                  20046.429637884976,
+                  10255.391062344514
+                ],
+                [
+                  10566.590375537511,
+                  8092.502384661758
+                ],
+                [
+                  10519.8778693315,
+                  8297.241100502106
+                ],
+                [
+                  10531.183755282704,
+                  8515.21710022685
+                ],
+                [
+                  19907.320292524964,
+                  10654.445308172977
+                ],
+                [
+                  20013.45217551807,
+                  10463.263520222568
+                ],
+                [
+                  20056.78675220246,
+                  10273.330110468885
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0007",
+          "index": 6,
+          "start": {
+            "xM": 10538.784149921163,
+            "yM": 8661.751712973746
+          },
+          "end": {
+            "xM": 19835.973013952407,
+            "yM": 10782.96748170102
+          },
+          "lengthM": 9536.103874799384,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19882.68552015842,
+                  10578.228765860675
+                ],
+                [
+                  10585.496656127174,
+                  8457.0129971334
+                ],
+                [
+                  10538.78414992116,
+                  8661.751712973753
+                ],
+                [
+                  10550.090035872365,
+                  8879.727712698494
+                ],
+                [
+                  19729.8411309593,
+                  10974.149269651434
+                ],
+                [
+                  19835.973013952407,
+                  10782.967481701015
+                ],
+                [
+                  19882.68552015842,
+                  10578.228765860675
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0008",
+          "index": 7,
+          "start": {
+            "xM": 10557.690430510826,
+            "yM": 9026.26232544539
+          },
+          "end": {
+            "xM": 19658.493852386742,
+            "yM": 11102.671443179483
+          },
+          "lengthM": 9334.671807184099,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19705.206358592754,
+                  10897.932727339137
+                ],
+                [
+                  10604.402936716837,
+                  8821.523609605045
+                ],
+                [
+                  10557.690430510824,
+                  9026.2623254454
+                ],
+                [
+                  10568.996316462028,
+                  9244.238325170138
+                ],
+                [
+                  19552.36196939363,
+                  11293.853231129897
+                ],
+                [
+                  19658.493852386746,
+                  11102.67144317947
+                ],
+                [
+                  19705.206358592754,
+                  10897.932727339137
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0009",
+          "index": 8,
+          "start": {
+            "xM": 10576.596711100487,
+            "yM": 9390.772937917034
+          },
+          "end": {
+            "xM": 19481.014690821074,
+            "yM": 11422.375404657942
+          },
+          "lengthM": 9133.239739568813,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19527.727197027085,
+                  11217.636688817596
+                ],
+                [
+                  10623.309217306498,
+                  9186.034222076689
+                ],
+                [
+                  10576.596711100485,
+                  9390.77293791704
+                ],
+                [
+                  10587.902597051689,
+                  9608.748937641782
+                ],
+                [
+                  19374.882807827966,
+                  11613.557192608356
+                ],
+                [
+                  19481.014690821074,
+                  11422.37540465794
+                ],
+                [
+                  19527.727197027085,
+                  11217.636688817596
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0010",
+          "index": 9,
+          "start": {
+            "xM": 10595.50299169015,
+            "yM": 9755.283550388676
+          },
+          "end": {
+            "xM": 19303.53552925541,
+            "yM": 11742.0793661364
+          },
+          "lengthM": 8931.80767195353,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19350.24803546142,
+                  11537.340650296055
+                ],
+                [
+                  10642.21549789616,
+                  9550.544834548331
+                ],
+                [
+                  10595.502991690148,
+                  9755.283550388685
+                ],
+                [
+                  10606.808877641352,
+                  9973.259550113424
+                ],
+                [
+                  19197.4036462623,
+                  11933.261154086815
+                ],
+                [
+                  19303.53552925541,
+                  11742.079366136397
+                ],
+                [
+                  19350.24803546142,
+                  11537.340650296055
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0011",
+          "index": 10,
+          "start": {
+            "xM": 10614.40927227981,
+            "yM": 10119.794162860318
+          },
+          "end": {
+            "xM": 19126.056367689744,
+            "yM": 12061.78332761486
+          },
+          "lengthM": 8730.375604338245,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  19172.768873895755,
+                  11857.044611774514
+                ],
+                [
+                  10661.121778485822,
+                  9915.055447019973
+                ],
+                [
+                  10614.409272279809,
+                  10119.794162860326
+                ],
+                [
+                  10625.715158231013,
+                  10337.770162585066
+                ],
+                [
+                  19019.924484696636,
+                  12252.965115565274
+                ],
+                [
+                  19126.056367689744,
+                  12061.783327614854
+                ],
+                [
+                  19172.768873895755,
+                  11857.044611774514
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0012",
+          "index": 11,
+          "start": {
+            "xM": 10633.315552869473,
+            "yM": 10484.304775331964
+          },
+          "end": {
+            "xM": 18948.577206124075,
+            "yM": 12381.487289093322
+          },
+          "lengthM": 8528.943536722958,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  18995.289712330086,
+                  12176.748573252977
+                ],
+                [
+                  10680.028059075485,
+                  10279.566059491619
+                ],
+                [
+                  10633.315552869472,
+                  10484.304775331973
+                ],
+                [
+                  10644.621438820675,
+                  10702.280775056712
+                ],
+                [
+                  18842.445323130967,
+                  12572.669077043736
+                ],
+                [
+                  18948.577206124075,
+                  12381.48728909332
+                ],
+                [
+                  18995.289712330086,
+                  12176.748573252977
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0013",
+          "index": 12,
+          "start": {
+            "xM": 10652.221833459136,
+            "yM": 10848.815387803606
+          },
+          "end": {
+            "xM": 18771.09804455841,
+            "yM": 12701.191250571781
+          },
+          "lengthM": 8327.511469107674,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  18817.81055076442,
+                  12496.452534731436
+                ],
+                [
+                  10698.934339665147,
+                  10644.076671963261
+                ],
+                [
+                  10652.221833459133,
+                  10848.81538780362
+                ],
+                [
+                  10663.527719410336,
+                  11066.791387528354
+                ],
+                [
+                  18664.966161565302,
+                  12892.373038522195
+                ],
+                [
+                  18771.09804455841,
+                  12701.191250571777
+                ],
+                [
+                  18817.81055076442,
+                  12496.452534731436
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "stripId": "ST-0014",
+          "index": 13,
+          "start": {
+            "xM": 10671.128114048797,
+            "yM": 11213.326000275252
+          },
+          "end": {
+            "xM": 18593.618882992745,
+            "yM": 13020.895212050244
+          },
+          "lengthM": 8126.079401492391,
+          "scanAngleDeg": 12.852416196078096,
+          "coveragePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  18640.331389198756,
+                  12816.156496209898
+                ],
+                [
+                  10717.840620254809,
+                  11008.587284434907
+                ],
+                [
+                  10671.128114048795,
+                  11213.326000275261
+                ],
+                [
+                  10682.434,
+                  11431.302
+                ],
+                [
+                  18487.487,
+                  13212.077
+                ],
+                [
+                  18593.61888299275,
+                  13020.895212050233
+                ],
+                [
+                  18640.331389198756,
+                  12816.156496209898
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "estimatedCoverageRatio": 0.9931572647353497,
+      "generationWarnings": [
+        "COVERAGE_METRICS|coverage_ratio=0.993157|missed_area_m2=293963.90|overlap_area_m2=7720646.83|redundant_area_m2=899862.36|min_boundary_margin_m=-135.51"
+      ],
+      "compatibleFlightCandidates": [
+        {
+          "candidateId": "FPC-00127",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 203.88,
+          "coverageSpeedMach": 0.619,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 203.88,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2558.92,
+          "planningTurnRadiusM": 2814.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00128",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 207.174,
+          "coverageSpeedMach": 0.629,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 207.174,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2608.92,
+          "planningTurnRadiusM": 2869.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00129",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 210.468,
+          "coverageSpeedMach": 0.639,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 210.468,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2658.92,
+          "planningTurnRadiusM": 2924.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00130",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 213.761,
+          "coverageSpeedMach": 0.649,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 213.761,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2708.92,
+          "planningTurnRadiusM": 2979.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00131",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 217.055,
+          "coverageSpeedMach": 0.659,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 217.055,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2758.92,
+          "planningTurnRadiusM": 3034.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00132",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 220.349,
+          "coverageSpeedMach": 0.669,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 220.349,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2808.92,
+          "planningTurnRadiusM": 3089.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00133",
+          "uavId": "UAV-01",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 223.642,
+          "coverageSpeedMach": 0.679,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 223.642,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2858.92,
+          "planningTurnRadiusM": 3144.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00267",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 203.88,
+          "coverageSpeedMach": 0.619,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 203.88,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2558.92,
+          "planningTurnRadiusM": 2814.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00268",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 207.174,
+          "coverageSpeedMach": 0.629,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 207.174,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2608.92,
+          "planningTurnRadiusM": 2869.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00269",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 210.468,
+          "coverageSpeedMach": 0.639,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 210.468,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2658.92,
+          "planningTurnRadiusM": 2924.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00270",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 213.761,
+          "coverageSpeedMach": 0.649,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 213.761,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2708.92,
+          "planningTurnRadiusM": 2979.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00271",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 217.055,
+          "coverageSpeedMach": 0.659,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 217.055,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2758.92,
+          "planningTurnRadiusM": 3034.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00272",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 220.349,
+          "coverageSpeedMach": 0.669,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 220.349,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2808.92,
+          "planningTurnRadiusM": 3089.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00273",
+          "uavId": "UAV-02",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 223.642,
+          "coverageSpeedMach": 0.679,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 223.642,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2858.92,
+          "planningTurnRadiusM": 3144.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00407",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 203.88,
+          "coverageSpeedMach": 0.619,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 203.88,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2558.92,
+          "planningTurnRadiusM": 2814.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00408",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 207.174,
+          "coverageSpeedMach": 0.629,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 207.174,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2608.92,
+          "planningTurnRadiusM": 2869.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00409",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 210.468,
+          "coverageSpeedMach": 0.639,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 210.468,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2658.92,
+          "planningTurnRadiusM": 2924.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00410",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 213.761,
+          "coverageSpeedMach": 0.649,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 213.761,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2708.92,
+          "planningTurnRadiusM": 2979.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00411",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 217.055,
+          "coverageSpeedMach": 0.659,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 217.055,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2758.92,
+          "planningTurnRadiusM": 3034.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00412",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 220.349,
+          "coverageSpeedMach": 0.669,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 220.349,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2808.92,
+          "planningTurnRadiusM": 3089.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        },
+        {
+          "candidateId": "FPC-00413",
+          "uavId": "UAV-03",
+          "coverageHeightM": 2800.0,
+          "coverageSpeedMps": 223.642,
+          "coverageSpeedMach": 0.679,
+          "transitHeightM": 2800.0,
+          "transitSpeedMps": 223.642,
+          "swathWidthM": 420.0,
+          "stripSpacingM": 378.0,
+          "minTurnRadiusM": 2858.92,
+          "planningTurnRadiusM": 3144.8120000000004,
+          "resolutionValue": 0.56,
+          "resolutionFeasible": true
+        }
+      ]
+    }
+  }
+]

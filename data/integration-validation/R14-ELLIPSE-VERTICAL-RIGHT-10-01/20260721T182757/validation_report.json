@@ -1,0 +1,146 @@
+{
+  "valid": true,
+  "checks": [
+    {
+      "name": "STRIP_ASSIGNMENT",
+      "status": "PASS",
+      "message": "所有条带已全部分配",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "COVERAGE_RATIO",
+      "status": "PASS",
+      "message": "覆盖率=0.9922",
+      "value": 0.9921916780521898,
+      "threshold": 0.95
+    },
+    {
+      "name": "RECON_ACCURACY",
+      "status": "PASS",
+      "message": "所有飞行候选的传感器分辨率均满足要求",
+      "value": true,
+      "threshold": true
+    },
+    {
+      "name": "OBSTACLE_CROSSING",
+      "status": "PASS",
+      "message": "所有航段均未穿越障碍",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "TURN_RADIUS",
+      "status": "PASS",
+      "message": "所有掉头段均满足规划转弯半径",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "ALTITUDE_SPEED",
+      "status": "PASS",
+      "message": "????????????",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "RANGE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 航程=261302m / 上限=297500m",
+      "value": 261302.37910113038,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 油耗=85.95kg / 初始=120.00kg",
+      "value": 85.95246736643648,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 余油比=0.2837 >= 要求=0.1500",
+      "value": 0.28372943861302935,
+      "threshold": 0.15
+    },
+    {
+      "name": "RANGE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 航程=290278m / 上限=297500m",
+      "value": 290278.22171284416,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 油耗=94.82kg / 初始=120.00kg",
+      "value": 94.82118064068212,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 余油比=0.2098 >= 要求=0.1500",
+      "value": 0.20982349466098238,
+      "threshold": 0.15
+    },
+    {
+      "name": "RANGE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 航程=286837m / 上限=297500m",
+      "value": 286837.2273642279,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 油耗=93.86kg / 初始=120.00kg",
+      "value": 93.85784383543263,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 余油比=0.2179 >= 要求=0.1500",
+      "value": 0.21785130137139472,
+      "threshold": 0.15
+    },
+    {
+      "name": "RANGE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 航程=251731m / 上限=297500m",
+      "value": 251730.5146456214,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 油耗=83.27kg / 初始=120.00kg",
+      "value": 83.27320300594832,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 余油比=0.3061 >= 要求=0.1500",
+      "value": 0.30605664161709734,
+      "threshold": 0.15
+    },
+    {
+      "name": "MULTI_AIRCRAFT_CONFLICT",
+      "status": "PASS",
+      "message": "多机航迹无空间冲突",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "TRAJECTORY_FEASIBILITY",
+      "status": "PASS",
+      "message": "所有航迹可行",
+      "value": true,
+      "threshold": true
+    }
+  ],
+  "failureCodes": []
+}

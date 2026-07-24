@@ -1,0 +1,18 @@
+{
+  "planId": "PLAN-001",
+  "caseId": "R01-BASELINE-01",
+  "feasible": false,
+  "failureCodes": [
+    "E003_PARAMETER_TABLE_INVALID"
+  ],
+  "failureMessages": [
+    "速度或高度参数不满足无人机要求"
+  ],
+  "validationChecks": [
+    {
+      "name": "ALTITUDE_SPEED",
+      "status": "FAIL",
+      "message": "6 个航段存在无效高度或速度"
+    }
+  ]
+}

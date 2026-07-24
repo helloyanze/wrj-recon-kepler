@@ -1,0 +1,104 @@
+{
+  "valid": true,
+  "checks": [
+    {
+      "name": "STRIP_ASSIGNMENT",
+      "status": "PASS",
+      "message": "所有条带已全部分配",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "COVERAGE_RATIO",
+      "status": "PASS",
+      "message": "覆盖率=0.9918",
+      "value": 0.9917758808093791,
+      "threshold": 0.95
+    },
+    {
+      "name": "RECON_ACCURACY",
+      "status": "PASS",
+      "message": "所有飞行候选的传感器分辨率均满足要求",
+      "value": true,
+      "threshold": true
+    },
+    {
+      "name": "OBSTACLE_CROSSING",
+      "status": "PASS",
+      "message": "所有航段均未穿越障碍",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "TURN_RADIUS",
+      "status": "PASS",
+      "message": "所有掉头段均满足规划转弯半径",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "ALTITUDE_SPEED",
+      "status": "PASS",
+      "message": "????????????",
+      "value": 0.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "RANGE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 航程=279885m / 上限=297500m",
+      "value": 279884.8760281745,
+      "threshold": 297500.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 油耗=96.68kg / 初始=120.00kg",
+      "value": 96.6799638794111,
+      "threshold": 120.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-03",
+      "status": "PASS",
+      "message": "UAV-03 余油比=0.1943 >= 要求=0.1500",
+      "value": 0.1943336343382408,
+      "threshold": 0.15
+    },
+    {
+      "name": "RANGE_UAV-02",
+      "status": "PASS",
+      "message": "UAV-02 航程=182607m / 上限=255000m",
+      "value": 182606.80269528693,
+      "threshold": 255000.0
+    },
+    {
+      "name": "FUEL_CONSUMPTION_UAV-02",
+      "status": "PASS",
+      "message": "UAV-02 油耗=63.60kg / 初始=105.00kg",
+      "value": 63.59818155527643,
+      "threshold": 105.0
+    },
+    {
+      "name": "FUEL_RESERVE_UAV-02",
+      "status": "PASS",
+      "message": "UAV-02 余油比=0.3943 >= 要求=0.1500",
+      "value": 0.3943030328068911,
+      "threshold": 0.15
+    },
+    {
+      "name": "MULTI_AIRCRAFT_CONFLICT",
+      "status": "WARNING",
+      "message": "检测到 4 处多机航迹潜在空间冲突",
+      "value": 4.0,
+      "threshold": 0.0
+    },
+    {
+      "name": "TRAJECTORY_FEASIBILITY",
+      "status": "PASS",
+      "message": "所有航迹可行",
+      "value": true,
+      "threshold": true
+    }
+  ],
+  "failureCodes": []
+}

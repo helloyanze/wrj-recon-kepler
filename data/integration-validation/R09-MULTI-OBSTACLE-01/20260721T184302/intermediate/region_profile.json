@@ -1,0 +1,17 @@
+{
+  "regionId": "REG-001",
+  "geometryWkt": "POLYGON ((49739.435 24528.801, 44639.332 27095.837, 37033.99 25370.344, 36997.265 20867.268, 42406.237 18385.36, 48400.446 21199.096, 49739.435 24528.801))",
+  "regionType": "CONVEX_POLYGON",
+  "coordinateReference": "LOCAL_CARTESIAN_M",
+  "areaM2": 76594639.05373152,
+  "perimeterM": 34173.36413367964,
+  "centroid": {
+    "xM": 42920.114412803036,
+    "yM": 22956.58517869015
+  },
+  "mainAxisAngleDeg": 12.782817719090758,
+  "longAxisM": 13236.501212205063,
+  "shortAxisM": 8000.508575981799,
+  "valid": true,
+  "warnings": []
+}
