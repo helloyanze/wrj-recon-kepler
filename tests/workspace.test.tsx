@@ -41,8 +41,8 @@ const PUBLIC_BASEMAP: ResolvedBasemap = {
     {id: "light", style: {version: 8, sources: {}, layers: []}}
   ],
   mapStylesReplaceDefault: true,
-  primaryLabel: "公共地图",
-  secondaryLabel: "OSM 简洁图",
+  primaryLabel: "深色地图",
+  secondaryLabel: "亮色地图",
   statusLabel: "公共底图",
   attributionByStyle: {
     satellite: "© OpenStreetMap contributors · © CARTO",
@@ -221,8 +221,8 @@ describe("dynamic algorithm Workspace", () => {
       "R10-LONG-TRANSIT-01:PLAN-002:built-in"
     );
     expect(screen.getByRole("button", {name: "本地导入算例"})).toBeEnabled();
-    expect(screen.getByRole("button", {name: "公共地图"})).toBeEnabled();
-    expect(screen.getByRole("button", {name: "OSM 简洁图"})).toBeEnabled();
+    expect(screen.getByRole("button", {name: "深色地图"})).toBeEnabled();
+    expect(screen.getByRole("button", {name: "亮色地图"})).toBeEnabled();
     expect(screen.getByRole("button", {name: "重置三维视角"})).toBeEnabled();
     expect(screen.getByRole("button", {name: "任务概览"})).toBeEnabled();
     expect(screen.getByRole("region", {name: "任务时间轴"})).toBeInTheDocument();
@@ -275,7 +275,7 @@ describe("dynamic algorithm Workspace", () => {
     }));
 
     expect(screen.getByText("正在加载算例数据…")).toBeInTheDocument();
-    expect(screen.getByRole("button", {name: "公共地图"})).toBeDisabled();
+    expect(screen.getByRole("button", {name: "深色地图"})).toBeDisabled();
     expect(latestMapProps?.bundle ?? null).toBeNull();
   });
 
@@ -292,7 +292,7 @@ describe("dynamic algorithm Workspace", () => {
 
     expect(await screen.findByText("方案可行")).toBeInTheDocument();
     expect(loader).toHaveBeenCalledTimes(2);
-    expect(screen.getByRole("button", {name: "公共地图"})).toBeEnabled();
+    expect(screen.getByRole("button", {name: "深色地图"})).toBeEnabled();
   });
 
   it("switches cases without injecting legacy Kepler datasets", async () => {
@@ -367,7 +367,7 @@ describe("dynamic algorithm Workspace", () => {
       loadBuiltInCase: vi.fn(() => pending.promise)
     }));
     const dispatch = vi.spyOn(store, "dispatch");
-    const light = screen.getByRole("button", {name: "OSM 简洁图"});
+    const light = screen.getByRole("button", {name: "亮色地图"});
     expect(light).toBeDisabled();
 
     await act(async () => {
