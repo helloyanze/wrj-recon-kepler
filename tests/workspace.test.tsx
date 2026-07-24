@@ -340,12 +340,25 @@ describe("dynamic algorithm Workspace", () => {
 
   it("performs one catalog, repository and R10 load under React StrictMode", async () => {
     const deps = dependencies();
-    renderWorkspace(deps, true);
+    const {store} = renderWorkspace(deps, true);
+    const dispatch = vi.spyOn(store, "dispatch");
 
     expect(await screen.findByText("方案可行")).toBeInTheDocument();
     expect(deps.loadCaseCatalog).toHaveBeenCalledTimes(1);
     expect(deps.openCaseRepository).toHaveBeenCalledTimes(1);
     expect(deps.loadBuiltInCase).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(Number.parseFloat(
+        screen.getByLabelText("当前任务时间原始秒").textContent ?? "0"
+      )).toBeGreaterThan(0);
+    });
+    fireEvent.change(
+      screen.getByLabelText("静态规划航迹 不透明度"),
+      {target: {value: "0.4"}}
+    );
+    expect(dispatch.mock.calls.filter(([action]) => (
+      action as unknown as {payload: {type: string}}
+    ).payload.type === updateMap({}).type)).toHaveLength(1);
   });
 
   it("applies the public basemap on startup and switches style when ready", async () => {

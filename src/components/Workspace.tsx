@@ -96,10 +96,7 @@ export function Workspace({
       return;
     }
     const nextCaseKey = `${bundle.case.caseId}:${bundle.case.planId}`;
-    if (
-      previousCaseKeyRef.current !== null
-      && previousCaseKeyRef.current !== nextCaseKey
-    ) {
+    if (previousCaseKeyRef.current !== nextCaseKey) {
       dispatch(wrapTo(WRJ_MAP_ID, updateMap(caseMapState(bundle))));
     }
     previousCaseKeyRef.current = nextCaseKey;
