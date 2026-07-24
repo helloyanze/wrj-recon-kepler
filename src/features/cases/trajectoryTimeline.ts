@@ -74,10 +74,9 @@ export function buildTripPath(
   const trip: TimedMapPoint[] = [];
 
   segments.forEach(segment => {
-    segment.timedPath.forEach((point, pointIndex) => {
+    segment.timedPath.forEach(point => {
       const previous = trip.at(-1);
       if (
-        pointIndex === 0 &&
         previous !== undefined &&
         timedPointsEqual(previous, point)
       ) {
