@@ -31,7 +31,7 @@ const localPointSchema = z
 const lineStringGeometrySchema = z
   .object({
     type: z.literal("LineString"),
-    coordinates: z.array(z.tuple([finiteNumber, finiteNumber])).min(2)
+    coordinates: z.array(z.tuple([finiteNumber, finiteNumber])).min(1)
   })
   .passthrough();
 

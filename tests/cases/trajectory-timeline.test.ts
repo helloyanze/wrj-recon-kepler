@@ -4,11 +4,15 @@ import type {
   TimedMapPoint,
   TimedSegment
 } from "../../src/features/cases/caseBundle";
-import type {MissionPlan} from "../../src/features/cases/missionPlanSchema";
+import {
+  parseMissionPlan,
+  type MissionPlan
+} from "../../src/features/cases/missionPlanSchema";
 import {
   buildTrajectoryTimeline,
   buildTripPath
 } from "../../src/features/cases/trajectoryTimeline";
+import {missionPlanFixture} from "../fixtures/missionPlanFixture";
 
 type RawTrajectory = MissionPlan["trajectories"][number];
 type RawSegment = RawTrajectory["segments"][number];
@@ -169,6 +173,46 @@ describe("trajectory timeline", () => {
       [7, 8, 0]
     ]);
     expect(segment.timedPath.map(point => point[2])).toEqual([2900, 0]);
+  });
+
+  it("parses one-point vertical climb and descent geometry into timed endpoints", () => {
+    const fixture = structuredClone(missionPlanFixture);
+    const [climbInput, , descentInput] = fixture.trajectories[0].segments;
+    climbInput.geometry.coordinates = [
+      [climbInput.startPoint.xM, climbInput.startPoint.yM]
+    ];
+    climbInput.endPoint.xM = climbInput.startPoint.xM;
+    climbInput.endPoint.yM = climbInput.startPoint.yM;
+    descentInput.geometry.coordinates = [
+      [descentInput.startPoint.xM, descentInput.startPoint.yM]
+    ];
+    descentInput.endPoint.xM = descentInput.startPoint.xM;
+    descentInput.endPoint.yM = descentInput.startPoint.yM;
+
+    const parsed = parseMissionPlan(fixture, "mission_plan.json");
+    const segments = buildTrajectoryTimeline(
+      parsed.trajectories[0],
+      parsed.assignmentPlan.assignments[0],
+      transform
+    );
+    const [climb, , descent] = segments;
+
+    expect(climb.localPath).toEqual([
+      [0, 0, 0],
+      [0, 0, 120]
+    ]);
+    expect(climb.timedPath.map(point => [point[2], point[3]])).toEqual([
+      [0, 0],
+      [120, 10]
+    ]);
+    expect(descent.localPath).toEqual([
+      [500, 200, 120],
+      [500, 200, 0]
+    ]);
+    expect(descent.timedPath.map(point => [point[2], point[3]])).toEqual([
+      [120, 30],
+      [0, 52]
+    ]);
   });
 
   it("keeps a zero-duration one-vertex takeoff as one exact-time point", () => {
