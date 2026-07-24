@@ -5,8 +5,10 @@ import {
   type CaseManifest,
   type CaseSummary
 } from "./caseSchema";
-import {loadJson} from "./loadJson";
+import {loadJson, rebaseDataUrl} from "./loadJson";
 import {loadText} from "./loadText";
+
+export {rebaseDataUrl} from "./loadJson";
 
 export type LoadedCaseDataset = CaseDataset &
   (
@@ -19,12 +21,6 @@ export interface CaseBundle {
   summary: CaseSummary;
   keplerConfig: Record<string, unknown>;
   datasets: LoadedCaseDataset[];
-}
-
-export function rebaseDataUrl(url: string, dataBase: string): string {
-  const base = dataBase.replace(/\/$/, "");
-  if (url === "/data") return base;
-  return url.startsWith("/data/") ? `${base}${url.slice("/data".length)}` : url;
 }
 
 async function loadDataset(
