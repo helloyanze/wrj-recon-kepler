@@ -4,8 +4,6 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {useDispatch} from "react-redux";
 import type {AppDispatch} from "../app/store";
 import type {ResolvedBasemap} from "../basemap/basemapConfig";
-import type {CaseSummary, UavSummary} from "../data/caseSchema";
-import type {CaseBundleV2} from "../features/cases/caseBundle";
 import {
   caseMapState
 } from "../features/mission/caseMapState";
@@ -42,54 +40,6 @@ export interface WorkspaceProps {
 
 const COORDINATE_NOTICE =
   "算法数据采用 LOCAL_CARTESIAN_M；当前地图位置为日月湾视觉锚定，不代表真实地理定位。";
-
-function toLegacySummary(bundle: CaseBundleV2): CaseSummary {
-  const uavIds = [...new Set(bundle.assignments.map(({uavId}) => uavId))];
-  const uavs = uavIds.map((uavId) => {
-    const sorties = bundle.sorties.filter(sortie => sortie.uavId === uavId);
-    const segments = sorties.flatMap(sortie => sortie.segments);
-    const stripIds = [...new Set(sorties.flatMap(sortie => sortie.stripIds))];
-    const altitude = (types?: ReadonlySet<string>) => Math.max(
-      0,
-      ...segments
-        .filter(segment => types === undefined || types.has(segment.segmentType))
-        .map(segment => segment.heightM)
-    );
-    return {
-      uavId: uavId as UavSummary["uavId"],
-      callsign: uavId,
-      stripRange: stripIds.length > 0
-        ? `${stripIds[0]} – ${stripIds.at(-1)}`
-        : "—",
-      distanceKm: sorties.reduce((sum, sortie) => sum + sortie.totalDistanceM, 0) / 1_000,
-      durationMin: sorties.reduce((sum, sortie) => sum + sortie.totalDurationSec, 0) / 60,
-      coverageAltitudeM: altitude(new Set(["COVERAGE_LINE", "TURN"])),
-      transitAltitudeM: altitude(new Set(["ENTRY", "RETURN"])),
-      maxAltitudeM: altitude(),
-      status: "VALID"
-    };
-  });
-
-  return {
-    schemaVersion: "1.0",
-    caseId: bundle.case.caseId,
-    name: bundle.case.displayName,
-    description: "算法输出任务规划",
-    status: bundle.validation.valid ? "FEASIBLE" : "WARNING",
-    demoMock: false,
-    location: "日月湾视觉锚定位置",
-    metrics: {
-      uavCount: bundle.metrics.uavCount,
-      stripCount: bundle.metrics.stripCount,
-      coverageRatio: bundle.metrics.coverageRatio,
-      missionMakespanSec: bundle.metrics.missionMakespanSec,
-      totalDistanceKm: bundle.metrics.totalDistanceM / 1_000,
-      totalFuelKg: bundle.metrics.totalFuelKg
-    },
-    uavs,
-    notice: COORDINATE_NOTICE
-  } as unknown as CaseSummary;
-}
 
 export function Workspace({
   basemap,
@@ -129,10 +79,6 @@ export function Workspace({
       ? []
       : selectSortieStates(bundle.sorties, clock.missionTimeSec),
     [bundle, clock.missionTimeSec]
-  );
-  const summary = useMemo(
-    () => bundle === null ? null : toLegacySummary(bundle),
-    [bundle]
   );
   useEffect(() => {
     if (bundle === null) {
@@ -272,7 +218,7 @@ export function Workspace({
           <button
             type="button"
             onClick={() => setDrawerContent({type: "overview"})}
-            disabled={summary === null}
+            disabled={bundle === null}
           >
             任务概览
           </button>
@@ -305,20 +251,12 @@ export function Workspace({
               setSelectedSortieId(null);
               setDrawerContent({
                 type: "uav",
-                uavId: uavId as UavSummary["uavId"]
+                uavId
               });
             }}
             onSelectSortie={assignmentId => {
               setSelectedSortieId(assignmentId);
-              const sortie = bundle?.sorties.find(
-                item => item.assignmentId === assignmentId
-              );
-              if (sortie !== undefined) {
-                setDrawerContent({
-                  type: "uav",
-                  uavId: sortie.uavId as UavSummary["uavId"]
-                });
-              }
+              setDrawerContent({type: "sortie", assignmentId});
             }}
           />
           {!ready ? (
@@ -340,13 +278,7 @@ export function Workspace({
             preferences={preferences}
             onSelectSortie={assignmentId => {
               setSelectedSortieId(assignmentId);
-              const sortie = liveSorties.find(item => item.assignmentId === assignmentId);
-              if (sortie !== undefined) {
-                setDrawerContent({
-                  type: "uav",
-                  uavId: sortie.uavId as UavSummary["uavId"]
-                });
-              }
+              setDrawerContent({type: "sortie", assignmentId});
             }}
           />
           <MissionTimeline
@@ -376,9 +308,11 @@ export function Workspace({
           <div className="map-tag">
             <span>{COORDINATE_NOTICE}</span>
           </div>
-          {summary !== null ? (
+          {bundle !== null ? (
             <DetailDrawer
-              summary={summary}
+              bundle={bundle}
+              liveSorties={liveSorties}
+              missionTime={clock.missionTimeSec}
               content={drawerContent}
               attribution={attribution}
               onClose={() => setDrawerContent(null)}
