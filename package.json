@@ -15,12 +15,16 @@
     "data:normalize-real": "node scripts/normalize-osm-features.mjs",
     "data:generate-simulated": "node scripts/generate-simulated-mission.mjs",
     "data:validate": "node scripts/validate-case-data.mjs",
-    "data:prepare": "npm run data:fetch-real && npm run data:generate-simulated && npm run data:validate"
+    "data:prepare": "npm run data:fetch-real && npm run data:generate-simulated && npm run data:validate",
+    "data:prepare-algorithm": "vite-node scripts/prepare-algorithm-cases.ts",
+    "data:check-algorithm": "vite-node scripts/prepare-algorithm-cases.ts --check"
   },
   "engines": {
     "node": ">=20 <21"
   },
   "dependencies": {
+    "@deck.gl/core": "8.9.36",
+    "@deck.gl/geo-layers": "8.9.36",
     "@deck.gl/layers": "8.9.36",
     "@kepler.gl/actions": "3.2.6",
     "@kepler.gl/components": "3.2.6",
@@ -28,6 +32,8 @@
     "@kepler.gl/reducers": "3.2.6",
     "@kepler.gl/schemas": "3.2.6",
     "@kepler.gl/types": "3.2.6",
+    "fflate": "0.8.2",
+    "idb": "8.0.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-palm": "3.3.11",

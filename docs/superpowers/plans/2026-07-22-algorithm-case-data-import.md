@@ -4,9 +4,9 @@
 
 **Goal:** Build one validated conversion core that turns the repository's algorithm outputs and future single-case ZIP uploads into persistent `CaseBundleV2` packages.
 
-**Architecture:** TypeScript/Zod conversion modules under `src/features/cases` are shared by a `tsx` Node catalog generator and a browser Web Worker. Built-in normalized cases are emitted under `public/data/integration-cases`; uploaded cases are parsed off the main thread and persisted in IndexedDB through a small repository interface.
+**Architecture:** TypeScript/Zod conversion modules under `src/features/cases` are shared by a `vite-node` catalog generator and a browser Web Worker. Built-in normalized cases are emitted under `public/data/integration-cases`; uploaded cases are parsed off the main thread and persisted in IndexedDB through a small repository interface.
 
-**Tech Stack:** TypeScript 5.6, Zod 3.23, fflate, idb, fake-indexeddb, Node 20.19, Vitest 2.1, Vite 5.4
+**Tech Stack:** TypeScript 5.6, Zod 3.23, fflate, idb, Node 20.19, Vitest 2.1, Vite 5.4 (`vite-node`)
 
 ---
 
@@ -53,8 +53,7 @@ Expected: at least one command prints `PONG`. Record the first reachable registr
 Run:
 
 ```powershell
-npm install --save-exact @deck.gl/core@8.9.36 @deck.gl/geo-layers@8.9.36 fflate@0.8.2 idb@8.0.3 --registry=$wrjRegistry
-npm install --save-dev --save-exact fake-indexeddb@6.0.1 tsx@4.20.3 --registry=$wrjRegistry
+npm install --save-exact @deck.gl/core@8.9.36 @deck.gl/geo-layers@8.9.36 fflate@0.8.2 idb@8.0.3 --legacy-peer-deps --registry=$wrjRegistry
 ```
 
 Expected: exit code 0; the user's global/project registry remains unchanged.
@@ -66,8 +65,8 @@ Add these entries to `package.json`:
 ```json
 {
   "scripts": {
-    "data:prepare-algorithm": "tsx scripts/prepare-algorithm-cases.ts",
-    "data:check-algorithm": "tsx scripts/prepare-algorithm-cases.ts --check"
+    "data:prepare-algorithm": "vite-node scripts/prepare-algorithm-cases.ts",
+    "data:check-algorithm": "vite-node scripts/prepare-algorithm-cases.ts --check"
   }
 }
 ```
@@ -77,10 +76,10 @@ Add these entries to `package.json`:
 Run:
 
 ```powershell
-npm ls @deck.gl/core @deck.gl/geo-layers fflate idb fake-indexeddb tsx
+npm ls @deck.gl/core @deck.gl/geo-layers fflate idb
 ```
 
-Expected: the five requested packages resolve with no `invalid` or `extraneous` marker.
+Expected: the four requested packages resolve with no `invalid` or `extraneous` marker. Verify the existing Vite runner with `npx --no-install vite-node --version`.
 
 - [ ] **Step 5: Commit dependency setup**
 
@@ -630,7 +629,7 @@ git commit -m "feat: parse algorithm zip packages"
 
 - [ ] **Step 1: Write failing repository tests**
 
-Load `fake-indexeddb/auto` and test:
+Inject a fake CaseRepository database adapter and test:
 
 ```ts
 await repository.save(bundle);
