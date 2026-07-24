@@ -4,7 +4,7 @@ import {StrictMode} from "react";
 import {act, cleanup, fireEvent, render, screen, waitFor} from "@testing-library/react";
 import {Provider} from "react-redux";
 import {afterEach, describe, expect, it, vi} from "vitest";
-import {updateMap} from "@kepler.gl/actions";
+import {mapStyleChange, updateMap, wrapTo} from "@kepler.gl/actions";
 import {createAppStore} from "../src/app/store";
 import type {ResolvedBasemap} from "../src/basemap/basemapConfig";
 import {Workspace} from "../src/components/Workspace";
@@ -27,6 +27,7 @@ import type {
   ImportWorkerClient
 } from "../src/hooks/useCaseImport";
 import type {CaseLibraryDependencies} from "../src/hooks/useCaseLibrary";
+import {WRJ_MAP_ID} from "../src/kepler/constants";
 
 vi.mock("../src/components/WrjKeplerMap", () => ({
   WrjKeplerMap: () => <div data-testid="default-kepler-map">Kepler map</div>
@@ -309,10 +310,13 @@ describe("dynamic algorithm Workspace", () => {
     expect(screen.getByRole("option", {name: "R01-BASELINE-01"}))
       .toBeInTheDocument();
     expect(deps.loadBuiltInCase).toHaveBeenCalledTimes(2);
-    expect(dispatch).toHaveBeenCalledTimes(1);
-    expect((
-      dispatch.mock.calls[0][0] as unknown as {payload: {type: string}}
-    ).payload.type).toBe(updateMap({}).type);
+    expect(dispatch).toHaveBeenCalledTimes(2);
+    expect(dispatch.mock.calls.map(([action]) => (
+      action as unknown as {payload: {type: string}}
+    ).payload.type)).toEqual([
+      updateMap({}).type,
+      mapStyleChange("satellite").type
+    ]);
   });
 
   it("resets the camera from the current algorithm bundle and ignores R in an input", async () => {
@@ -344,7 +348,7 @@ describe("dynamic algorithm Workspace", () => {
     expect(deps.loadBuiltInCase).toHaveBeenCalledTimes(1);
   });
 
-  it("switches basemap style only after a bundle is ready", async () => {
+  it("applies the public basemap on startup and switches style when ready", async () => {
     const pending = deferred<CaseBundleV2>();
     const {store} = renderWorkspace(dependencies({
       loadBuiltInCase: vi.fn(() => pending.promise)
@@ -358,8 +362,18 @@ describe("dynamic algorithm Workspace", () => {
       await pending.promise;
     });
     expect(await screen.findByText("方案可行")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(dispatch).toHaveBeenCalledWith(
+        wrapTo(WRJ_MAP_ID, mapStyleChange("satellite"))
+      );
+    });
+
+    dispatch.mockClear();
     fireEvent.click(light);
-    expect(dispatch).toHaveBeenCalledTimes(1);
+    expect(dispatch).toHaveBeenCalledOnce();
+    expect(dispatch).toHaveBeenCalledWith(
+      wrapTo(WRJ_MAP_ID, mapStyleChange("light"))
+    );
   });
 
   it("imports, refreshes and selects a saved local case", async () => {

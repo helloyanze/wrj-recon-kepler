@@ -120,8 +120,12 @@ export function Workspace({
 
   const changeStyle = useCallback((style: "satellite" | "light") => {
     setStyleType(style);
-    dispatch(wrapTo(WRJ_MAP_ID, mapStyleChange(style)));
-  }, [dispatch]);
+  }, []);
+
+  useEffect(() => {
+    if (caseLibrary.status !== "ready" || bundle === null) return;
+    dispatch(wrapTo(WRJ_MAP_ID, mapStyleChange(styleType)));
+  }, [basemap, bundle, caseLibrary.status, dispatch, styleType]);
 
   const updatePreferences = useCallback((
     updater: (current: MissionLayerPreferencesV2) => MissionLayerPreferencesV2
