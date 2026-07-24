@@ -474,6 +474,49 @@ describe("convertMissionPlan", () => {
     );
   });
 
+  it("preserves and warns about a small overlap under the explicit import policy", () => {
+    const plan = makePlan();
+    addSecondSortie(plan, {launchTimeSec: 51.5});
+    plan.missionMakespanSec = 103.5;
+
+    const bundle = convertMissionPlan({
+      missionPlan: plan,
+      ...provenance,
+      uavScheduleOverlapPolicy: {
+        mode: "WARN_WITHIN_TOLERANCE",
+        maxOverlapSec: 1
+      }
+    });
+
+    expect(bundle.sorties.map(sortie => sortie.plannedLaunchTimeSec)).toEqual([
+      0,
+      51.5
+    ]);
+    expect(bundle.sorties[0].segments.at(-1)?.endTimeSec).toBe(52);
+    expect(bundle.validation.warnings).toEqual([
+      expect.stringMatching(
+        /UAV_SCHEDULE_OVERLAP:.*UAV-04.*ASG-0001-001.*ASG-0001-002.*0\.5.*original.*preserved/i
+      )
+    ]);
+  });
+
+  it("still rejects an overlap larger than the explicit import warning tolerance", () => {
+    const plan = makePlan();
+    addSecondSortie(plan, {launchTimeSec: 50.9});
+    plan.missionMakespanSec = 102.9;
+
+    expect(() =>
+      convertMissionPlan({
+        missionPlan: plan,
+        ...provenance,
+        uavScheduleOverlapPolicy: {
+          mode: "WARN_WITHIN_TOLERANCE",
+          maxOverlapSec: 1
+        }
+      })
+    ).toThrow(/UAV-04.*ASG-0001-001.*ASG-0001-002.*overlap/i);
+  });
+
   it("allows sorties for one physical UAV to meet at an equal boundary", () => {
     const plan = makePlan();
     addSecondSortie(plan, {launchTimeSec: 52});

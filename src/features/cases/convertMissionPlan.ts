@@ -25,7 +25,18 @@ export interface ConvertMissionPlanInput {
   sourceRun: string;
   importedAt: string;
   sha256: string;
+  uavScheduleOverlapPolicy?: UavScheduleOverlapPolicy;
 }
+
+export interface UavScheduleOverlapPolicy {
+  mode: "WARN_WITHIN_TOLERANCE";
+  maxOverlapSec: number;
+}
+
+export const ALGORITHM_IMPORT_UAV_SCHEDULE_OVERLAP_POLICY = {
+  mode: "WARN_WITHIN_TOLERANCE",
+  maxOverlapSec: 1
+} as const satisfies UavScheduleOverlapPolicy;
 
 type MissionAssignment =
   MissionPlan["assignmentPlan"]["assignments"][number];
@@ -100,7 +111,12 @@ export function convertMissionPlan(
     plan.missionMakespanSec,
     fuelWarnings
   );
-  validatePhysicalUavSchedule(sorties);
+  const scheduleWarnings: string[] = [];
+  validatePhysicalUavSchedule(
+    sorties,
+    input.uavScheduleOverlapPolicy,
+    scheduleWarnings
+  );
 
   const sortedStrips = [...snapshot.strips].sort(compareStrips);
   const strips = sortedStrips.map(strip => {
@@ -189,6 +205,7 @@ export function convertMissionPlan(
       warnings: [
         ...stringValues(plan.validationReport.warnings),
         ...stringValues(snapshot.generationWarnings),
+        ...scheduleWarnings,
         ...fuelWarnings
       ],
       failureCodes: uniqueStrings([
@@ -953,8 +970,24 @@ function buildSorties(
 }
 
 function validatePhysicalUavSchedule(
-  sorties: readonly NormalizedSortie[]
+  sorties: readonly NormalizedSortie[],
+  overlapPolicy: UavScheduleOverlapPolicy | undefined,
+  warnings: string[]
 ): void {
+  if (
+    overlapPolicy !== undefined &&
+    (
+      overlapPolicy.mode !== "WARN_WITHIN_TOLERANCE" ||
+      !Number.isFinite(overlapPolicy.maxOverlapSec) ||
+      overlapPolicy.maxOverlapSec < 0
+    )
+  ) {
+    throw new Error(
+      "uavScheduleOverlapPolicy.maxOverlapSec must be a finite " +
+      "non-negative number"
+    );
+  }
+
   const sortiesByUavId = new Map<string, NormalizedSortie[]>();
   for (const sortie of sorties) {
     const uavSorties = sortiesByUavId.get(sortie.uavId) ?? [];
@@ -974,10 +1007,23 @@ function validatePhysicalUavSchedule(
       const previousEnd =
         previous.segments.at(-1)?.endTimeSec ??
         previous.plannedLaunchTimeSec;
-      if (
-        next.plannedLaunchTimeSec <
-        previousEnd - OVERLAP_TOLERANCE_SEC
-      ) {
+      const overlapSec = previousEnd - next.plannedLaunchTimeSec;
+      if (overlapSec > OVERLAP_TOLERANCE_SEC) {
+        if (
+          overlapPolicy !== undefined &&
+          overlapSec <=
+            overlapPolicy.maxOverlapSec + OVERLAP_TOLERANCE_SEC
+        ) {
+          warnings.push(
+            `UAV_SCHEDULE_OVERLAP: UAV ${uavId} assignments ` +
+            `${previous.assignmentId} and ${next.assignmentId} overlap by ` +
+            `${overlapSec} seconds (${previous.assignmentId} ends at ` +
+            `${previousEnd}; ${next.assignmentId} starts at ` +
+            `${next.plannedLaunchTimeSec}); original plannedLaunchTimeSec ` +
+            "and trajectory timing preserved"
+          );
+          continue;
+        }
         throw new Error(
           `UAV ${uavId} assignments ${previous.assignmentId} and ` +
           `${next.assignmentId} overlap: ${previous.assignmentId} ends at ` +

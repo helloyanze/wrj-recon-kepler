@@ -29,7 +29,10 @@ import {
 import {
   type CaseBundleV2
 } from "../src/features/cases/caseBundle";
-import {convertMissionPlan} from "../src/features/cases/convertMissionPlan";
+import {
+  ALGORITHM_IMPORT_UAV_SCHEDULE_OVERLAP_POLICY,
+  convertMissionPlan
+} from "../src/features/cases/convertMissionPlan";
 import {
   parseMissionPlan
 } from "../src/features/cases/missionPlanSchema";
@@ -124,7 +127,9 @@ export async function discoverValidRuns(
         sourceName: sourcePath,
         sourceRun: runId,
         importedAt,
-        sha256
+        sha256,
+        uavScheduleOverlapPolicy:
+          ALGORITHM_IMPORT_UAV_SCHEDULE_OVERLAP_POLICY
       });
       const candidate: SelectedRun = {
         caseId: missionPlan.caseId,
@@ -143,14 +148,20 @@ export async function discoverValidRuns(
     }
   }
 
-  return {
-    selectedRuns: new Map(
-      [...selectedRuns.entries()].sort(([left], [right]) =>
-        compareStrings(left, right)
-      )
-    ),
-    diagnostics
-  };
+  const sortedSelectedRuns = new Map(
+    [...selectedRuns.entries()].sort(([left], [right]) =>
+      compareStrings(left, right)
+    )
+  );
+  for (const selected of sortedSelectedRuns.values()) {
+    for (const warning of selected.bundle.validation.warnings) {
+      if (warning.startsWith("UAV_SCHEDULE_OVERLAP:")) {
+        diagnostics.push(`[warning] ${selected.sourcePath}: ${warning}`);
+      }
+    }
+  }
+
+  return {selectedRuns: sortedSelectedRuns, diagnostics};
 }
 
 export async function prepareAlgorithmCases(
@@ -181,6 +192,7 @@ export async function prepareAlgorithmCases(
     discovery.selectedRuns,
     defaultCaseId
   );
+  validateOutputFilePlan(outputRoot, expectedFiles);
   const catalog = caseCatalogSchema.parse(
     JSON.parse(expectedFiles.get("catalog.json") ?? "")
   );
@@ -240,6 +252,9 @@ export function parseCliArgs(args: readonly string[]): CliOptions {
 export async function main(args = process.argv.slice(2)): Promise<void> {
   const options = parseCliArgs(args);
   const result = await prepareAlgorithmCases(options);
+  for (const diagnostic of result.diagnostics) {
+    console.error(diagnostic);
+  }
   const action = options.check ? "Checked" : "Prepared";
   console.log(
     `${action} ${result.catalog.cases.length} algorithm cases ` +
@@ -395,17 +410,17 @@ function assertSafeCaseId(caseId: string): void {
     );
   }
 
-  const encodedCaseId = encodeCaseDirectory(caseId);
-  const windowsStem = encodedCaseId.split(".", 1)[0].toLowerCase();
+  const staticCaseDirectory = staticDirectorySegment(caseId);
+  const windowsStem = staticCaseDirectory.split(".", 1)[0].toLowerCase();
   if (
     /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/u.test(windowsStem)
   ) {
     throw new Error(
       `caseId ${JSON.stringify(caseId)} maps to Windows reserved directory ` +
-      encodedCaseId
+      staticCaseDirectory
     );
   }
-  if (/[<>:"/\\|?*]/u.test(encodedCaseId)) {
+  if (/[<>:"/\\|?*]/u.test(staticCaseDirectory)) {
     throw new Error(
       `caseId ${JSON.stringify(caseId)} does not map to a Windows-safe ` +
       "directory name"
@@ -422,6 +437,10 @@ function encodeCaseDirectory(caseId: string): string {
       errorMessage(error)
     );
   }
+}
+
+function staticDirectorySegment(caseId: string): string {
+  return decodeURI(encodeCaseDirectory(caseId));
 }
 
 function adaptAlgorithmMissionPlan(value: unknown): unknown {
@@ -492,12 +511,12 @@ function buildExpectedFiles(
   const sortedRuns = [...selectedRuns.values()].sort((left, right) =>
     compareStrings(left.caseId, right.caseId)
   );
-  const encodedDirectories = new Map<string, string>();
-  const encodedByCaseId = new Map<string, string>();
+  const diskDirectories = new Map<string, string>();
+  const staticDirectoryByCaseId = new Map<string, string>();
   for (const selected of sortedRuns) {
-    const encodedCaseId = encodeCaseDirectory(selected.caseId);
-    const collisionKey = encodedCaseId.normalize("NFC").toLowerCase();
-    const existingCaseId = encodedDirectories.get(collisionKey);
+    const staticDirectory = staticDirectorySegment(selected.caseId);
+    const collisionKey = staticDirectory.normalize("NFC").toLowerCase();
+    const existingCaseId = diskDirectories.get(collisionKey);
     if (
       existingCaseId !== undefined &&
       existingCaseId !== selected.caseId
@@ -507,18 +526,13 @@ function buildExpectedFiles(
         `${selected.caseId} under Windows filesystem semantics`
       );
     }
-    encodedDirectories.set(collisionKey, selected.caseId);
-    encodedByCaseId.set(selected.caseId, encodedCaseId);
+    diskDirectories.set(collisionKey, selected.caseId);
+    staticDirectoryByCaseId.set(selected.caseId, staticDirectory);
   }
 
   const entries: CaseCatalogEntry[] = sortedRuns
     .map(selected => {
-      const encodedCaseId = encodedByCaseId.get(selected.caseId);
-      if (encodedCaseId === undefined) {
-        throw new Error(
-          `Internal error: encoded case directory missing for ${selected.caseId}`
-        );
-      }
+      const encodedCaseId = encodeCaseDirectory(selected.caseId);
       const bundleUrl =
         `/data/integration-cases/${encodedCaseId}/bundle.json`;
       return {
@@ -551,7 +565,7 @@ function buildExpectedFiles(
       throw new Error(`Internal error: selected case ${entry.caseId} missing`);
     }
     files.set(
-      `${encodedByCaseId.get(entry.caseId) ?? encodeCaseDirectory(entry.caseId)}/bundle.json`,
+      `${staticDirectoryByCaseId.get(entry.caseId) ?? staticDirectorySegment(entry.caseId)}/bundle.json`,
       serializeJson(selected.bundle)
     );
   }
@@ -560,6 +574,16 @@ function buildExpectedFiles(
 
 function serializeJson(value: unknown): string {
   return `${JSON.stringify(value)}\n`;
+}
+
+function validateOutputFilePlan(
+  outputRoot: string,
+  expectedFiles: ReadonlyMap<string, string>
+): void {
+  for (const relativePath of expectedFiles.keys()) {
+    const parts = validateRelativeOutputPath(relativePath);
+    assertContained(outputRoot, join(outputRoot, ...parts));
+  }
 }
 
 async function checkOutputTree(
@@ -774,6 +798,17 @@ function validateRelativeOutputPath(relativePath: string): string[] {
   const parts = relativePath.split("/");
   if (parts.some(part => part.length === 0 || part === "." || part === "..")) {
     throw new Error(`Unsafe output path: ${relativePath}`);
+  }
+  for (const part of parts) {
+    if (
+      part.length > 255 ||
+      Buffer.byteLength(part, "utf8") > 255
+    ) {
+      throw new Error(
+        `Output path segment exceeds the 255-unit/byte limit in ` +
+        `${relativePath}: ${JSON.stringify(part)}`
+      );
+    }
   }
   return parts;
 }

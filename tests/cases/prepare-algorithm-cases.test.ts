@@ -394,7 +394,7 @@ describe("prepareAlgorithmCases", () => {
     expect(caseCatalogSchema.parse(result.catalog)).toEqual(result.catalog);
 
     const bundle = await readJson(
-      join(outputRoot, "CASE%20%232", "bundle.json")
+      join(outputRoot, "CASE %232", "bundle.json")
     ) as {
       provenance: {
         sourceName: string;
@@ -413,6 +413,51 @@ describe("prepareAlgorithmCases", () => {
     const catalogText = await readFile(join(outputRoot, "catalog.json"), "utf8");
     expect(catalogText.endsWith("\n")).toBe(true);
     expect(catalogText.slice(0, -1)).not.toContain("\n");
+  });
+
+  it("resolves encoded bundle URLs to Vite static disk directories", async () => {
+    const {inputRoot, outputRoot} = await makeWorkspace();
+    await writePlan(
+      inputRoot,
+      "space",
+      "20260721T192032",
+      makePlan("CASE SPACE")
+    );
+    await writePlan(
+      inputRoot,
+      "unicode",
+      "20260721T192033",
+      makePlan("中文#?100%")
+    );
+
+    const result = await prepareAlgorithmCases({
+      inputRoot,
+      outputRoot,
+      defaultCaseId: "CASE SPACE"
+    });
+    expect(result.catalog.cases.map(entry => entry.caseId)).toEqual([
+      "CASE SPACE",
+      "中文#?100%"
+    ]);
+
+    for (const entry of result.catalog.cases) {
+      const pathname = new URL(
+        entry.bundleUrl,
+        "http://vite-static.test"
+      ).pathname;
+      const decodedPathname = decodeURI(pathname);
+      const staticPrefix = "/data/integration-cases/";
+      expect(decodedPathname).toBe(
+        `${staticPrefix}${decodeURI(encodeURIComponent(entry.caseId))}/bundle.json`
+      );
+      expect(decodedPathname.startsWith(staticPrefix)).toBe(true);
+      const relativeStaticPath = decodedPathname.slice(staticPrefix.length);
+      const bundle = await readJson(
+        join(outputRoot, ...relativeStaticPath.split("/"))
+      ) as {case: {caseId: string}};
+
+      expect(bundle.case.caseId).toBe(entry.caseId);
+    }
   });
 
   it("uses R10-LONG-TRANSIT-01 by default and requires an existing default", async () => {
@@ -740,6 +785,36 @@ describe("prepareAlgorithmCases", () => {
     ).rejects.toThrow(/output directory collision.*CASE-A.*case-a/i);
     await expect(lstat(outputRoot)).rejects.toThrow();
   });
+
+  it("prevalidates every output segment length before writing any file", async () => {
+    const {inputRoot, outputRoot} = await makeWorkspace();
+    await writePlan(
+      inputRoot,
+      "safe",
+      "20260721T192032",
+      makePlan("SAFE-CASE")
+    );
+    await writePlan(
+      inputRoot,
+      "long",
+      "20260721T192032",
+      makePlan("A".repeat(256))
+    );
+    await mkdir(outputRoot, {recursive: true});
+    await writeFile(join(outputRoot, "sentinel.txt"), "unchanged", "utf8");
+
+    await expect(
+      prepareAlgorithmCases({
+        inputRoot,
+        outputRoot,
+        defaultCaseId: "SAFE-CASE"
+      })
+    ).rejects.toThrow(/output path segment.*255|segment.*too long/i);
+    expect(await readFile(join(outputRoot, "sentinel.txt"), "utf8")).toBe(
+      "unchanged"
+    );
+    await expect(lstat(join(outputRoot, "catalog.json"))).rejects.toThrow();
+  });
 });
 
 describe("parseCliArgs", () => {
@@ -779,12 +854,28 @@ describe("parseCliArgs", () => {
       "20260721T192032",
       makePlan("R10-LONG-TRANSIT-01")
     );
+    const infeasible = makePlan("SKIPPED-INFEASIBLE");
+    infeasible.feasible = false;
+    await writePlan(
+      inputRoot,
+      "infeasible",
+      "20260721T192032",
+      infeasible
+    );
+    const malformedPath = join(
+      inputRoot,
+      "malformed",
+      "20260721T192032",
+      "mission_plan.json"
+    );
+    await mkdir(dirname(malformedPath), {recursive: true});
+    await writeFile(malformedPath, "{broken", "utf8");
     const npmCliPath = process.env.npm_execpath;
     if (npmCliPath === undefined) {
       throw new Error("npm_execpath is required for the package CLI test");
     }
 
-    const {stdout} = await execFileAsync(
+    const {stdout, stderr} = await execFileAsync(
       process.execPath,
       [
         npmCliPath,
@@ -804,8 +895,66 @@ describe("parseCliArgs", () => {
     );
 
     expect(stdout).toMatch(/Prepared 1 algorithm cases/);
+    expect(stderr.trim().split(/\r?\n/u)).toEqual([
+      expect.stringMatching(/^\[skip\].*infeasible.*feasible/i),
+      expect.stringMatching(/^\[skip\].*malformed.*invalid JSON/i)
+    ]);
     expect(await readJson(join(outputRoot, "catalog.json"))).toMatchObject({
       defaultCaseId: "R10-LONG-TRANSIT-01"
     });
   }, 30_000);
+});
+
+describe("generated integration catalog", () => {
+  it("keeps the real feasible R06 run with original overlap timing and a warning", async () => {
+    const generatedRoot = join(
+      process.cwd(),
+      "public",
+      "data",
+      "integration-cases"
+    );
+    const catalog = await readJson(
+      join(generatedRoot, "catalog.json")
+    ) as CaseCatalogV1;
+    const r06 = catalog.cases.find(
+      entry => entry.caseId === "R06-CIRCLE-01"
+    );
+
+    expect(catalog.cases).toHaveLength(11);
+    expect(r06).toMatchObject({
+      runId: "20260721T184200",
+      bundleUrl: "/data/integration-cases/R06-CIRCLE-01/bundle.json"
+    });
+
+    const bundle = await readJson(
+      join(generatedRoot, "R06-CIRCLE-01", "bundle.json")
+    ) as {
+      sorties: Array<{
+        assignmentId: string;
+        plannedLaunchTimeSec: number;
+        segments: Array<{endTimeSec: number}>;
+      }>;
+      validation: {warnings: string[]};
+    };
+    const previous = bundle.sorties.find(
+      sortie => sortie.assignmentId === "ASG-0003-002"
+    );
+    const next = bundle.sorties.find(
+      sortie => sortie.assignmentId === "ASG-0003-003"
+    );
+
+    expect(previous?.segments.at(-1)?.endTimeSec).toBeCloseTo(
+      1986.964730811549,
+      9
+    );
+    expect(next?.plannedLaunchTimeSec).toBeCloseTo(
+      1986.414871459004,
+      9
+    );
+    expect(bundle.validation.warnings).toContainEqual(
+      expect.stringMatching(
+        /UAV_SCHEDULE_OVERLAP:.*ASG-0003-002.*ASG-0003-003.*original.*preserved/i
+      )
+    );
+  });
 });
