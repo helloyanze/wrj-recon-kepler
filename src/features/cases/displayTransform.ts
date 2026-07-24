@@ -32,8 +32,8 @@ export function createDisplayTransform(
   return {
     anchorLongitude: DISPLAY_ANCHOR.longitude,
     anchorLatitude: DISPLAY_ANCHOR.latitude,
-    sourceCenterXM: (minX + maxX) / 2,
-    sourceCenterYM: (minY + maxY) / 2,
+    sourceCenterXM: minX / 2 + maxX / 2,
+    sourceCenterYM: minY / 2 + maxY / 2,
     xAxis: "EAST",
     yAxis: "NORTH"
   };
@@ -51,22 +51,29 @@ export function localToMapPoint(
   const latitudeCosine = Math.cos(anchorLatitude * RADIANS_PER_DEGREE);
   const dxM = xM - sourceCenterXM;
   const dyM = yM - sourceCenterYM;
+  validateFinite(dxM, "derived local delta X");
+  validateFinite(dyM, "derived local delta Y");
+  const longitude =
+    anchorLongitude + dxM / (EARTH_RADIUS_M * latitudeCosine) / RADIANS_PER_DEGREE;
+  const latitude = anchorLatitude + dyM / EARTH_RADIUS_M / RADIANS_PER_DEGREE;
+  validateFinite(longitude, "derived display longitude");
+  validateFinite(latitude, "derived display latitude");
 
-  return [
-    anchorLongitude + dxM / (EARTH_RADIUS_M * latitudeCosine) / RADIANS_PER_DEGREE,
-    anchorLatitude + dyM / EARTH_RADIUS_M / RADIANS_PER_DEGREE,
-    zM
-  ];
+  return [longitude, latitude, zM];
 }
 
 function validateLocalPoint(point: LocalPoint, label: string): void {
   const coordinateNames = ["X", "Y", "Z"] as const;
 
   coordinateNames.forEach((coordinateName, index) => {
-    if (!Number.isFinite(point[index])) {
-      throw new Error(`${label} coordinate ${coordinateName} must be finite`);
-    }
+    validateFinite(point[index], `${label} coordinate ${coordinateName}`);
   });
+}
+
+function validateFinite(value: number, label: string): void {
+  if (!Number.isFinite(value)) {
+    throw new Error(`${label} must be finite`);
+  }
 }
 
 function validateTransform(transform: DisplayTransform): void {
@@ -78,9 +85,7 @@ function validateTransform(transform: DisplayTransform): void {
   ];
 
   finiteFields.forEach(([field, value]) => {
-    if (!Number.isFinite(value)) {
-      throw new Error(`display transform ${field} must be finite`);
-    }
+    validateFinite(value, `display transform ${field}`);
   });
 
   if (transform.anchorLatitude < -90 || transform.anchorLatitude > 90) {

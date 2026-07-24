@@ -25,6 +25,17 @@ describe("algorithm display transform", () => {
     });
   });
 
+  it("calculates finite source centres for same-sign extreme coordinate bounds", () => {
+    const transform = createDisplayTransform([
+      [Number.MAX_VALUE, 0, 0],
+      [Number.MAX_VALUE, 2, 0]
+    ]);
+
+    expect(transform.sourceCenterXM).toBe(Number.MAX_VALUE);
+    expect(transform.sourceCenterYM).toBe(1);
+    expect(Number.isFinite(transform.sourceCenterXM)).toBe(true);
+  });
+
   it("maps the source centre exactly to the display anchor", () => {
     const transform = createDisplayTransform([
       [0, 0, 0],
@@ -132,6 +143,21 @@ describe("algorithm display transform", () => {
     ]);
 
     expect(() => localToMapPoint([50_000, 40_000, 0], {...transform, ...patch})).toThrow();
+  });
+
+  it("rejects a finite local delta that overflows a derived display coordinate", () => {
+    const nearPoleTransform: DisplayTransform = {
+      anchorLongitude: 110.235,
+      anchorLatitude: 89.999999999,
+      sourceCenterXM: 0,
+      sourceCenterYM: 0,
+      xAxis: "EAST",
+      yAxis: "NORTH"
+    };
+
+    expect(() => localToMapPoint([Number.MAX_VALUE, 0, 0], nearPoleTransform)).toThrow(
+      /derived.*longitude|longitude.*finite/i
+    );
   });
 
   it("does not mutate point inputs or the transform", () => {
