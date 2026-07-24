@@ -15,9 +15,17 @@ import {
 } from "../src/features/cases/caseBundle";
 import type {CaseRepository} from "../src/features/cases/caseRepository";
 import type {
+  ImportWorkerRequest,
+  ImportWorkerResponse
+} from "../src/features/cases/importPackage";
+import type {
   CaseCatalogEntry,
   CaseCatalogV1
 } from "../src/features/cases/catalogSchema";
+import type {
+  CaseImportDependencies,
+  ImportWorkerClient
+} from "../src/hooks/useCaseImport";
 import type {CaseLibraryDependencies} from "../src/hooks/useCaseLibrary";
 
 vi.mock("../src/components/WrjKeplerMap", () => ({
@@ -123,7 +131,8 @@ function MapStub(props: WrjKeplerMapProps) {
 
 function renderWorkspace(
   caseLibraryDependencies = dependencies(),
-  strict = false
+  strict = false,
+  caseImportDependencies?: CaseImportDependencies
 ) {
   const store = createAppStore(false);
   const workspace = (
@@ -133,12 +142,43 @@ function renderWorkspace(
         debugMode={false}
         dataBase="/data"
         caseLibraryDependencies={caseLibraryDependencies}
+        caseImportDependencies={caseImportDependencies}
         MapView={MapStub}
       />
     </Provider>
   );
   render(strict ? <StrictMode>{workspace}</StrictMode> : workspace);
   return {store, dependencies: caseLibraryDependencies};
+}
+
+class WorkspaceImportWorker implements ImportWorkerClient {
+  onmessage: ((event: MessageEvent<ImportWorkerResponse>) => void) | null = null;
+  onerror: ((event: ErrorEvent) => void) | null = null;
+  postMessage = vi.fn();
+  terminate = vi.fn();
+
+  respond(response: ImportWorkerResponse): void {
+    this.onmessage?.({data: response} as MessageEvent<ImportWorkerResponse>);
+  }
+}
+
+function importFile(): File {
+  const file = new File(["zip"], "local-case.zip", {
+    type: "application/zip"
+  });
+  Object.defineProperty(file, "arrayBuffer", {
+    value: vi.fn(async () => new Uint8Array([1, 2, 3]).buffer)
+  });
+  return file;
+}
+
+function postedParse(worker: WorkspaceImportWorker): Extract<
+ImportWorkerRequest, {type: "parse"}> {
+  const request = worker.postMessage.mock.calls
+    .map(([message]) => message as ImportWorkerRequest)
+    .find(message => message.type === "parse");
+  if (request?.type !== "parse") throw new Error("missing parse request");
+  return request;
 }
 
 afterEach(() => {
@@ -256,5 +296,156 @@ describe("dynamic algorithm Workspace", () => {
     expect(await screen.findByText("方案可行")).toBeInTheDocument();
     fireEvent.click(light);
     expect(dispatch).toHaveBeenCalledTimes(1);
+  });
+
+  it("imports, refreshes and selects a saved local case", async () => {
+    const worker = new WorkspaceImportWorker();
+    const localBundle: CaseBundleV2 = {
+      ...structuredClone(R10_BUNDLE),
+      case: {
+        caseId: "LOCAL-R10",
+        planId: "LOCAL-PLAN",
+        displayName: "本地 R10"
+      }
+    };
+    let stored: CaseBundleV2 | undefined;
+    const repository: CaseRepository = {
+      persistent: true,
+      list: vi.fn(async () => stored === undefined ? [] : [{
+        caseId: stored.case.caseId,
+        planId: stored.case.planId,
+        displayName: stored.case.displayName,
+        importedAt: stored.provenance.importedAt,
+        sourceName: stored.provenance.sourceName,
+        sourceRun: stored.provenance.sourceRun,
+        metrics: stored.metrics,
+        warnings: stored.validation.warnings
+      }]),
+      get: vi.fn(async () => stored),
+      save: vi.fn(async next => {
+        stored = next;
+      }),
+      remove: vi.fn(async () => {
+        stored = undefined;
+      })
+    };
+    const libraryDependencies = dependencies({
+      openCaseRepository: vi.fn(async () => repository)
+    });
+    const importDependencies: CaseImportDependencies = {
+      createWorker: vi.fn(() => worker),
+      openCaseRepository: vi.fn(async () => repository)
+    };
+    renderWorkspace(libraryDependencies, false, importDependencies);
+    await screen.findByText("方案可行");
+
+    fireEvent.click(screen.getByRole("button", {name: "本地导入算例"}));
+    fireEvent.change(screen.getByLabelText("选择 ZIP 文件"), {
+      target: {files: [importFile()]}
+    });
+    await waitFor(() => expect(worker.postMessage).toHaveBeenCalled());
+    const request = postedParse(worker);
+    act(() => worker.respond({
+      type: "success",
+      requestId: request.requestId,
+      bundle: localBundle,
+      preview: {
+        caseId: localBundle.case.caseId,
+        uavCount: localBundle.metrics.uavCount,
+        sortieCount: localBundle.metrics.sortieCount,
+        batchCount: localBundle.metrics.batchCount,
+        stripCount: localBundle.metrics.stripCount,
+        durationSec: localBundle.metrics.missionMakespanSec,
+        warnings: []
+      }
+    }));
+    fireEvent.click(await screen.findByRole("button", {name: "确认导入"}));
+
+    await waitFor(() => expect(screen.getByLabelText("选择算例"))
+      .toHaveValue("LOCAL-R10:LOCAL-PLAN:imported"));
+    expect(await screen.findByText("本地 R10")).toBeInTheDocument();
+    expect(repository.save).toHaveBeenCalledTimes(1);
+    expect(repository.list).toHaveBeenCalledTimes(2);
+  });
+
+  it("only offers deletion for imported selections after confirmation", async () => {
+    const localBundle: CaseBundleV2 = {
+      ...structuredClone(R10_BUNDLE),
+      case: {
+        caseId: "LOCAL-R10",
+        planId: "LOCAL-PLAN",
+        displayName: "本地 R10"
+      }
+    };
+    let exists = true;
+    const imported = {
+      caseId: localBundle.case.caseId,
+      planId: localBundle.case.planId,
+      displayName: localBundle.case.displayName,
+      importedAt: localBundle.provenance.importedAt,
+      sourceName: localBundle.provenance.sourceName,
+      sourceRun: localBundle.provenance.sourceRun,
+      metrics: localBundle.metrics,
+      warnings: localBundle.validation.warnings
+    };
+    const repository: CaseRepository = {
+      persistent: true,
+      list: vi.fn(async () => exists ? [imported] : []),
+      get: vi.fn(async () => exists ? localBundle : undefined),
+      save: vi.fn(),
+      remove: vi.fn(async () => {
+        exists = false;
+      })
+    };
+    renderWorkspace(dependencies({
+      openCaseRepository: vi.fn(async () => repository)
+    }));
+    await screen.findByText("方案可行");
+    expect(screen.queryByRole("button", {name: "删除本地算例"}))
+      .not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("选择算例"), {
+      target: {value: "LOCAL-R10:LOCAL-PLAN:imported"}
+    });
+    expect(await screen.findByRole("button", {name: "删除本地算例"}))
+      .toBeEnabled();
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    fireEvent.click(screen.getByRole("button", {name: "删除本地算例"}));
+
+    await waitFor(() => expect(repository.remove)
+      .toHaveBeenCalledWith("LOCAL-R10", "LOCAL-PLAN"));
+    expect(confirm).toHaveBeenCalled();
+    expect(screen.getByLabelText("选择算例"))
+      .toHaveValue("R10-LONG-TRANSIT-01:PLAN-002:built-in");
+  });
+
+  it("Escape closes the import dialog before the mission drawer", async () => {
+    const worker = new WorkspaceImportWorker();
+    renderWorkspace(dependencies(), false, {
+      createWorker: vi.fn(() => worker),
+      openCaseRepository: vi.fn(async () => ({
+        persistent: true,
+        list: async () => [],
+        get: async () => undefined,
+        save: async () => undefined,
+        remove: async () => undefined
+      }))
+    });
+    await screen.findByText("方案可行");
+    fireEvent.click(screen.getByRole("button", {name: "任务概览"}));
+    expect(screen.getByRole("dialog", {name: "任务概览"}))
+      .toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", {name: "本地导入算例"}));
+    expect(screen.getByRole("dialog", {name: "本地导入算例"}))
+      .toBeInTheDocument();
+
+    fireEvent.keyDown(window, {key: "Escape"});
+    expect(screen.queryByRole("dialog", {name: "本地导入算例"}))
+      .not.toBeInTheDocument();
+    expect(screen.getByRole("dialog", {name: "任务概览"}))
+      .toBeInTheDocument();
+    fireEvent.keyDown(window, {key: "Escape"});
+    expect(screen.queryByRole("dialog", {name: "任务概览"}))
+      .not.toBeInTheDocument();
   });
 });

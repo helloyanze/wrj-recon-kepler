@@ -20,6 +20,7 @@ import {
   useCaseLibrary,
   type CaseLibraryDependencies
 } from "../hooks/useCaseLibrary";
+import type {CaseImportDependencies} from "../hooks/useCaseImport";
 import {useMissionClock} from "../hooks/useMissionClock";
 import {WRJ_MAP_ID} from "../kepler/constants";
 import {
@@ -27,6 +28,7 @@ import {
   type DrawerContent
 } from "./workspace/DetailDrawer";
 import {LayerSidebar} from "./workspace/LayerSidebar";
+import {ImportCaseDialog} from "./workspace/ImportCaseDialog";
 import {MissionTimeline} from "./workspace/MissionTimeline";
 import {WrjKeplerMap, type WrjKeplerMapProps} from "./WrjKeplerMap";
 
@@ -35,6 +37,7 @@ export interface WorkspaceProps {
   debugMode: boolean;
   dataBase: string;
   caseLibraryDependencies?: CaseLibraryDependencies;
+  caseImportDependencies?: CaseImportDependencies;
   MapView?: ComponentType<WrjKeplerMapProps>;
 }
 
@@ -46,6 +49,7 @@ export function Workspace({
   debugMode,
   dataBase,
   caseLibraryDependencies,
+  caseImportDependencies,
   MapView = WrjKeplerMap
 }: WorkspaceProps) {
   const dispatch = useDispatch<AppDispatch>();
@@ -67,6 +71,7 @@ export function Workspace({
   const [selectedSortieId, setSelectedSortieId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [styleType, setStyleType] = useState<"satellite" | "light">("satellite");
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const uavIds = useMemo(
     () => bundle === null
@@ -149,7 +154,13 @@ export function Workspace({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setDrawerContent(null);
+      if (event.key === "Escape") {
+        if (importDialogOpen) {
+          setImportDialogOpen(false);
+        } else {
+          setDrawerContent(null);
+        }
+      }
       const target = event.target;
       const isEditing = target instanceof HTMLElement && (
         target.isContentEditable ||
@@ -159,13 +170,28 @@ export function Workspace({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [resetView]);
+  }, [importDialogOpen, resetView]);
 
   const selectedUavId = drawerContent?.type === "uav"
     ? drawerContent.uavId
     : null;
   const attribution = basemap.attributionByStyle[styleType];
   const ready = caseLibrary.status === "ready" && bundle !== null;
+  const selectedEntry = caseLibrary.entries.find(
+    entry => entry.key === caseLibrary.selectedKey
+  );
+
+  const deleteSelectedImport = useCallback(() => {
+    if (
+      selectedEntry?.source !== "imported" ||
+      !window.confirm(
+        `确定删除本地算例 ${selectedEntry.displayName}？此操作无法撤销。`
+      )
+    ) {
+      return;
+    }
+    void caseLibrary.deleteImported(selectedEntry.key);
+  }, [caseLibrary, selectedEntry]);
 
   return (
     <main className="workspace">
@@ -222,6 +248,18 @@ export function Workspace({
           >
             任务概览
           </button>
+          <button type="button" onClick={() => setImportDialogOpen(true)}>
+            本地导入算例
+          </button>
+          {selectedEntry?.source === "imported" ? (
+            <button
+              type="button"
+              className="danger"
+              onClick={deleteSelectedImport}
+            >
+              删除本地算例
+            </button>
+          ) : null}
         </div>
       </header>
 
@@ -320,6 +358,17 @@ export function Workspace({
           ) : null}
         </section>
       </section>
+      {importDialogOpen ? (
+        <ImportCaseDialog
+          open
+          dependencies={caseImportDependencies}
+          onClose={() => setImportDialogOpen(false)}
+          onSaved={async key => {
+            await caseLibrary.refreshImports();
+            caseLibrary.select(key);
+          }}
+        />
+      ) : null}
     </main>
   );
 }
