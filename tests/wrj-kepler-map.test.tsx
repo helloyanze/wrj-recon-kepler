@@ -237,6 +237,61 @@ describe("mergeDeckRenderCallbacks", () => {
     ]);
   });
 
+  it("replaces previously appended mission layers when vertical scale changes", () => {
+    const scaleOneLayers = createMissionOverlayLayers({
+      bundle,
+      missionTimeSec: 5,
+      verticalScale: 1,
+      preferences
+    });
+    const firstFrame = mergeDeckRenderCallbacks(
+      undefined,
+      scaleOneLayers
+    ).onDeckRender?.({layers: []});
+    const scaleFourLayers = createMissionOverlayLayers({
+      bundle,
+      missionTimeSec: 5,
+      verticalScale: 4,
+      preferences
+    });
+    const nextFrame = mergeDeckRenderCallbacks(
+      undefined,
+      scaleFourLayers
+    ).onDeckRender?.(firstFrame ?? {layers: []});
+    const nextLayers = nextFrame?.layers as Array<{id: string; props: unknown}>;
+
+    expect(nextLayers.find(({id}) => id === "wrj-algorithm-routes"))
+      .toBe(scaleFourLayers[2]);
+    expect(nextLayers.find(({id}) => id === "wrj-algorithm-trips"))
+      .toBe(scaleFourLayers[3]);
+    expect(nextLayers.find(({id}) => id === "wrj-algorithm-uav-triangles"))
+      .toBe(scaleFourLayers[4]);
+
+    const route = scaleFourLayers[2].props as {
+      data: CaseBundleV2["sorties"];
+      getPath: (sortie: CaseBundleV2["sorties"][number]) => number[][];
+    };
+    const positiveAltitudeIndex = bundle.sorties[0].trip.findIndex(
+      point => point[2] > 0
+    );
+    expect(positiveAltitudeIndex).toBeGreaterThanOrEqual(0);
+    expect(route.getPath(route.data[0])[positiveAltitudeIndex][2]).toBe(
+      bundle.sorties[0].trip[positiveAltitudeIndex][2] * 4
+    );
+
+    type MarkerProps = {
+      data: Array<{position: readonly [number, number, number]}>;
+      getPosition: (
+        datum: {position: readonly [number, number, number]}
+      ) => number[];
+    };
+    const scaleOneMarker = scaleOneLayers[4].props as MarkerProps;
+    const scaleFourMarker = scaleFourLayers[4].props as MarkerProps;
+    expect(scaleFourMarker.getPosition(scaleFourMarker.data[0])[2]).toBe(
+      scaleOneMarker.getPosition(scaleOneMarker.data[0])[2] * 4
+    );
+  });
+
   it("keeps null from the original onDeckRender callback", () => {
     const callbacks = mergeDeckRenderCallbacks(
       {onDeckRender: () => null},

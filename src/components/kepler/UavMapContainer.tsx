@@ -60,12 +60,12 @@ export function mergeDeckRenderCallbacks(
       if (renderedProps === null) return null;
 
       const layers = Array.isArray(renderedProps.layers) ? renderedProps.layers : [];
-      const existingLayerIds = new Set(layers.map(deckLayerId));
+      const missionLayerIds = new Set(missionLayers.map(deckLayerId));
       return {
         ...renderedProps,
         layers: [
-          ...layers,
-          ...missionLayers.filter(layer => !existingLayerIds.has(layer.id))
+          ...layers.filter(layer => !missionLayerIds.has(deckLayerId(layer))),
+          ...missionLayers
         ]
       };
     }
