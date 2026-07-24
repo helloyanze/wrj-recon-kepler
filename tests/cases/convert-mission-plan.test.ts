@@ -14,7 +14,9 @@ const provenance = {
 } as const;
 
 function makePlan(): TestPlan {
-  return structuredClone(missionPlanFixture);
+  const plan = structuredClone(missionPlanFixture);
+  Object.assign(plan.trajectories[0], {valid: true});
+  return plan;
 }
 
 function convert(
@@ -318,6 +320,26 @@ describe("convertMissionPlan", () => {
       expected: /assignment.*ASG-0001-001.*more than one trajectory|multiple trajectories/i
     },
     {
+      label: "a duplicate trajectory ID",
+      mutate: (plan: TestPlan) => {
+        const trajectory = structuredClone(plan.trajectories[0]);
+        plan.trajectories.push(trajectory);
+      },
+      expected: /trajectory.*TRJ-0001.*duplicate trajectoryId/i
+    },
+    {
+      label: "a duplicate strip ID",
+      mutate: (plan: TestPlan) => {
+        const strip = structuredClone(
+          plan.assignmentPlan.stripPlanSnapshot.strips[0]
+        );
+        strip.index = 1;
+        plan.assignmentPlan.stripPlanSnapshot.strips.push(strip);
+        plan.assignmentPlan.stripPlanSnapshot.stripCount = 2;
+      },
+      expected: /strip.*ST-0001.*duplicate stripId/i
+    },
+    {
       label: "duplicate strip ownership",
       mutate: (plan: TestPlan) => {
         addSecondSortie(plan, {
@@ -342,6 +364,21 @@ describe("convertMissionPlan", () => {
       expected: /assignment.*ASG-0001-001.*unknown strip.*ST-UNKNOWN/i
     },
     {
+      label: "a segment referencing an unknown strip",
+      mutate: (plan: TestPlan) => {
+        plan.trajectories[0].segments[1].stripId = "ST-UNKNOWN";
+      },
+      expected: /trajectory.*TRJ-0001.*segment.*SEG-0002.*unknown strip.*ST-UNKNOWN/i
+    },
+    {
+      label: "a segment referencing a strip owned by another assignment",
+      mutate: (plan: TestPlan) => {
+        addSecondSortie(plan);
+        plan.trajectories[0].segments[1].stripId = "ST-0002";
+      },
+      expected: /trajectory.*TRJ-0001.*segment.*SEG-0002.*strip.*ST-0002.*not owned.*assignment.*ASG-0001-001/i
+    },
+    {
       label: "a trajectory whose UAV differs from its assignment",
       mutate: (plan: TestPlan) => {
         plan.trajectories[0].uavId = "UAV-WRONG";
@@ -362,11 +399,51 @@ describe("convertMissionPlan", () => {
     expect(() => convert(plan)).toThrow(/trajectory.*TRJ-0001.*valid.*false/i);
   });
 
+  it("rejects a trajectory whose valid flag is missing", () => {
+    const plan = makePlan();
+    Reflect.deleteProperty(plan.trajectories[0], "valid");
+
+    expect(() => convert(plan)).toThrow(
+      /trajectory.*TRJ-0001.*valid.*must be true|trajectory.*TRJ-0001.*missing.*valid/i
+    );
+  });
+
+  it("rejects a trajectory whose valid flag is non-boolean truthy", () => {
+    const plan = makePlan();
+    Object.assign(plan.trajectories[0], {valid: "true"});
+
+    expect(() => convert(plan)).toThrow(
+      /trajectory.*TRJ-0001.*valid.*must be true/i
+    );
+  });
+
   it("rejects segment.valid=false and identifies the segment and trajectory", () => {
     const plan = makePlan();
     plan.trajectories[0].segments[1].valid = false;
 
     expect(() => convert(plan)).toThrow(/trajectory.*TRJ-0001.*segment.*SEG-0002.*valid.*false/i);
+  });
+
+  it.each([
+    {
+      label: "missing",
+      mutate: (plan: TestPlan) => {
+        Reflect.deleteProperty(plan.trajectories[0].segments[0], "valid");
+      }
+    },
+    {
+      label: "non-boolean truthy",
+      mutate: (plan: TestPlan) => {
+        Object.assign(plan.trajectories[0].segments[0], {valid: "true"});
+      }
+    }
+  ])("rejects a segment whose valid flag is $label with an actionable path", ({mutate}) => {
+    const plan = makePlan();
+    mutate(plan);
+
+    expect(() => convert(plan)).toThrow(
+      /trajectories\.0\.segments\.0\.valid|segment.*SEG-0001.*valid/i
+    );
   });
 
   it("enforces the normalized final end against makespan with a 1e-3 tolerance", () => {
@@ -400,6 +477,26 @@ describe("convertMissionPlan", () => {
       0,
       52
     ]);
+  });
+
+  it("includes an extreme geometry vertex in the display transform independently", () => {
+    const plan = makePlan();
+    plan.trajectories[0].segments[1].geometry.coordinates.push([2000, 200]);
+
+    const bundle = convert(plan);
+
+    expect(bundle.displayTransform.sourceCenterXM).toBe(1000);
+    expect(bundle.displayTransform.sourceCenterYM).toBe(125);
+  });
+
+  it("includes an extreme segment endpoint in the display transform independently", () => {
+    const plan = makePlan();
+    plan.trajectories[0].segments[0].startPoint.xM = -2000;
+
+    const bundle = convert(plan);
+
+    expect(bundle.displayTransform.sourceCenterXM).toBe(-750);
+    expect(bundle.displayTransform.sourceCenterYM).toBe(125);
   });
 
   it("computes one transform from segment endpoints and geometry, strip points, and region points", () => {
@@ -448,6 +545,14 @@ describe("convertMissionPlan", () => {
     expect(bundle.region.source).toBe("REGION_PROFILE");
     expect(bundle.region.polygon).toHaveLength(5);
     expect(bundle.region.polygon[0]).toEqual(bundle.region.polygon.at(-1));
+  });
+
+  it("treats a self-intersecting WKT exterior ring as invalid and falls back to strips", () => {
+    const bundle = convert(makePlan(), {
+      geometryWkt: "POLYGON((0 0,4 0,4 4,0 4,3 -1,0 0))"
+    });
+
+    expect(bundle.region.source).toBe("DERIVED_FROM_STRIPS");
   });
 
   it.each([

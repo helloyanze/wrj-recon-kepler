@@ -240,16 +240,17 @@ function indexTrajectories(
         `assignment ${assignment.assignmentId} uses UAV ${assignment.uavId}`
       );
     }
-    if (trajectory.valid === false) {
+    if (trajectory.valid !== true) {
       throw new Error(
-        `Trajectory ${trajectory.trajectoryId} has valid=false`
+        `Trajectory ${trajectory.trajectoryId} valid must be true; received ` +
+        describeValue(trajectory.valid)
       );
     }
     for (const segment of trajectory.segments) {
-      if (segment.valid === false) {
+      if (segment.valid !== true) {
         throw new Error(
           `Trajectory ${trajectory.trajectoryId} segment ${segment.segmentId} ` +
-          "has valid=false"
+          `valid must be true; received ${describeValue(segment.valid)}`
         );
       }
     }
@@ -514,7 +515,13 @@ function parseRegionProfilePolygon(
 
   const openPoints = removeClosingPoint(points);
   const uniquePoints = uniquePlanarPoints(openPoints);
-  if (uniquePoints.length < 3 || Math.abs(signedArea(openPoints)) === 0) {
+  const area = signedArea(openPoints);
+  if (
+    uniquePoints.length < 3 ||
+    !Number.isFinite(area) ||
+    area === 0 ||
+    !isSimpleRing(openPoints)
+  ) {
     return null;
   }
   return openPoints.map(([xM, yM]) => [xM, yM]);
@@ -539,6 +546,118 @@ function signedArea(points: readonly PlanarPoint[]): number {
     twiceArea += current[0] * next[1] - next[0] * current[1];
   }
   return twiceArea / 2;
+}
+
+function isSimpleRing(points: readonly PlanarPoint[]): boolean {
+  for (let index = 0; index < points.length; index += 1) {
+    if (pointsEqual(points[index], points[(index + 1) % points.length])) {
+      return false;
+    }
+  }
+
+  for (let leftIndex = 0; leftIndex < points.length; leftIndex += 1) {
+    const leftStart = points[leftIndex];
+    const leftEnd = points[(leftIndex + 1) % points.length];
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < points.length;
+      rightIndex += 1
+    ) {
+      const adjacent =
+        rightIndex === leftIndex + 1 ||
+        (leftIndex === 0 && rightIndex === points.length - 1);
+      if (adjacent) {
+        continue;
+      }
+      const rightStart = points[rightIndex];
+      const rightEnd = points[(rightIndex + 1) % points.length];
+      if (segmentsIntersect(leftStart, leftEnd, rightStart, rightEnd)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function segmentsIntersect(
+  leftStart: PlanarPoint,
+  leftEnd: PlanarPoint,
+  rightStart: PlanarPoint,
+  rightEnd: PlanarPoint
+): boolean {
+  const leftStartSide = orientation(leftStart, leftEnd, rightStart);
+  const leftEndSide = orientation(leftStart, leftEnd, rightEnd);
+  const rightStartSide = orientation(rightStart, rightEnd, leftStart);
+  const rightEndSide = orientation(rightStart, rightEnd, leftEnd);
+  if (
+    leftStartSide === null ||
+    leftEndSide === null ||
+    rightStartSide === null ||
+    rightEndSide === null
+  ) {
+    return true;
+  }
+
+  if (
+    leftStartSide !== leftEndSide &&
+    rightStartSide !== rightEndSide &&
+    leftStartSide !== 0 &&
+    leftEndSide !== 0 &&
+    rightStartSide !== 0 &&
+    rightEndSide !== 0
+  ) {
+    return true;
+  }
+  return (
+    (leftStartSide === 0 && onSegment(leftStart, rightStart, leftEnd)) ||
+    (leftEndSide === 0 && onSegment(leftStart, rightEnd, leftEnd)) ||
+    (rightStartSide === 0 && onSegment(rightStart, leftStart, rightEnd)) ||
+    (rightEndSide === 0 && onSegment(rightStart, leftEnd, rightEnd))
+  );
+}
+
+function orientation(
+  start: PlanarPoint,
+  end: PlanarPoint,
+  point: PlanarPoint
+): -1 | 0 | 1 | null {
+  const firstProduct =
+    (end[0] - start[0]) * (point[1] - start[1]);
+  const secondProduct =
+    (end[1] - start[1]) * (point[0] - start[0]);
+  const determinant = firstProduct - secondProduct;
+  const scale = Math.abs(firstProduct) + Math.abs(secondProduct);
+  if (!Number.isFinite(determinant) || !Number.isFinite(scale)) {
+    return null;
+  }
+  const tolerance = Number.EPSILON * 16 * Math.max(1, scale);
+  if (Math.abs(determinant) <= tolerance) {
+    return 0;
+  }
+  return determinant < 0 ? -1 : 1;
+}
+
+function onSegment(
+  start: PlanarPoint,
+  point: PlanarPoint,
+  end: PlanarPoint
+): boolean {
+  const scale = Math.max(
+    1,
+    Math.abs(start[0]),
+    Math.abs(start[1]),
+    Math.abs(point[0]),
+    Math.abs(point[1]),
+    Math.abs(end[0]),
+    Math.abs(end[1])
+  );
+  const tolerance = Number.EPSILON * 16 * scale;
+  return (
+    point[0] >= Math.min(start[0], end[0]) - tolerance &&
+    point[0] <= Math.max(start[0], end[0]) + tolerance &&
+    point[1] >= Math.min(start[1], end[1]) - tolerance &&
+    point[1] <= Math.max(start[1], end[1]) + tolerance
+  );
 }
 
 function convexHull(points: readonly PlanarPoint[]): PlanarPoint[] {
@@ -816,4 +935,11 @@ function stringValues(value: unknown): string[] {
 
 function uniqueStrings(values: readonly string[]): string[] {
   return [...new Set(values)];
+}
+
+function describeValue(value: unknown): string {
+  if (value === undefined) {
+    return "missing";
+  }
+  return JSON.stringify(value);
 }
