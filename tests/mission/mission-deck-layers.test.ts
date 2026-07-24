@@ -279,7 +279,7 @@ describe("createMissionDeckLayers", () => {
     expect(marker.getColor(marker.data[0])).toEqual(expectedColor);
   });
 
-  it("shows flying and three-second landed markers with scaled altitude and heading", () => {
+  it("shows flying and three-second landed markers with scaled altitude and clockwise heading", () => {
     const flyingLayer = makeLayers(5)[4];
     const flying = layerProps<{
       data: Array<{position: readonly [number, number, number]; headingDeg: number | null}>;
@@ -292,7 +292,10 @@ describe("createMissionDeckLayers", () => {
 
     expect(flying.data).toHaveLength(1);
     expect(flying.getPosition(flying.data[0])).toEqual([110.5, 18, 240]);
-    expect(flying.getAngle(flying.data[0])).toBe(90);
+    // The SVG nose is at the top of the texture. IconLayer's map-plane
+    // rotation is counter-clockwise after its texture Y flip, so an
+    // eastbound clockwise-from-north heading must be supplied as -90°.
+    expect(flying.getAngle(flying.data[0])).toBe(-90);
     expect(flying.getSize()).toBe(44);
     expect(flying.billboard).toBe(false);
     expect(flying.getIcon()).toEqual({

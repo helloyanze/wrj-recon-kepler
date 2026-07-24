@@ -152,7 +152,7 @@ export function createMissionDeckLayers({
       billboard: false,
       sizeUnits: "pixels",
       getPosition: ({position}) => [position[0], position[1], position[2]],
-      getAngle: ({headingDeg}) => headingDeg ?? 0,
+      getAngle: ({headingDeg}) => headingDeg === null ? 0 : -headingDeg,
       getColor: ({color}) => color,
       getSize: () => preferences.markerSize,
       getIcon: () => UAV_ICON,
