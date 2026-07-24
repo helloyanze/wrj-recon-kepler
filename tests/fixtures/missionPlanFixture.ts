@@ -119,7 +119,9 @@ export const missionPlanFixture = {
       ],
       totalDistanceM: 1200,
       totalDurationSec: 52,
-      totalFuelKg: 2.25
+      totalFuelKg: 2.25,
+      valid: true,
+      failureCodes: []
     }
   ],
   coverageRatio: 0.98,

@@ -61,7 +61,9 @@ const trajectorySchema = z
     segments: z.array(segmentSchema),
     totalDistanceM: finiteNumber,
     totalDurationSec: finiteNumber,
-    totalFuelKg: finiteNumber.nullable()
+    totalFuelKg: finiteNumber.nullable(),
+    valid: z.boolean(),
+    failureCodes: z.array(z.string())
   })
   .passthrough();
 

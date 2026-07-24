@@ -11,6 +11,51 @@ import {parseMissionPlan} from "../../src/features/cases/missionPlanSchema";
 import {missionPlanFixture} from "../fixtures/missionPlanFixture";
 
 describe("algorithm mission plan schema", () => {
+  it("keeps the canonical trajectory validity fields from actual algorithm output", () => {
+    expect(missionPlanFixture.trajectories[0]).toMatchObject({
+      valid: true,
+      failureCodes: []
+    });
+  });
+
+  it("requires trajectory.valid with an actionable field path", () => {
+    const invalid = structuredClone(missionPlanFixture);
+    Object.assign(invalid.trajectories[0], {
+      valid: true,
+      failureCodes: []
+    });
+    Reflect.deleteProperty(invalid.trajectories[0], "valid");
+
+    expect(() => parseMissionPlan(invalid, "mission_plan.json")).toThrow(
+      /trajectories\.0\.valid/
+    );
+  });
+
+  it("rejects a non-boolean trajectory.valid with an actionable field path", () => {
+    const invalid = structuredClone(missionPlanFixture);
+    Object.assign(invalid.trajectories[0], {
+      valid: "true",
+      failureCodes: []
+    });
+
+    expect(() => parseMissionPlan(invalid, "mission_plan.json")).toThrow(
+      /trajectories\.0\.valid/
+    );
+  });
+
+  it("requires trajectory.failureCodes with an actionable field path", () => {
+    const invalid = structuredClone(missionPlanFixture);
+    Object.assign(invalid.trajectories[0], {
+      valid: true,
+      failureCodes: []
+    });
+    Reflect.deleteProperty(invalid.trajectories[0], "failureCodes");
+
+    expect(() => parseMissionPlan(invalid, "mission_plan.json")).toThrow(
+      /trajectories\.0\.failureCodes/
+    );
+  });
+
   it("exposes immutable coordinate tuples and numeric normalized fuel totals", () => {
     expectTypeOf<LocalPoint>().toEqualTypeOf<
       readonly [xM: number, yM: number, zM: number]

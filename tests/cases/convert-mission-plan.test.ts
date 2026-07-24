@@ -14,9 +14,7 @@ const provenance = {
 } as const;
 
 function makePlan(): TestPlan {
-  const plan = structuredClone(missionPlanFixture);
-  Object.assign(plan.trajectories[0], {valid: true});
-  return plan;
+  return structuredClone(missionPlanFixture);
 }
 
 function convert(
@@ -115,6 +113,14 @@ function addSecondSortie(
 }
 
 describe("convertMissionPlan", () => {
+  it("converts the unmodified canonical mission plan fixture directly", () => {
+    const bundle = convert(missionPlanFixture);
+
+    expect(bundle.version).toBe(2);
+    expect(bundle.case.planId).toBe("PLAN-0001");
+    expect(bundle.sorties[0].trajectoryId).toBe("TRJ-0001");
+  });
+
   it("converts one assignment into a deterministic version-2 case bundle without mutation", () => {
     const plan = makePlan();
     const before = structuredClone(plan);
@@ -404,7 +410,7 @@ describe("convertMissionPlan", () => {
     Reflect.deleteProperty(plan.trajectories[0], "valid");
 
     expect(() => convert(plan)).toThrow(
-      /trajectory.*TRJ-0001.*valid.*must be true|trajectory.*TRJ-0001.*missing.*valid/i
+      /trajectories\.0\.valid/i
     );
   });
 
@@ -413,7 +419,7 @@ describe("convertMissionPlan", () => {
     Object.assign(plan.trajectories[0], {valid: "true"});
 
     expect(() => convert(plan)).toThrow(
-      /trajectory.*TRJ-0001.*valid.*must be true/i
+      /trajectories\.0\.valid/i
     );
   });
 
@@ -477,6 +483,29 @@ describe("convertMissionPlan", () => {
       0,
       52
     ]);
+  });
+
+  it("allows the exact 1e-6 sortie overlap tolerance boundary", () => {
+    const plan = makePlan();
+    const launchTimeSec = 52 - 1e-6;
+    addSecondSortie(plan, {launchTimeSec});
+    plan.missionMakespanSec = launchTimeSec + 52;
+
+    expect(convert(plan).sorties.map(sortie => sortie.plannedLaunchTimeSec)).toEqual([
+      0,
+      launchTimeSec
+    ]);
+  });
+
+  it("rejects an overlap just beyond the 1e-6 sortie tolerance", () => {
+    const plan = makePlan();
+    const launchTimeSec = 52 - 1.0001e-6;
+    addSecondSortie(plan, {launchTimeSec});
+    plan.missionMakespanSec = launchTimeSec + 52;
+
+    expect(() => convert(plan)).toThrow(
+      /UAV-04.*ASG-0001-001.*ASG-0001-002.*overlap/i
+    );
   });
 
   it("includes an extreme geometry vertex in the display transform independently", () => {
@@ -547,12 +576,54 @@ describe("convertMissionPlan", () => {
     expect(bundle.region.polygon[0]).toEqual(bundle.region.polygon.at(-1));
   });
 
+  it("falls back before parsing a WKT over 100000 characters", () => {
+    const geometryWkt =
+      `POLYGON((${` `.repeat(100_001)}` +
+      "0 0, 4 0, 4 4, 0 4))";
+
+    expect(convert(makePlan(), {geometryWkt}).region.source).toBe(
+      "DERIVED_FROM_STRIPS"
+    );
+  });
+
+  it("falls back before pairwise checks for a WKT over 2000 vertices", () => {
+    const vertexCount = 2001;
+    const vertices = Array.from({length: vertexCount}, (_, index) => {
+      const angle = 2 * Math.PI * index / vertexCount;
+      return `${(1000 * Math.cos(angle)).toFixed(6)} ` +
+        `${(1000 * Math.sin(angle)).toFixed(6)}`;
+    });
+    const geometryWkt = `POLYGON((${vertices.join(",")}))`;
+
+    expect(geometryWkt.length).toBeLessThan(100_000);
+    expect(convert(makePlan(), {geometryWkt}).region.source).toBe(
+      "DERIVED_FROM_STRIPS"
+    );
+  });
+
   it("treats a self-intersecting WKT exterior ring as invalid and falls back to strips", () => {
     const bundle = convert(makePlan(), {
       geometryWkt: "POLYGON((0 0,4 0,4 4,0 4,3 -1,0 0))"
     });
 
     expect(bundle.region.source).toBe("DERIVED_FROM_STRIPS");
+  });
+
+  it("accepts a valid large-offset region with a two-unit non-intersection gap", () => {
+    const offset = 1_000_000_000_000_000;
+    const geometryWkt = `POLYGON((` +
+      `${offset} 0,` +
+      `${offset + 10} 0,` +
+      `${offset + 10} 10,` +
+      `${offset - 4} 10,` +
+      `${offset - 4} 2,` +
+      `${offset - 2} 2,` +
+      `${offset - 2} 0` +
+      "))";
+
+    expect(convert(makePlan(), {geometryWkt}).region.source).toBe(
+      "REGION_PROFILE"
+    );
   });
 
   it.each([
@@ -591,7 +662,101 @@ describe("convertMissionPlan", () => {
     ];
 
     expect(() => convert(plan, {geometryWkt: "invalid"})).toThrow(
-      /region.*strip.*ST-0001.*fewer than 3 unique|convex hull.*3 unique/i
+      /strip.*ST-0001.*3 unique|region.*strip.*ST-0001.*fewer than 3 unique|convex hull.*3 unique/i
+    );
+  });
+
+  it.each([
+    {
+      label: "fewer than three unique vertices",
+      polygon: [
+        {xM: 0, yM: 0},
+        {xM: 1, yM: 1},
+        {xM: 0, yM: 0}
+      ],
+      reason: /3 unique/i
+    },
+    {
+      label: "collinear vertices",
+      polygon: [
+        {xM: 0, yM: 0},
+        {xM: 1, yM: 1},
+        {xM: 2, yM: 2}
+      ],
+      reason: /area|collinear/i
+    },
+    {
+      label: "a self-intersection",
+      polygon: [
+        {xM: 0, yM: 0},
+        {xM: 4, yM: 0},
+        {xM: 4, yM: 4},
+        {xM: 0, yM: 4},
+        {xM: 3, yM: -1}
+      ],
+      reason: /simple|self-intersect/i
+    },
+    {
+      label: "an empty ring",
+      polygon: [],
+      reason: /3 unique|empty/i
+    }
+  ])("rejects strip coveragePolygon with $label even when the region profile is valid", ({
+    polygon,
+    reason
+  }) => {
+    const plan = makePlan();
+    Object.assign(plan.assignmentPlan.stripPlanSnapshot.strips[0], {
+      coveragePolygon: polygon
+    });
+
+    expect(() =>
+      convert(plan, {geometryWkt: "POLYGON((0 0,10 0,10 10,0 10))"})
+    ).toThrow(new RegExp(`ST-0001.*coveragePolygon.*${reason.source}`, "i"));
+  });
+
+  it("rejects the invalid strip in a mixed valid and invalid strip plan", () => {
+    const plan = makePlan();
+    addSecondSortie(plan);
+    const secondStrip = plan.assignmentPlan.stripPlanSnapshot.strips[1];
+    secondStrip.coveragePolygon = [
+      {xM: 0, yM: 0},
+      {xM: 1, yM: 1},
+      {xM: 2, yM: 2}
+    ];
+
+    expect(() =>
+      convert(plan, {geometryWkt: "POLYGON((0 0,10 0,10 10,0 10))"})
+    ).toThrow(/ST-0002.*coveragePolygon.*area|ST-0002.*coveragePolygon.*collinear/i);
+  });
+
+  it("accepts an assignment using the selected strip snapshot flight candidate", () => {
+    const plan = makePlan();
+
+    expect(plan.assignmentPlan.assignments[0].flightCandidateId).toBe(
+      plan.assignmentPlan.stripPlanSnapshot.flightCandidateId
+    );
+    expect(convert(plan).assignments[0].flightCandidateId).toBe("FPC-00560");
+  });
+
+  it("accepts an assignment using a compatible strip snapshot flight candidate", () => {
+    const plan = makePlan();
+    plan.assignmentPlan.assignments[0].flightCandidateId = "FPC-COMPATIBLE";
+    plan.assignmentPlan.stripPlanSnapshot.compatibleFlightCandidates = [
+      "FPC-COMPATIBLE"
+    ];
+
+    expect(convert(plan).assignments[0].flightCandidateId).toBe(
+      "FPC-COMPATIBLE"
+    );
+  });
+
+  it("rejects an assignment whose flight candidate is neither selected nor compatible", () => {
+    const plan = makePlan();
+    plan.assignmentPlan.assignments[0].flightCandidateId = "FPC-NOT-ALLOWED";
+
+    expect(() => convert(plan)).toThrow(
+      /assignment.*ASG-0001-001.*flight candidate.*FPC-NOT-ALLOWED.*snapshot/i
     );
   });
 

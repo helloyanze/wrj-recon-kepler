@@ -41,6 +41,8 @@ interface RegionGeometry {
 
 const MAKESPAN_TOLERANCE_SEC = 1e-3;
 const OVERLAP_TOLERANCE_SEC = 1e-6;
+const MAX_REGION_WKT_CHARACTERS = 100_000;
+const MAX_REGION_WKT_VERTICES = 2_000;
 
 export function convertMissionPlan(
   input: ConvertMissionPlanInput
@@ -60,6 +62,11 @@ export function convertMissionPlan(
   );
 
   const snapshot = plan.assignmentPlan.stripPlanSnapshot;
+  validateAssignmentFlightCandidates(
+    plan.assignmentPlan.assignments,
+    snapshot.flightCandidateId,
+    snapshot.compatibleFlightCandidates
+  );
   const stripsById = indexStrips(snapshot.strips);
   if (snapshot.stripCount !== snapshot.strips.length) {
     throw new Error(
@@ -67,6 +74,7 @@ export function convertMissionPlan(
       `the normalized strip count ${snapshot.strips.length}`
     );
   }
+  validateStripCoveragePolygons(snapshot.strips);
   const ownersByStripId = validateStripOwnership(
     plan.assignmentPlan.assignments,
     snapshot.strips,
@@ -305,6 +313,57 @@ function indexStrips(
   return result;
 }
 
+function validateAssignmentFlightCandidates(
+  assignments: readonly MissionAssignment[],
+  selectedFlightCandidateId: string,
+  compatibleFlightCandidates: readonly string[]
+): void {
+  const allowedFlightCandidateIds = new Set([
+    selectedFlightCandidateId,
+    ...compatibleFlightCandidates
+  ]);
+  for (const assignment of assignments) {
+    if (!allowedFlightCandidateIds.has(assignment.flightCandidateId)) {
+      throw new Error(
+        `Assignment ${assignment.assignmentId} flight candidate ` +
+        `${assignment.flightCandidateId} is neither the selected snapshot ` +
+        `candidate ${selectedFlightCandidateId} nor a compatible flight candidate`
+      );
+    }
+  }
+}
+
+function validateStripCoveragePolygons(
+  strips: readonly MissionStrip[]
+): void {
+  for (const strip of strips) {
+    const polygon = removeClosingPoint(
+      strip.coveragePolygon.map(
+        point => [point.xM, point.yM] as PlanarPoint
+      )
+    );
+    if (uniquePlanarPoints(polygon).length < 3) {
+      throw new Error(
+        `Strip ${strip.stripId} coveragePolygon must contain at least 3 ` +
+        "unique vertices"
+      );
+    }
+    const area = signedArea(polygon);
+    if (!Number.isFinite(area) || area === 0) {
+      throw new Error(
+        `Strip ${strip.stripId} coveragePolygon must have finite non-zero ` +
+        "area; its vertices are collinear or unusable"
+      );
+    }
+    if (!isSimpleRing(polygon)) {
+      throw new Error(
+        `Strip ${strip.stripId} coveragePolygon must be a simple ring ` +
+        "without self-intersections or overlaps"
+      );
+    }
+  }
+}
+
 function validateStripOwnership(
   assignments: readonly MissionAssignment[],
   strips: readonly MissionStrip[],
@@ -490,6 +549,9 @@ function parseRegionProfilePolygon(
   ) {
     return null;
   }
+  if (regionProfile.geometryWkt.length > MAX_REGION_WKT_CHARACTERS) {
+    return null;
+  }
 
   const match =
     /^\s*polygon\s*\(\(\s*([^()]*)\s*\)\)\s*$/i.exec(
@@ -499,8 +561,12 @@ function parseRegionProfilePolygon(
     return null;
   }
 
+  const tokens = match[1].split(",");
+  if (tokens.length > MAX_REGION_WKT_VERTICES) {
+    return null;
+  }
   const points: PlanarPoint[] = [];
-  for (const token of match[1].split(",")) {
+  for (const token of tokens) {
     const coordinates = token.trim().split(/\s+/);
     if (coordinates.length !== 2) {
       return null;
@@ -621,16 +687,25 @@ function orientation(
   end: PlanarPoint,
   point: PlanarPoint
 ): -1 | 0 | 1 | null {
-  const firstProduct =
-    (end[0] - start[0]) * (point[1] - start[1]);
-  const secondProduct =
-    (end[1] - start[1]) * (point[0] - start[0]);
+  const segmentDeltaX = end[0] - start[0];
+  const segmentDeltaY = end[1] - start[1];
+  const pointDeltaX = point[0] - start[0];
+  const pointDeltaY = point[1] - start[1];
+  const coordinateScale = Math.max(
+    1,
+    Math.abs(segmentDeltaX),
+    Math.abs(segmentDeltaY),
+    Math.abs(pointDeltaX),
+    Math.abs(pointDeltaY)
+  );
+  const firstProduct = segmentDeltaX * pointDeltaY;
+  const secondProduct = segmentDeltaY * pointDeltaX;
   const determinant = firstProduct - secondProduct;
-  const scale = Math.abs(firstProduct) + Math.abs(secondProduct);
-  if (!Number.isFinite(determinant) || !Number.isFinite(scale)) {
+  const tolerance =
+    Number.EPSILON * 16 * coordinateScale * coordinateScale;
+  if (!Number.isFinite(determinant) || !Number.isFinite(tolerance)) {
     return null;
   }
-  const tolerance = Number.EPSILON * 16 * Math.max(1, scale);
   if (Math.abs(determinant) <= tolerance) {
     return 0;
   }
@@ -644,12 +719,12 @@ function onSegment(
 ): boolean {
   const scale = Math.max(
     1,
-    Math.abs(start[0]),
-    Math.abs(start[1]),
-    Math.abs(point[0]),
-    Math.abs(point[1]),
-    Math.abs(end[0]),
-    Math.abs(end[1])
+    Math.abs(end[0] - start[0]),
+    Math.abs(end[1] - start[1]),
+    Math.abs(point[0] - start[0]),
+    Math.abs(point[1] - start[1]),
+    Math.abs(point[0] - end[0]),
+    Math.abs(point[1] - end[1])
   );
   const tolerance = Number.EPSILON * 16 * scale;
   return (

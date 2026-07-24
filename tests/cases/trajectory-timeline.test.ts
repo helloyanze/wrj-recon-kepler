@@ -60,7 +60,9 @@ function makeTrajectory(segments: RawSegment[]): RawTrajectory {
     segments,
     totalDistanceM: 0,
     totalDurationSec: 0,
-    totalFuelKg: null
+    totalFuelKg: null,
+    valid: true,
+    failureCodes: []
   };
 }
 
