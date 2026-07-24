@@ -642,7 +642,7 @@ await repository.remove(bundle.case.caseId, bundle.case.planId);
 expect(await repository.list()).toEqual([]);
 ```
 
-Mock the browser adapter factory (`openBrowserCaseDatabaseAdapter`) to reject, then call the public parameterless `openCaseRepository()` and assert its memory fallback supports the same session API while returning `{persistent: false}`. Do not replace `CaseRepository` itself with a fake.
+Pass `async () => { throw new Error("IndexedDB unavailable"); }` as the opener to `openCaseRepository` and assert its memory fallback supports the same session API while returning `{persistent: false}`. Do not replace `CaseRepository` itself with a fake.
 
 - [ ] **Step 2: Verify failure**
 
@@ -663,6 +663,8 @@ export interface CaseDatabaseAdapter {
   close(): Promise<void>;
 }
 
+export type OpenCaseDatabaseAdapter = () => Promise<CaseDatabaseAdapter>;
+
 export interface CaseRepository {
   persistent: boolean;
   list(): Promise<ImportedCaseEntry[]>;
@@ -672,10 +674,12 @@ export interface CaseRepository {
 }
 
 export function createCaseRepository(adapter: CaseDatabaseAdapter): CaseRepository;
-export function openCaseRepository(): Promise<CaseRepository>;
+export function openCaseRepository(
+  openAdapter: OpenCaseDatabaseAdapter = openBrowserCaseDatabaseAdapter
+): Promise<CaseRepository>;
 ```
 
-`createCaseRepository(adapter)` contains the shared production behavior and is the test target; it must call the adapter for bundle and list-record operations. Keep `openCaseRepository()` parameterless for app code: it opens the browser `idb` adapter via `openBrowserCaseDatabaseAdapter`, then delegates to `createCaseRepository`. If that adapter factory/open operation fails, return one process-local memory repository and expose `persistent: false`; do not swallow later transaction errors.
+`createCaseRepository(adapter)` contains the shared production behavior and is the test target; it must call the adapter for bundle and list-record operations. App code calls `openCaseRepository()` with no argument, so its default opener creates the browser `idb` adapter; tests inject an `OpenCaseDatabaseAdapter` instead. The function delegates a successful open to `createCaseRepository`. If the supplied opener fails, return one process-local memory repository and expose `persistent: false`; do not swallow later transaction errors.
 
 - [ ] **Step 4: Run focused and full foundation verification**
 
