@@ -1,8 +1,36 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, expectTypeOf, it} from "vitest";
+import type {
+  CaseBundleV2,
+  LocalPoint,
+  MapPoint,
+  NormalizedSortie,
+  TimedMapPoint,
+  TimedSegment
+} from "../../src/features/cases/caseBundle";
 import {parseMissionPlan} from "../../src/features/cases/missionPlanSchema";
 import {missionPlanFixture} from "../fixtures/missionPlanFixture";
 
 describe("algorithm mission plan schema", () => {
+  it("exposes immutable coordinate tuples and numeric normalized fuel totals", () => {
+    expectTypeOf<LocalPoint>().toEqualTypeOf<
+      readonly [xM: number, yM: number, zM: number]
+    >();
+    expectTypeOf<MapPoint>().toEqualTypeOf<
+      readonly [longitude: number, latitude: number, altitudeM: number]
+    >();
+    expectTypeOf<TimedMapPoint>().toEqualTypeOf<
+      readonly [
+        longitude: number,
+        latitude: number,
+        altitudeM: number,
+        missionTimeSec: number
+      ]
+    >();
+    expectTypeOf<TimedSegment["fuelConsumptionKg"]>().toEqualTypeOf<number>();
+    expectTypeOf<NormalizedSortie["totalFuelKg"]>().toEqualTypeOf<number>();
+    expectTypeOf<CaseBundleV2["metrics"]["totalFuelKg"]>().toEqualTypeOf<number>();
+  });
+
   it("accepts the R10 fixture and exposes assignment and segment values", () => {
     const parsed = parseMissionPlan(missionPlanFixture, "nested/mission_plan.json");
 

@@ -1,8 +1,8 @@
 export const CASE_BUNDLE_VERSION = 2 as const;
 
-export type LocalPoint = [xM: number, yM: number, zM: number];
-export type MapPoint = [longitude: number, latitude: number, altitudeM: number];
-export type TimedMapPoint = [
+export type LocalPoint = readonly [xM: number, yM: number, zM: number];
+export type MapPoint = readonly [longitude: number, latitude: number, altitudeM: number];
+export type TimedMapPoint = readonly [
   longitude: number,
   latitude: number,
   altitudeM: number,
@@ -40,7 +40,7 @@ export interface TimedSegment {
   heightM: number;
   speedMps: number;
   distanceM: number;
-  fuelConsumptionKg: number | null;
+  fuelConsumptionKg: number;
   localPath: LocalPoint[];
   mapPath: MapPoint[];
   timedPath: TimedMapPoint[];
@@ -55,7 +55,7 @@ export interface NormalizedSortie {
   stripIds: string[];
   totalDistanceM: number;
   totalDurationSec: number;
-  totalFuelKg: number | null;
+  totalFuelKg: number;
   segments: TimedSegment[];
   trip: TimedMapPoint[];
 }
@@ -98,7 +98,7 @@ export interface CaseBundleV2 {
     coverageRatio: number;
     missionMakespanSec: number;
     totalDistanceM: number;
-    totalFuelKg: number | null;
+    totalFuelKg: number;
   };
   validation: {
     valid: boolean;
