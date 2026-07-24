@@ -14,7 +14,8 @@ import {
 } from "../../src/features/cases/importPackage";
 import {
   createImportWorkerMessageHandler,
-  parseAlgorithmZipPackage
+  parseAlgorithmZipPackage,
+  type AlgorithmZipParser
 } from "../../src/features/cases/import.worker";
 import {missionPlanFixture} from "../fixtures/missionPlanFixture";
 
@@ -130,7 +131,7 @@ function copyToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
 
 function changeDeclaredUncompressedSize(
   source: Uint8Array,
-  delta: number
+  replacement: number
 ): Uint8Array {
   const bytes = source.slice();
   const view = new DataView(
@@ -145,14 +146,14 @@ function changeDeclaredUncompressedSize(
     if (signature === 0x04034b50 && !localChanged) {
       view.setUint32(
         offset + 22,
-        view.getUint32(offset + 22, true) + delta,
+        replacement,
         true
       );
       localChanged = true;
     } else if (signature === 0x02014b50 && !centralChanged) {
       view.setUint32(
         offset + 24,
-        view.getUint32(offset + 24, true) + delta,
+        replacement,
         true
       );
       centralChanged = true;
@@ -322,6 +323,7 @@ describe("algorithm ZIP package parsing", () => {
       "/run/mission_plan.json",
       "\\\\server\\share\\mission_plan.json",
       "C:\\run\\mission_plan.json",
+      "C:run/mission_plan.json",
       "run/\0mission_plan.json",
       "run//mission_plan.json"
     ]) {
@@ -444,11 +446,60 @@ describe("algorithm ZIP package parsing", () => {
   it("rejects tampered central and local declared sizes before JSON conversion", async () => {
     const tampered = changeDeclaredUncompressedSize(
       makeMissionZip(),
-      1
+      jsonBytes(missionPlanFixture).byteLength + 1
     );
 
     await expect(parse(tampered)).rejects.toThrow(
       /ZIP entry size mismatch.*mission_plan\.json.*declared.*extracted/i
+    );
+  });
+
+  it("counts actual streamed output when forged headers claim a small file", async () => {
+    const largeMissionPlan = {
+      ...missionPlanFixture,
+      padding: "x".repeat(32 * 1024)
+    };
+    const tampered = changeDeclaredUncompressedSize(
+      makeMissionZip(
+        "run/mission_plan.json",
+        largeMissionPlan
+      ),
+      16
+    );
+
+    await expect(parseAlgorithmZipPackage(
+      tampered,
+      "forged-small-size.zip",
+      {
+        limits: {
+          ...ZIP_LIMITS,
+          singleFileBytes: 1_024,
+          uncompressedBytes: 2_048
+        }
+      }
+    )).rejects.toThrow(
+      /actual uncompressed.*mission_plan\.json.*single.*1024|single.*1024.*actual/i
+    );
+  });
+
+  it("stops when actual streamed files exceed the total output limit", async () => {
+    const tampered = changeDeclaredUncompressedSize(makeZip({
+      "run/mission_plan.json": jsonBytes(missionPlanFixture),
+      "run/padding.bin": new Uint8Array(1_000)
+    }, 0), 16);
+
+    await expect(parseAlgorithmZipPackage(
+      tampered,
+      "forged-total-size.zip",
+      {
+        limits: {
+          ...ZIP_LIMITS,
+          singleFileBytes: 3_000,
+          uncompressedBytes: 2_500
+        }
+      }
+    )).rejects.toThrow(
+      /actual uncompressed total.*2500.*padding\.bin/i
     );
   });
 
@@ -626,6 +677,55 @@ describe("import worker protocol", () => {
       type: "success",
       requestId: "request-b"
     }));
+  });
+
+  it("cancels the real streaming parser during multi-chunk extraction", async () => {
+    const responses: ImportWorkerResponse[] = [];
+    const filler = new Uint8Array(64 * 1024);
+    for (let index = 0; index < filler.length; index += 1) {
+      filler[index] = (index * 31 + 17) % 251;
+    }
+    const bytes = makeZip({
+      "run/mission_plan.json": jsonBytes(missionPlanFixture),
+      "run/payload.bin": filler
+    }, 0);
+    let yieldCount = 0;
+    let responseCountAfterCancel = -1;
+    const realParser: AlgorithmZipParser = (
+      input,
+      fileName,
+      options
+    ) => parseAlgorithmZipPackage(input, fileName, {
+      ...options,
+      archiveChunkBytes: 128,
+      yieldEveryChunks: 1,
+      yieldControl: async () => {
+        yieldCount += 1;
+        if (yieldCount === 2) {
+          await handle({type: "cancel", requestId: "real-cancel"});
+          responseCountAfterCancel = responses.length;
+        }
+      }
+    });
+    const handle = createImportWorkerMessageHandler(
+      response => responses.push(response),
+      realParser
+    );
+
+    await handle({
+      type: "parse",
+      requestId: "real-cancel",
+      fileName: "real-cancel.zip",
+      bytes: copyToArrayBuffer(bytes)
+    });
+
+    expect(yieldCount).toBe(2);
+    expect(responseCountAfterCancel).toBeGreaterThanOrEqual(1);
+    expect(responses).toHaveLength(responseCountAfterCancel);
+    expect(responses.some(response =>
+      response.requestId === "real-cancel" &&
+      (response.type === "success" || response.type === "failure")
+    )).toBe(false);
   });
 
   it("suppresses stale duplicate-request results and returns readable failures", async () => {

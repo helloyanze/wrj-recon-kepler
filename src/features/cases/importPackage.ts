@@ -106,7 +106,7 @@ export function normalizeZipEntryPath(path: string): string {
   const normalizedSeparators = path.replaceAll("\\", "/");
   if (
     normalizedSeparators.startsWith("/") ||
-    /^[A-Za-z]:(?:\/|$)/u.test(normalizedSeparators)
+    /^[A-Za-z]:/u.test(normalizedSeparators)
   ) {
     throw new Error(`Unsafe absolute or drive ZIP path: ${path}`);
   }
