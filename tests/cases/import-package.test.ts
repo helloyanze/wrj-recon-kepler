@@ -122,6 +122,47 @@ function metadata(
   };
 }
 
+function copyToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  return copy.buffer;
+}
+
+function changeDeclaredUncompressedSize(
+  source: Uint8Array,
+  delta: number
+): Uint8Array {
+  const bytes = source.slice();
+  const view = new DataView(
+    bytes.buffer,
+    bytes.byteOffset,
+    bytes.byteLength
+  );
+  let localChanged = false;
+  let centralChanged = false;
+  for (let offset = 0; offset <= bytes.byteLength - 4; offset += 1) {
+    const signature = view.getUint32(offset, true);
+    if (signature === 0x04034b50 && !localChanged) {
+      view.setUint32(
+        offset + 22,
+        view.getUint32(offset + 22, true) + delta,
+        true
+      );
+      localChanged = true;
+    } else if (signature === 0x02014b50 && !centralChanged) {
+      view.setUint32(
+        offset + 24,
+        view.getUint32(offset + 24, true) + delta,
+        true
+      );
+      centralChanged = true;
+    }
+  }
+  expect(localChanged).toBe(true);
+  expect(centralChanged).toBe(true);
+  return bytes;
+}
+
 describe("algorithm ZIP package parsing", () => {
   it("exports the exact archive limits", () => {
     expect(ZIP_LIMITS).toEqual({
@@ -197,6 +238,66 @@ describe("algorithm ZIP package parsing", () => {
     ));
 
     expect(result.bundle.region.source).toBe("REGION_PROFILE");
+  });
+
+  it("recursively discovers optional metadata by basename at unrelated depths", async () => {
+    const result = await parse(makeMissionZip(
+      "wrapper/case/run/mission_plan.json",
+      missionPlanFixture,
+      {
+        "reports/archive/score_report.json": jsonBytes({score: 98}),
+        "validation/deep/validation_report.json": jsonBytes({valid: true}),
+        "geometry/export/trajectories.geojson": jsonBytes({
+          type: "FeatureCollection",
+          features: []
+        }),
+        "profiles/v2/region_profile.json": jsonBytes({
+          geometryWkt:
+            "POLYGON ((0 0, 600 0, 600 400, 0 400, 0 0))"
+        })
+      }
+    ));
+
+    expect(result.bundle.region.source).toBe("REGION_PROFILE");
+  });
+
+  it.each([
+    "score_report.json",
+    "validation_report.json",
+    "trajectories.geojson"
+  ])("reads a recursively discovered %s instead of silently ignoring it", async fileName => {
+    await expect(parse(makeMissionZip(
+      "run/mission_plan.json",
+      missionPlanFixture,
+      {
+        [`metadata/deep/${fileName}`]: strToU8("{ invalid")
+      }
+    ))).rejects.toThrow(
+      new RegExp(`metadata/deep/${fileName.replace(".", "\\.")}.*invalid JSON`, "i")
+    );
+  });
+
+  it.each([
+    "score_report.json",
+    "validation_report.json",
+    "trajectories.geojson",
+    "region_profile.json"
+  ])("rejects ambiguous recursive %s matches and lists sorted paths", async fileName => {
+    await expect(parse(makeMissionZip(
+      "run/mission_plan.json",
+      missionPlanFixture,
+      {
+        [`z-last/${fileName}`]: jsonBytes({}),
+        [`a-first/deep/${fileName}`]: jsonBytes({})
+      }
+    ))).rejects.toThrow(
+      new RegExp(
+        `ambiguous.*${fileName.replace(".", "\\.")}.*` +
+        `a-first/deep/${fileName.replace(".", "\\.")}.*` +
+        `z-last/${fileName.replace(".", "\\.")}`,
+        "i"
+      )
+    );
   });
 
   it("requires exactly one non-OS mission_plan.json", async () => {
@@ -340,6 +441,17 @@ describe("algorithm ZIP package parsing", () => {
     )).rejects.toThrow(/uncompressed/i);
   });
 
+  it("rejects tampered central and local declared sizes before JSON conversion", async () => {
+    const tampered = changeDeclaredUncompressedSize(
+      makeMissionZip(),
+      1
+    );
+
+    await expect(parse(tampered)).rejects.toThrow(
+      /ZIP entry size mismatch.*mission_plan\.json.*declared.*extracted/i
+    );
+  });
+
   it("throws a genuine AbortError before conversion", async () => {
     const controller = new AbortController();
     controller.abort();
@@ -395,6 +507,71 @@ describe("algorithm ZIP package parsing", () => {
 });
 
 describe("import worker protocol", () => {
+  it("forwards request-scoped progress with stage and percent for concurrent imports", async () => {
+    const responses: ImportWorkerResponse[] = [];
+    const handle = createImportWorkerMessageHandler(
+      response => responses.push(response)
+    );
+    const firstBytes = makeMissionZip();
+    const secondPlan = structuredClone(missionPlanFixture);
+    secondPlan.caseId = "CASE-0002";
+    secondPlan.planId = "PLAN-0002";
+    const secondBytes = makeMissionZip(
+      "other/run/mission_plan.json",
+      secondPlan
+    );
+
+    await Promise.all([
+      handle({
+        type: "parse",
+        requestId: "progress-a",
+        fileName: "a.zip",
+        bytes: copyToArrayBuffer(firstBytes)
+      }),
+      handle({
+        type: "parse",
+        requestId: "progress-b",
+        fileName: "b.zip",
+        bytes: copyToArrayBuffer(secondBytes)
+      })
+    ]);
+
+    for (const requestId of ["progress-a", "progress-b"]) {
+      const progress = responses.filter(
+        (response): response is Extract<
+          ImportWorkerResponse,
+          {type: "progress"}
+        > =>
+          response.type === "progress" &&
+          response.requestId === requestId
+      );
+      expect(progress.map(update => update.stage)).toEqual([
+        "unzip",
+        "unzip",
+        "validate",
+        "validate",
+        "convert",
+        "convert"
+      ]);
+      expect(progress.map(update => update.percent)).toEqual([
+        0,
+        35,
+        45,
+        65,
+        75,
+        100
+      ]);
+      expect(responses).toContainEqual(expect.objectContaining({
+        type: "success",
+        requestId
+      }));
+    }
+    expect(responses.filter(response =>
+      response.type === "progress" &&
+      !["progress-a", "progress-b"].includes(response.requestId)
+    )).toHaveLength(0);
+  });
+
   it("never posts success after cancellation and keeps requests isolated", async () => {
     const responses: ImportWorkerResponse[] = [];
     const pending = new Map<

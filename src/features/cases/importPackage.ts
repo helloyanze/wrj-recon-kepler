@@ -92,10 +92,11 @@ const MAX_ZIP_COMMENT_BYTES = 0xffff;
 const UNIX_FILE_TYPE_MASK = 0o170000;
 const UNIX_SYMBOLIC_LINK_TYPE = 0o120000;
 
-const OPTIONAL_SIBLING_FILES = [
+const OPTIONAL_METADATA_FILES = [
   "score_report.json",
   "validation_report.json",
-  "trajectories.geojson"
+  "trajectories.geojson",
+  "region_profile.json"
 ] as const;
 
 export function normalizeZipEntryPath(path: string): string {
@@ -347,7 +348,10 @@ export function convertExtractedAlgorithmPackage(
   const entries = new Map<string, Uint8Array>();
   for (const entry of extractedEntries) {
     const normalizedPath = normalizeZipEntryPath(entry.path);
-    if (isIgnoredOsPath(normalizedPath)) {
+    if (
+      entry.path.replaceAll("\\", "/").endsWith("/") ||
+      isIgnoredOsPath(normalizedPath)
+    ) {
       continue;
     }
     if (entries.has(normalizedPath)) {
@@ -367,26 +371,27 @@ export function convertExtractedAlgorithmPackage(
   }
   const missionPath = missionPaths[0];
   const runDirectory = dirname(missionPath);
-  const optionalPaths = [
-    ...OPTIONAL_SIBLING_FILES.map(fileName =>
-      joinArchivePath(runDirectory, fileName)
-    ),
-    joinArchivePath(
-      runDirectory,
-      "intermediate/region_profile.json"
-    )
-  ];
 
   const missionPlan = parseJsonEntry(entries, missionPath);
-  for (const optionalPath of optionalPaths.slice(0, -1)) {
-    if (entries.has(optionalPath)) {
-      parseJsonEntry(entries, optionalPath);
+  const optionalValues = new Map<string, unknown>();
+  for (const fileName of OPTIONAL_METADATA_FILES) {
+    const matches = [...entries.keys()]
+      .filter(path => basename(path) === fileName)
+      .sort(compareStrings);
+    if (matches.length > 1) {
+      throw new Error(
+        `Ambiguous optional ZIP metadata ${fileName}; found: ` +
+        matches.join(", ")
+      );
+    }
+    if (matches.length === 1) {
+      optionalValues.set(
+        fileName,
+        parseJsonEntry(entries, matches[0])
+      );
     }
   }
-  const regionProfilePath = optionalPaths[optionalPaths.length - 1];
-  const regionProfile = entries.has(regionProfilePath)
-    ? parseJsonEntry(entries, regionProfilePath)
-    : undefined;
+  const regionProfile = optionalValues.get("region_profile.json");
   throwIfAborted(options.signal);
 
   const sourceRun =
@@ -487,12 +492,6 @@ function dirname(path: string): string {
   return separator < 0 ? "" : path.slice(0, separator);
 }
 
-function joinArchivePath(directory: string, relativePath: string): string {
-  return directory.length === 0
-    ? relativePath
-    : `${directory}/${relativePath}`;
-}
-
 function parseJsonEntry(
   entries: ReadonlyMap<string, Uint8Array>,
   path: string
@@ -578,4 +577,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function compareStrings(left: string, right: string): number {
+  if (left < right) {
+    return -1;
+  }
+  if (left > right) {
+    return 1;
+  }
+  return 0;
 }
