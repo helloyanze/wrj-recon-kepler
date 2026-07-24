@@ -4,6 +4,9 @@ import {
   loadCaseCatalog
 } from "../../src/features/cases/loadCaseCatalog";
 import type {CaseCatalogEntry} from "../../src/features/cases/catalogSchema";
+import {caseBundleSchema} from "../../src/features/cases/caseBundle";
+import {readFile} from "node:fs/promises";
+import {resolve} from "node:path";
 
 const catalogUrl = "/data/integration-cases/catalog.json";
 const bundleUrl =
@@ -18,11 +21,11 @@ const catalogEntry: CaseCatalogEntry = {
   sourcePath:
     "R10-LONG-TRANSIT-01/20260721T192032/mission_plan.json",
   metrics: {
-    uavCount: 0,
-    sortieCount: 0,
-    batchCount: 0,
-    stripCount: 0,
-    missionMakespanSec: 0
+    uavCount: 1,
+    sortieCount: 1,
+    batchCount: 1,
+    stripCount: 1,
+    missionMakespanSec: 10
   },
   warnings: []
 };
@@ -40,9 +43,79 @@ const bundle = {
     planId: catalogEntry.planId,
     displayName: catalogEntry.displayName
   },
-  assignments: [],
-  sorties: [],
-  strips: [],
+  assignments: [
+    {
+      assignmentId: "ASG-001",
+      uavId: "UAV-01",
+      baseId: "BASE-01",
+      flightCandidateId: "FPC-001",
+      stripIds: ["ST-001"],
+      stripStartIndex: 0,
+      stripEndIndex: 0,
+      batchIndex: 0,
+      plannedLaunchTimeSec: 0
+    }
+  ],
+  sorties: [
+    {
+      trajectoryId: "TRJ-001",
+      assignmentId: "ASG-001",
+      uavId: "UAV-01",
+      batchIndex: 0,
+      plannedLaunchTimeSec: 0,
+      stripIds: ["ST-001"],
+      totalDistanceM: 1000,
+      totalDurationSec: 10,
+      totalFuelKg: 1,
+      segments: [
+        {
+          segmentId: "SEG-001",
+          segmentType: "COVERAGE_LINE",
+          stripId: "ST-001",
+          startTimeSec: 0,
+          endTimeSec: 10,
+          heightM: 1000,
+          speedMps: 100,
+          distanceM: 1000,
+          fuelConsumptionKg: 1,
+          localPath: [
+            [0, 0, 1000],
+            [1000, 0, 1000]
+          ],
+          mapPath: [
+            [110.2, 18.6, 1000],
+            [110.21, 18.6, 1000]
+          ],
+          timedPath: [
+            [110.2, 18.6, 1000, 0],
+            [110.21, 18.6, 1000, 10]
+          ]
+        }
+      ],
+      trip: [
+        [110.2, 18.6, 1000, 0],
+        [110.21, 18.6, 1000, 10]
+      ]
+    }
+  ],
+  strips: [
+    {
+      stripId: "ST-001",
+      index: 0,
+      uavId: "UAV-01",
+      assignmentId: "ASG-001",
+      line: [
+        [110.2, 18.6, 0],
+        [110.21, 18.6, 0]
+      ],
+      polygon: [
+        [110.2, 18.59, 0],
+        [110.21, 18.59, 0],
+        [110.21, 18.61, 0],
+        [110.2, 18.59, 0]
+      ]
+    }
+  ],
   region: {
     source: "DERIVED_FROM_STRIPS",
     polygon: [
@@ -53,14 +126,14 @@ const bundle = {
     ]
   },
   metrics: {
-    uavCount: 0,
-    sortieCount: 0,
-    batchCount: 0,
-    stripCount: 0,
+    uavCount: 1,
+    sortieCount: 1,
+    batchCount: 1,
+    stripCount: 1,
     coverageRatio: 0,
-    missionMakespanSec: 0,
-    totalDistanceM: 0,
-    totalFuelKg: 0
+    missionMakespanSec: 10,
+    totalDistanceM: 1000,
+    totalFuelKg: 1
   },
   validation: {
     valid: true,
@@ -111,6 +184,47 @@ describe("algorithm case catalog loaders", () => {
     );
     expect(fetchMock).toHaveBeenCalledWith(bundleUrl, {signal: undefined});
   });
+
+  it.each([
+    {
+      label: "caseId",
+      value: {
+        ...bundle,
+        case: {...bundle.case, caseId: "R01-OTHER"}
+      },
+      expected: catalogEntry.caseId,
+      actual: "R01-OTHER"
+    },
+    {
+      label: "planId",
+      value: {
+        ...bundle,
+        case: {...bundle.case, planId: "PLAN-OTHER"}
+      },
+      expected: catalogEntry.planId,
+      actual: "PLAN-OTHER"
+    },
+    {
+      label: "sourceRun",
+      value: {
+        ...bundle,
+        provenance: {...bundle.provenance, sourceRun: "20260101T000000"}
+      },
+      expected: catalogEntry.runId,
+      actual: "20260101T000000"
+    }
+  ])(
+    "rejects a bundle whose $label does not match its catalog entry",
+    async ({label, value, expected, actual}) => {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(value)));
+
+      await expect(loadBuiltInCase(catalogEntry, "/data")).rejects.toThrow(
+        new RegExp(
+          `${bundleUrl.replaceAll("/", "\\/")}.*${label}.*expected ${expected}.*actual ${actual}`
+        )
+      );
+    }
+  );
 
   it("rebases catalog and bundle URLs onto a mirror data root", async () => {
     const responses = new Map<string, unknown>([
@@ -217,6 +331,110 @@ describe("algorithm case catalog loaders", () => {
     ).rejects.toThrow(
       /\/data\/integration-cases\/R10-LONG-TRANSIT-01\/bundle\.json.*metrics\.missionMakespanSec/
     );
+  });
+
+  it.each(["assignments", "sorties", "strips"] as const)(
+    "rejects an empty %s collection",
+    collection => {
+      expect(
+        caseBundleSchema.safeParse({...bundle, [collection]: []}).success
+      ).toBe(false);
+    }
+  );
+
+  it.each([
+    {field: "uavCount", value: 2},
+    {field: "sortieCount", value: 2},
+    {field: "batchCount", value: 2},
+    {field: "stripCount", value: 2}
+  ] as const)(
+    "rejects an inconsistent metrics.$field",
+    ({field, value}) => {
+      expect(
+        caseBundleSchema.safeParse({
+          ...bundle,
+          metrics: {...bundle.metrics, [field]: value}
+        }).success
+      ).toBe(false);
+    }
+  );
+
+  it.each([
+    {
+      label: "sortie assignment",
+      value: {
+        ...bundle,
+        sorties: [
+          {...bundle.sorties[0], assignmentId: "ASG-MISSING"}
+        ]
+      }
+    },
+    {
+      label: "sortie UAV ownership",
+      value: {
+        ...bundle,
+        sorties: [{...bundle.sorties[0], uavId: "UAV-OTHER"}]
+      }
+    },
+    {
+      label: "strip assignment",
+      value: {
+        ...bundle,
+        strips: [
+          {...bundle.strips[0], assignmentId: "ASG-MISSING"}
+        ]
+      }
+    },
+    {
+      label: "strip UAV ownership",
+      value: {
+        ...bundle,
+        strips: [{...bundle.strips[0], uavId: "UAV-OTHER"}]
+      }
+    },
+    {
+      label: "assignment strip ownership",
+      value: {
+        ...bundle,
+        assignments: [{...bundle.assignments[0], stripIds: ["ST-MISSING"]}]
+      }
+    }
+  ])("rejects inconsistent $label references", ({value}) => {
+    expect(caseBundleSchema.safeParse(value).success).toBe(false);
+  });
+
+  it("parses the committed R10 generated bundle", async () => {
+    const raw = await readFile(
+      resolve(
+        process.cwd(),
+        "public/data/integration-cases/R10-LONG-TRANSIT-01/bundle.json"
+      ),
+      "utf8"
+    );
+
+    expect(() => caseBundleSchema.parse(JSON.parse(raw))).not.toThrow();
+  });
+
+  it("parses every committed generated bundle in the catalog", async () => {
+    const dataRoot = resolve(
+      process.cwd(),
+      "public/data/integration-cases"
+    );
+    const committedCatalog = JSON.parse(
+      await readFile(resolve(dataRoot, "catalog.json"), "utf8")
+    ) as {cases: Array<{caseId: string}>};
+
+    expect(committedCatalog.cases).toHaveLength(11);
+    for (const entry of committedCatalog.cases) {
+      const raw = await readFile(
+        resolve(dataRoot, encodeURIComponent(entry.caseId), "bundle.json"),
+        "utf8"
+      );
+      expect(
+        caseBundleSchema.safeParse(JSON.parse(raw)).success,
+        entry.caseId
+      ).toBe(true);
+    }
   });
 
   it("preserves AbortError and passes the caller signal to fetch", async () => {

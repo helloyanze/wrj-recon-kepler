@@ -49,5 +49,32 @@ export async function loadBuiltInCase(
   const parsedEntry = caseCatalogEntrySchema.parse(entry);
   const url = rebaseDataUrl(parsedEntry.bundleUrl, dataBase);
   const raw = await loadJson<unknown>(url, signal);
-  return parseFromUrl(caseBundleSchema, raw, url);
+  const bundle = parseFromUrl(caseBundleSchema, raw, url);
+  const identities = [
+    {
+      label: "caseId",
+      expected: parsedEntry.caseId,
+      actual: bundle.case.caseId
+    },
+    {
+      label: "planId",
+      expected: parsedEntry.planId,
+      actual: bundle.case.planId
+    },
+    {
+      label: "sourceRun",
+      expected: parsedEntry.runId,
+      actual: bundle.provenance.sourceRun
+    }
+  ];
+  const mismatch = identities.find(
+    identity => identity.actual !== identity.expected
+  );
+  if (mismatch !== undefined) {
+    throw new Error(
+      `校验 ${url} 的 catalog 身份失败：${mismatch.label} ` +
+      `expected ${mismatch.expected}, actual ${mismatch.actual}`
+    );
+  }
+  return bundle;
 }
