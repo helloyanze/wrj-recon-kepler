@@ -629,7 +629,7 @@ git commit -m "feat: parse algorithm zip packages"
 
 - [ ] **Step 1: Write failing repository tests**
 
-Inject a fake CaseRepository database adapter and test:
+Build a fake low-level `CaseDatabaseAdapter` backed by a `Map` and pass it to `createCaseRepository(adapter)`. Test the production repository behavior for successful persistence, overwrite, and delete:
 
 ```ts
 await repository.save(bundle);
@@ -642,7 +642,7 @@ await repository.remove(bundle.case.caseId, bundle.case.planId);
 expect(await repository.list()).toEqual([]);
 ```
 
-Also force `indexedDB.open` to fail and assert the memory repository supports the same session API while returning `{persistent: false}`.
+Mock the browser adapter factory (`openBrowserCaseDatabaseAdapter`) to reject, then call the public parameterless `openCaseRepository()` and assert its memory fallback supports the same session API while returning `{persistent: false}`. Do not replace `CaseRepository` itself with a fake.
 
 - [ ] **Step 2: Verify failure**
 
@@ -652,9 +652,17 @@ Expected: FAIL because `caseRepository.ts` is missing.
 
 - [ ] **Step 3: Implement IndexedDB storage**
 
-Use database `wrj-algorithm-cases`, version 1, object store `bundles`, and key `${caseId}:${planId}`. Store a lightweight list record separately from the full bundle so the case selector does not deserialize every trajectory. Export:
+Use database `wrj-algorithm-cases`, version 1, object store `bundles`, and key `${caseId}:${planId}`. Store a lightweight list record separately from the full bundle so the case selector does not deserialize every trajectory. Define the low-level storage seam and export:
 
 ```ts
+export interface CaseDatabaseAdapter {
+  get(key: string): Promise<CaseBundleV2 | undefined>;
+  list(): Promise<ImportedCaseEntry[]>;
+  put(key: string, bundle: CaseBundleV2, entry: ImportedCaseEntry): Promise<void>;
+  delete(key: string): Promise<void>;
+  close(): Promise<void>;
+}
+
 export interface CaseRepository {
   persistent: boolean;
   list(): Promise<ImportedCaseEntry[]>;
@@ -663,10 +671,11 @@ export interface CaseRepository {
   remove(caseId: string, planId: string): Promise<void>;
 }
 
+export function createCaseRepository(adapter: CaseDatabaseAdapter): CaseRepository;
 export function openCaseRepository(): Promise<CaseRepository>;
 ```
 
-If opening IndexedDB fails, return one process-local memory repository and expose `persistent: false`; do not swallow later transaction errors.
+`createCaseRepository(adapter)` contains the shared production behavior and is the test target; it must call the adapter for bundle and list-record operations. Keep `openCaseRepository()` parameterless for app code: it opens the browser `idb` adapter via `openBrowserCaseDatabaseAdapter`, then delegates to `createCaseRepository`. If that adapter factory/open operation fails, return one process-local memory repository and expose `persistent: false`; do not swallow later transaction errors.
 
 - [ ] **Step 4: Run focused and full foundation verification**
 
