@@ -16,8 +16,8 @@
     "data:generate-simulated": "node scripts/generate-simulated-mission.mjs",
     "data:validate": "node scripts/validate-case-data.mjs",
     "data:prepare": "npm run data:fetch-real && npm run data:generate-simulated && npm run data:validate",
-    "data:prepare-algorithm": "vite-node scripts/prepare-algorithm-cases.ts",
-    "data:check-algorithm": "vite-node scripts/prepare-algorithm-cases.ts --check"
+    "data:prepare-algorithm": "vite-node --script scripts/prepare-algorithm-cases.ts",
+    "data:check-algorithm": "vite-node --script scripts/prepare-algorithm-cases.ts --check"
   },
   "engines": {
     "node": ">=20 <21"
