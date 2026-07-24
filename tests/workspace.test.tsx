@@ -1,84 +1,28 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {StrictMode} from "react";
-import {mapStyleChange, registerEntry, updateMap} from "@kepler.gl/actions";
 import {act, cleanup, fireEvent, render, screen, waitFor} from "@testing-library/react";
 import {Provider} from "react-redux";
 import {afterEach, describe, expect, it, vi} from "vitest";
+import {updateMap} from "@kepler.gl/actions";
 import {createAppStore} from "../src/app/store";
-import {caseManifestSchema, caseSummarySchema} from "../src/data/caseSchema";
-import type {CaseBundle, LoadedCaseDataset} from "../src/data/loadCase";
-import {Workspace} from "../src/components/Workspace";
 import type {ResolvedBasemap} from "../src/basemap/basemapConfig";
+import {Workspace} from "../src/components/Workspace";
 import type {WrjKeplerMapProps} from "../src/components/WrjKeplerMap";
-import {loadKeplerCase} from "../src/kepler/loadKeplerCase";
+import {
+  caseBundleSchema,
+  type CaseBundleV2
+} from "../src/features/cases/caseBundle";
+import type {CaseRepository} from "../src/features/cases/caseRepository";
+import type {
+  CaseCatalogEntry,
+  CaseCatalogV1
+} from "../src/features/cases/catalogSchema";
+import type {CaseLibraryDependencies} from "../src/hooks/useCaseLibrary";
 
 vi.mock("../src/components/WrjKeplerMap", () => ({
   WrjKeplerMap: () => <div data-testid="default-kepler-map">Kepler map</div>
 }));
-
-afterEach(() => {
-  cleanup();
-  latestMapProps = undefined;
-  window.localStorage.clear();
-  vi.unstubAllGlobals();
-});
-
-function readJson(path: string): unknown {
-  return JSON.parse(readFileSync(resolve(path), "utf8")) as unknown;
-}
-
-function makeBundle(): CaseBundle {
-  return {
-    manifest: caseManifestSchema.parse(
-      readJson("public/data/riyue-3d/case-manifest.json")
-    ),
-    summary: caseSummarySchema.parse(
-      readJson("public/data/riyue-3d/simulated/summary.json")
-    ),
-    keplerConfig: {},
-    datasets: []
-  };
-}
-
-function makeIntegratedBundle(): CaseBundle {
-  const manifest = caseManifestSchema.parse(
-    readJson("public/data/riyue-3d/case-manifest.json")
-  );
-  const datasets: LoadedCaseDataset[] = manifest.datasets.map((dataset) => (
-    dataset.file.endsWith(".csv")
-      ? {...dataset, format: "csv", raw: readFileSync(resolve(`public${dataset.file}`), "utf8")}
-      : {...dataset, format: "geojson", raw: readJson(`public${dataset.file}`)}
-  ));
-  return {
-    manifest,
-    summary: caseSummarySchema.parse(
-      readJson("public/data/riyue-3d/simulated/summary.json")
-    ),
-    keplerConfig: readJson("public/config/wrj-kepler-config.json") as Record<string, unknown>,
-    datasets
-  };
-}
-
-function deferred<T>() {
-  let resolve!: (value: T) => void;
-  const promise = new Promise<T>((resolvePromise) => {
-    resolve = resolvePromise;
-  });
-  return {promise, resolve};
-}
-
-let latestMapProps: WrjKeplerMapProps | undefined;
-
-const MapStub = (props: WrjKeplerMapProps) => {
-  latestMapProps = props;
-  return (
-    <div data-testid="kepler-map">
-      Kepler map
-      <input aria-label="地图输入控件" />
-    </div>
-  );
-};
 
 const PUBLIC_BASEMAP: ResolvedBasemap = {
   provider: "public",
@@ -97,278 +41,220 @@ const PUBLIC_BASEMAP: ResolvedBasemap = {
   }
 };
 
-const LOCAL_BASEMAP: ResolvedBasemap = {
-  provider: "local",
-  mapboxToken: "",
-  mapStyles: [
-    {id: "satellite", style: {version: 8, sources: {}, layers: []}},
-    {id: "light", style: {version: 8, sources: {}, layers: []}}
-  ],
-  mapStylesReplaceDefault: true,
-  primaryLabel: "本地地图",
-  secondaryLabel: "公共备用",
-  statusLabel: "本地底图",
-  attributionByStyle: {
-    satellite: "© 本地测绘数据",
-    light: "© OpenStreetMap contributors"
-  }
-};
+const R10_BUNDLE = caseBundleSchema.parse(JSON.parse(readFileSync(resolve(
+  "public/data/integration-cases/R10-LONG-TRANSIT-01/bundle.json"
+), "utf8")) as unknown);
+
+function bundleFor(entry: CaseCatalogEntry): CaseBundleV2 {
+  return {
+    ...structuredClone(R10_BUNDLE),
+    case: {
+      caseId: entry.caseId,
+      planId: entry.planId,
+      displayName: entry.displayName
+    },
+    provenance: {
+      ...R10_BUNDLE.provenance,
+      sourceRun: entry.runId
+    }
+  };
+}
+
+function entry(caseId: string, planId: string): CaseCatalogEntry {
+  return {
+    caseId,
+    planId,
+    displayName: caseId,
+    runId: "20260721T192032",
+    bundleUrl: `/data/integration-cases/${encodeURIComponent(caseId)}/bundle.json`,
+    sourcePath: `${caseId}/20260721T192032/mission_plan.json`,
+    metrics: {
+      uavCount: 2,
+      sortieCount: 5,
+      batchCount: 3,
+      stripCount: 20,
+      missionMakespanSec: 3598.185
+    },
+    warnings: []
+  };
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return {promise, resolve, reject};
+}
+
+function dependencies(
+  overrides: Partial<CaseLibraryDependencies> = {}
+): CaseLibraryDependencies {
+  const r01 = entry("R01-BASELINE-01", "PLAN-001");
+  const r10 = entry("R10-LONG-TRANSIT-01", "PLAN-002");
+  const catalog: CaseCatalogV1 = {
+    version: 1,
+    defaultCaseId: r10.caseId,
+    cases: [r01, r10]
+  };
+  const repository: CaseRepository = {
+    persistent: true,
+    list: vi.fn(async () => []),
+    get: vi.fn(),
+    save: vi.fn(),
+    remove: vi.fn()
+  };
+  return {
+    loadCaseCatalog: vi.fn(async () => catalog),
+    loadBuiltInCase: vi.fn(async catalogEntry => bundleFor(catalogEntry)),
+    openCaseRepository: vi.fn(async () => repository),
+    ...overrides
+  };
+}
+
+let latestMapProps: WrjKeplerMapProps | undefined;
+
+function MapStub(props: WrjKeplerMapProps) {
+  latestMapProps = props;
+  return <div data-testid="kepler-map"><input aria-label="地图输入控件" /></div>;
+}
 
 function renderWorkspace(
-  caseLoader = vi.fn().mockResolvedValue(makeBundle()),
-  keplerLoader = vi.fn().mockResolvedValue(undefined),
-  store = createAppStore(false),
-  basemap = PUBLIC_BASEMAP
+  caseLibraryDependencies = dependencies(),
+  strict = false
 ) {
-  render(
+  const store = createAppStore(false);
+  const workspace = (
     <Provider store={store}>
       <Workspace
-        basemap={basemap}
+        basemap={PUBLIC_BASEMAP}
         debugMode={false}
         dataBase="/data"
-        caseLoader={caseLoader}
-        keplerLoader={keplerLoader}
+        caseLibraryDependencies={caseLibraryDependencies}
         MapView={MapStub}
       />
     </Provider>
   );
-  return {store, caseLoader, keplerLoader};
+  render(strict ? <StrictMode>{workspace}</StrictMode> : workspace);
+  return {store, dependencies: caseLibraryDependencies};
 }
 
-describe("WRJ workspace", () => {
-  it("renders the simplified map-first shell and moves metrics into the overview drawer", async () => {
-    renderWorkspace();
-    await screen.findByText("方案可行");
+afterEach(() => {
+  cleanup();
+  latestMapProps = undefined;
+  localStorage.clear();
+});
 
-    expect(screen.getByRole("heading", {name: "图层"})).toBeInTheDocument();
-    expect(screen.queryByLabelText("任务指标")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("任务阶段")).not.toBeInTheDocument();
-    expect(screen.queryByText("63.23 km")).not.toBeInTheDocument();
+describe("dynamic algorithm Workspace", () => {
+  it("loads catalog.defaultCaseId R10 and drives the 3D map from its bundle", async () => {
+    const {dependencies: deps} = renderWorkspace();
 
-    fireEvent.click(screen.getByRole("button", {name: "任务概览"}));
-    expect(screen.getByRole("dialog", {name: "任务概览"})).toBeInTheDocument();
-    expect(screen.getByText("63.23 km")).toBeInTheDocument();
-    expect(screen.getByText("98%")).toBeInTheDocument();
-  });
-
-  it("keeps the six fixed layers in the sidebar and collapses to an icon rail", async () => {
-    renderWorkspace();
-    await screen.findByText("方案可行");
-
-    const layerList = screen.getByRole("list", {name: "图层列表"});
-    expect(layerList.textContent).toContain("真实 POI");
-    expect(layerList.textContent).toContain("真实上下文");
-    expect(layerList.textContent).toContain("模拟任务区域");
-    expect(layerList.textContent).toContain("模拟侦察条带");
-    expect(layerList.textContent).toContain("模拟规划航迹");
-    expect(layerList.textContent).toContain("模拟 Trip");
-
-    fireEvent.click(screen.getByRole("button", {name: "收起图层"}));
-    expect(screen.getByRole("complementary", {name: "图层"})).toHaveStyle({width: "44px"});
-    fireEvent.click(screen.getByRole("button", {name: "展开图层"}));
-    expect(screen.getByRole("heading", {name: "图层"})).toBeInTheDocument();
-  });
-
-  it("prevents basemap changes until the fixed case is ready", async () => {
-    const pendingCase = deferred<CaseBundle>();
-    const store = createAppStore(false);
-    const dispatch = vi.spyOn(store, "dispatch");
-    renderWorkspace(vi.fn(() => pendingCase.promise), undefined, store);
-
-    const primaryButton = screen.getByRole("button", {name: "公共地图"});
-    const secondaryButton = screen.getByRole("button", {name: "OSM 简洁图"});
-    expect(primaryButton).toBeDisabled();
-    expect(secondaryButton).toBeDisabled();
-    fireEvent.click(secondaryButton);
-    expect(dispatch).not.toHaveBeenCalled();
-
-    await act(async () => {
-      pendingCase.resolve(makeBundle());
-      await pendingCase.promise;
-    });
+    expect(screen.getByText("正在加载算例数据…")).toBeInTheDocument();
     expect(await screen.findByText("方案可行")).toBeInTheDocument();
-    expect(primaryButton).toBeEnabled();
-    expect(secondaryButton).toBeEnabled();
-    fireEvent.click(secondaryButton);
+    expect(screen.getByLabelText("选择算例")).toHaveValue(
+      "R10-LONG-TRANSIT-01:PLAN-002:built-in"
+    );
+    expect(screen.getAllByText("R10-LONG-TRANSIT-01")).toHaveLength(2);
+    await waitFor(() => expect(latestMapProps?.bundle?.case.caseId)
+      .toBe("R10-LONG-TRANSIT-01"));
+    expect(latestMapProps).toMatchObject({
+      missionTimeSec: expect.any(Number),
+      verticalScale: 1,
+      preferences: expect.objectContaining({
+        caseId: "R10-LONG-TRANSIT-01",
+        planId: "PLAN-002"
+      })
+    });
+    expect(deps.loadBuiltInCase).toHaveBeenCalledTimes(1);
+  });
 
-    expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({
-      meta: expect.objectContaining({_addr_: "@@KG_WRJ-MAP"}),
-      payload: expect.objectContaining({type: mapStyleChange("light").type})
+  it("keeps the loading shell while the catalog is pending", () => {
+    const catalog = deferred<CaseCatalogV1>();
+    renderWorkspace(dependencies({
+      loadCaseCatalog: vi.fn(() => catalog.promise)
     }));
-  });
-
-  it("does not render the custom provenance overlay while case data is loading", () => {
-    renderWorkspace(vi.fn(() => new Promise<CaseBundle>(() => undefined)));
 
     expect(screen.getByText("正在加载算例数据…")).toBeInTheDocument();
-    expect(screen.queryByText("© OpenStreetMap contributors · © CARTO")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", {name: "公共地图"})).toBeDisabled();
+    expect(latestMapProps?.bundle ?? null).toBeNull();
   });
 
-  it("loads the fixed case and renders the simplified shell, UAVs and permanent provenance", async () => {
-    const {caseLoader, keplerLoader} = renderWorkspace();
-
-    expect(screen.getByText("正在加载算例数据…")).toBeInTheDocument();
-    expect(await screen.findByText("方案可行")).toBeInTheDocument();
-    expect(screen.queryByText("63.23 km")).not.toBeInTheDocument();
-    expect(screen.getAllByRole("button", {name: /UAV-0[1-3]/})).toHaveLength(3);
-    expect(screen.getByTestId("kepler-map")).toBeInTheDocument();
-    expect(screen.queryByText(/本演示不构成真实飞行计划或空域信息/)).not.toBeInTheDocument();
-    expect(screen.queryByText("© OpenStreetMap contributors · © CARTO")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", {name: "公共地图"})).toBeInTheDocument();
-    expect(screen.getByRole("button", {name: "OSM 简洁图"})).toBeInTheDocument();
-    expect(caseLoader).toHaveBeenCalledTimes(1);
-    expect(keplerLoader).toHaveBeenCalledTimes(1);
-  });
-
-  it("passes extracted Trip paths and persists marker size changes without reinjecting data", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(
-      new Response(JSON.stringify({version: 8, sources: {}, layers: []}), {status: 200})
-    )));
-    const caseLoader = vi.fn().mockResolvedValue(makeIntegratedBundle());
-    const keplerLoader = vi.fn(loadKeplerCase);
-    const store = createAppStore(false);
-    store.dispatch(registerEntry({id: "wrj-map", mint: true}));
-    renderWorkspace(caseLoader, keplerLoader, store);
-
-    expect(await screen.findByText("方案可行")).toBeInTheDocument();
-    await waitFor(() => expect(latestMapProps?.flightPaths).toHaveLength(3));
-    await waitFor(() => expect(
-      store.getState().keplerGl["wrj-map"]?.visState.layers
-    ).toHaveLength(6));
-    expect(latestMapProps?.uavIconSize).toBe(32);
-
-    fireEvent.click(screen.getByRole("button", {name: "编辑 模拟 Trip"}));
-    fireEvent.click(screen.getByRole("button", {name: "展开 模拟 Trip 高级设置"}));
-    fireEvent.change(screen.getByLabelText("模拟 Trip 无人机图标大小"), {
-      target: {value: "48"}
-    });
-
-    await waitFor(() => expect(latestMapProps?.uavIconSize).toBe(48));
-    expect(JSON.parse(window.localStorage.getItem("wrj-layer-preferences:v1:riyue-3d")!))
-      .toMatchObject({layers: {"wrj-trip-layer": {iconSize: 48}}});
-    expect(keplerLoader).toHaveBeenCalledTimes(1);
-
-    fireEvent.click(screen.getByRole("button", {name: "恢复全部图层默认设置"}));
-    await waitFor(() => expect(latestMapProps?.uavIconSize).toBe(32));
-    expect(window.localStorage.getItem("wrj-layer-preferences:v1:riyue-3d")).toBeNull();
-    expect(keplerLoader).toHaveBeenCalledTimes(1);
-  });
-
-  it("switches public attribution from CARTO to OSM for the light style", async () => {
-    renderWorkspace();
-    await screen.findByText("方案可行");
-    fireEvent.click(screen.getByRole("button", {name: "任务概览"}));
-    expect(screen.getByText("© OpenStreetMap contributors · © CARTO")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", {name: "OSM 简洁图"}));
-
-    expect(screen.getByText("© OpenStreetMap contributors")).toBeInTheDocument();
-    expect(screen.queryByText("© OpenStreetMap contributors · © CARTO")).not.toBeInTheDocument();
-  });
-
-  it("switches local attribution to OSM for the public fallback style", async () => {
-    renderWorkspace(undefined, undefined, undefined, LOCAL_BASEMAP);
-    await screen.findByText("方案可行");
-
-    fireEvent.click(screen.getByRole("button", {name: "任务概览"}));
-    expect(screen.getByText("© 本地测绘数据")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", {name: "公共备用"}));
-
-    expect(screen.getByText("© OpenStreetMap contributors")).toBeInTheDocument();
-    expect(screen.queryByText("© 本地测绘数据")).not.toBeInTheDocument();
-  });
-
-  it("updates UAV details and clears selection with Escape", async () => {
-    renderWorkspace();
-    await screen.findByText("方案可行");
-
-    fireEvent.click(screen.getByRole("button", {name: /UAV-02/}));
-    expect(screen.getByRole("dialog", {name: "UAV-02 任务详情"})).toBeInTheDocument();
-    expect(screen.getByText("WRJ02")).toBeInTheDocument();
-    expect(screen.getByText("139.5 m")).toBeInTheDocument();
-
-    fireEvent.keyDown(window, {key: "Escape"});
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  });
-
-  it("retries a failed case load", async () => {
-    const loader = vi
-      .fn()
-      .mockRejectedValueOnce(new Error("network down"))
-      .mockResolvedValueOnce(makeBundle());
-    renderWorkspace(loader);
+  it("reports load errors, retries, and then preserves normal controls", async () => {
+    const r10 = entry("R10-LONG-TRANSIT-01", "PLAN-002");
+    const loader = vi.fn()
+      .mockRejectedValueOnce(new Error("bundle offline"))
+      .mockResolvedValueOnce(bundleFor(r10));
+    renderWorkspace(dependencies({loadBuiltInCase: loader}));
 
     expect(await screen.findByText("算例加载失败")).toBeInTheDocument();
-    expect(screen.getByText(/network down/)).toBeInTheDocument();
-    expect(screen.queryByText(/本演示不构成真实飞行计划或空域信息/)).not.toBeInTheDocument();
-    expect(screen.queryByText("© OpenStreetMap contributors · © CARTO")).not.toBeInTheDocument();
+    expect(screen.getByText("bundle offline")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", {name: "重新加载"}));
 
     expect(await screen.findByText("方案可行")).toBeInTheDocument();
     expect(loader).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole("button", {name: "公共地图"})).toBeEnabled();
   });
 
-  it("dispatches reset and basemap actions from buttons and the R shortcut", async () => {
-    const store = createAppStore(false);
-    const dispatch = vi.spyOn(store, "dispatch");
-    renderWorkspace(undefined, undefined, store);
+  it("switches cases without injecting legacy Kepler datasets", async () => {
+    const {dependencies: deps} = renderWorkspace();
     await screen.findByText("方案可行");
 
-    fireEvent.click(screen.getByRole("button", {name: "OSM 简洁图"}));
-    fireEvent.click(screen.getByRole("button", {name: "公共地图"}));
+    fireEvent.change(screen.getByLabelText("选择算例"), {
+      target: {value: "R01-BASELINE-01:PLAN-001:built-in"}
+    });
+
+    await waitFor(() => expect(latestMapProps?.bundle?.case.caseId)
+      .toBe("R01-BASELINE-01"));
+    expect(screen.getAllByText("R01-BASELINE-01")).toHaveLength(2);
+    expect(deps.loadBuiltInCase).toHaveBeenCalledTimes(2);
+  });
+
+  it("resets the camera from the current algorithm bundle and ignores R in an input", async () => {
+    const {store} = renderWorkspace();
+    const dispatch = vi.spyOn(store, "dispatch");
+    await screen.findByText("方案可行");
+    dispatch.mockClear();
+
     fireEvent.click(screen.getByRole("button", {name: "重置三维视角"}));
     fireEvent.keyDown(window, {key: "r"});
-
-    await waitFor(() => expect(dispatch).toHaveBeenCalledTimes(4));
-    const actions = dispatch.mock.calls.map(([action]) => action as unknown as {
-      meta: {_addr_: string};
-      payload: {type: string};
-    });
-    expect(actions.map(({meta}) => meta._addr_)).toEqual([
-      "@@KG_WRJ-MAP",
-      "@@KG_WRJ-MAP",
-      "@@KG_WRJ-MAP",
-      "@@KG_WRJ-MAP"
-    ]);
-    expect(actions.map(({payload}) => payload.type)).toEqual([
-      mapStyleChange("light").type,
-      mapStyleChange("satellite").type,
-      updateMap({}).type,
-      updateMap({}).type
-    ]);
+    expect(dispatch).toHaveBeenCalledTimes(2);
+    expect(dispatch.mock.calls.map(([action]) => (
+      action as unknown as {payload: {type: string}}
+    ).payload.type)).toEqual([updateMap({}).type, updateMap({}).type]);
 
     const mapInput = screen.getByLabelText("地图输入控件");
     mapInput.focus();
     fireEvent.keyDown(mapInput, {key: "r"});
-    expect(dispatch).toHaveBeenCalledTimes(4);
+    expect(dispatch).toHaveBeenCalledTimes(2);
   });
 
-  it("performs one effective Kepler injection under React StrictMode", async () => {
-    const caseLoader = vi.fn().mockResolvedValue(makeBundle());
-    let finishInjection: (() => void) | undefined;
-    const keplerLoader = vi.fn(
-      () => new Promise<void>((resolve) => { finishInjection = resolve; })
-    );
-    const store = createAppStore(false);
+  it("performs one catalog, repository and R10 load under React StrictMode", async () => {
+    const deps = dependencies();
+    renderWorkspace(deps, true);
 
-    render(
-      <StrictMode>
-        <Provider store={store}>
-          <Workspace
-            basemap={PUBLIC_BASEMAP}
-            debugMode={false}
-            dataBase="/data"
-            caseLoader={caseLoader}
-            keplerLoader={keplerLoader}
-            MapView={MapStub}
-          />
-        </Provider>
-      </StrictMode>
-    );
-
-    await waitFor(() => expect(keplerLoader).toHaveBeenCalledTimes(1));
-    finishInjection?.();
     expect(await screen.findByText("方案可行")).toBeInTheDocument();
-    expect(keplerLoader).toHaveBeenCalledTimes(1);
+    expect(deps.loadCaseCatalog).toHaveBeenCalledTimes(1);
+    expect(deps.openCaseRepository).toHaveBeenCalledTimes(1);
+    expect(deps.loadBuiltInCase).toHaveBeenCalledTimes(1);
+  });
+
+  it("switches basemap style only after a bundle is ready", async () => {
+    const pending = deferred<CaseBundleV2>();
+    const {store} = renderWorkspace(dependencies({
+      loadBuiltInCase: vi.fn(() => pending.promise)
+    }));
+    const dispatch = vi.spyOn(store, "dispatch");
+    const light = screen.getByRole("button", {name: "OSM 简洁图"});
+    expect(light).toBeDisabled();
+
+    await act(async () => {
+      pending.resolve(R10_BUNDLE);
+      await pending.promise;
+    });
+    expect(await screen.findByText("方案可行")).toBeInTheDocument();
+    fireEvent.click(light);
+    expect(dispatch).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,34 +1,29 @@
 import {mapStyleChange, updateMap, wrapTo} from "@kepler.gl/actions";
 import type {ComponentType} from "react";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {useDispatch, useSelector, useStore} from "react-redux";
-import type {AppDispatch, RootState} from "../app/store";
+import {useCallback, useEffect, useMemo, useState} from "react";
+import {useDispatch} from "react-redux";
+import type {AppDispatch} from "../app/store";
 import type {ResolvedBasemap} from "../basemap/basemapConfig";
-import type {CaseSummary} from "../data/caseSchema";
-import {loadCase} from "../data/loadCase";
-import {extractFlightPaths, type UavFlightPath} from "../features/flight/flightPaths";
+import type {CaseSummary, UavSummary} from "../data/caseSchema";
+import type {CaseBundleV2} from "../features/cases/caseBundle";
 import {
-  controlledLayerViewModelsFromLayers,
-  selectControlledLayerViewModels,
-  type ControlledLayerViewModel,
-  type LayerAdvancedCapability
-} from "../features/layers/layerControls";
+  caseMapState
+} from "../features/mission/caseMapState";
+import {selectSortieStates} from "../features/mission/missionInterpolation";
 import {
-  createLayerAdvancedAction,
-  createLayerOpacityAction,
-  createLayerVisibilityAction,
-  createSingleLayerColorAction,
-  createUavPaletteAction
-} from "../features/layers/keplerLayerActions";
+  clearMissionLayerPreferences,
+  createDefaultMissionLayerPreferences,
+  loadMissionLayerPreferences,
+  saveMissionLayerPreferences,
+  type MissionLayerId,
+  type MissionLayerPreferencesV2
+} from "../features/mission/missionLayerPreferences";
 import {
-  clearLayerPreferences,
-  loadLayerPreferences,
-  saveLayerPreferences,
-  type LayerPreference,
-  type LayerPreferencesV1
-} from "../features/layers/layerPreferences";
-import {DEFAULT_MAP_STATE, UAV_COLORS, WRJ_MAP_ID} from "../kepler/constants";
-import {loadKeplerCase} from "../kepler/loadKeplerCase";
+  useCaseLibrary,
+  type CaseLibraryDependencies
+} from "../hooks/useCaseLibrary";
+import {useMissionClock} from "../hooks/useMissionClock";
+import {WRJ_MAP_ID} from "../kepler/constants";
 import {
   DetailDrawer,
   type DrawerContent
@@ -41,218 +36,255 @@ import {
 } from "./workspace/LayerSidebar";
 import {WrjKeplerMap, type WrjKeplerMapProps} from "./WrjKeplerMap";
 
-type CaseLoader = typeof loadCase;
-type KeplerLoader = typeof loadKeplerCase;
-type LoadStatus = "loading" | "ready" | "error";
-
 export interface WorkspaceProps {
   basemap: ResolvedBasemap;
   debugMode: boolean;
   dataBase: string;
-  caseLoader?: CaseLoader;
-  keplerLoader?: KeplerLoader;
+  caseLibraryDependencies?: CaseLibraryDependencies;
   MapView?: ComponentType<WrjKeplerMapProps>;
 }
 
-const SINGLE_COLOR_FALLBACKS: Record<string, string> = {
-  "wrj-pois-layer": "#E8F7FF",
-  "wrj-context-layer": "#C5D3E0",
-  "wrj-region-layer": "#35C5FF"
-};
+const COORDINATE_NOTICE =
+  "算法数据采用 LOCAL_CARTESIAN_M；当前地图位置为日月湾视觉锚定，不代表真实地理定位。";
 
-const DEFAULT_UAV_ICON_SIZE = 32;
-
-const ADVANCED_CAPABILITIES: readonly LayerAdvancedCapability[] = [
-  "radius",
-  "thickness",
-  "trailLength",
-  "filled",
-  "stroked"
+const LAYER_METADATA: ReadonlyArray<{
+  id: string;
+  missionId: MissionLayerId;
+  label: string;
+  mode: "single" | "uav";
+  capabilities: LayerViewModel["definition"]["capabilities"];
+}> = [
+  {
+    id: "wrj-region-layer",
+    missionId: "region",
+    label: "算法任务区",
+    mode: "single",
+    capabilities: ["filled", "stroked"]
+  },
+  {
+    id: "wrj-strips-layer",
+    missionId: "strips",
+    label: "侦察条带",
+    mode: "uav",
+    capabilities: ["thickness"]
+  },
+  {
+    id: "wrj-routes-layer",
+    missionId: "routes",
+    label: "静态规划航迹",
+    mode: "uav",
+    capabilities: ["thickness"]
+  },
+  {
+    id: "wrj-trip-layer",
+    missionId: "trips",
+    label: "动态飞行尾迹",
+    mode: "uav",
+    capabilities: ["thickness", "trailLength"]
+  }
 ];
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
-
-function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException && error.name === "AbortError";
-}
-
-function toLayerViewModel(
-  layer: ControlledLayerViewModel,
-  uavIconSize = DEFAULT_UAV_ICON_SIZE
-): LayerViewModel {
-  const palette = layer.uavPalette ?? [
-    UAV_COLORS["UAV-01"],
-    UAV_COLORS["UAV-02"],
-    UAV_COLORS["UAV-03"]
-  ];
-  const {radius, thickness, trailLength, filled, stroked} = layer.advancedValues;
+function toLegacySummary(bundle: CaseBundleV2): CaseSummary {
+  const uavIds = [...new Set(bundle.assignments.map(({uavId}) => uavId))];
+  const uavs = uavIds.map((uavId) => {
+    const sorties = bundle.sorties.filter(sortie => sortie.uavId === uavId);
+    const segments = sorties.flatMap(sortie => sortie.segments);
+    const stripIds = [...new Set(sorties.flatMap(sortie => sortie.stripIds))];
+    const altitude = (types?: ReadonlySet<string>) => Math.max(
+      0,
+      ...segments
+        .filter(segment => types === undefined || types.has(segment.segmentType))
+        .map(segment => segment.heightM)
+    );
+    return {
+      uavId: uavId as UavSummary["uavId"],
+      callsign: uavId,
+      stripRange: stripIds.length > 0
+        ? `${stripIds[0]} – ${stripIds.at(-1)}`
+        : "—",
+      distanceKm: sorties.reduce((sum, sortie) => sum + sortie.totalDistanceM, 0) / 1_000,
+      durationMin: sorties.reduce((sum, sortie) => sum + sortie.totalDurationSec, 0) / 60,
+      coverageAltitudeM: altitude(new Set(["COVERAGE_LINE", "TURN"])),
+      transitAltitudeM: altitude(new Set(["ENTRY", "RETURN"])),
+      maxAltitudeM: altitude(),
+      status: "VALID"
+    };
+  });
 
   return {
-    id: layer.id,
-    label: layer.label,
-    visible: layer.isVisible,
-    definition: {
-      mode: layer.colorMode,
-      capabilities: layer.advancedCapabilities
+    schemaVersion: "1.0",
+    caseId: bundle.case.caseId,
+    name: bundle.case.displayName,
+    description: "算法输出任务规划",
+    status: bundle.validation.valid ? "FEASIBLE" : "WARNING",
+    demoMock: false,
+    location: "日月湾视觉锚定位置",
+    metrics: {
+      uavCount: bundle.metrics.uavCount,
+      stripCount: bundle.metrics.stripCount,
+      coverageRatio: bundle.metrics.coverageRatio,
+      missionMakespanSec: bundle.metrics.missionMakespanSec,
+      totalDistanceKm: bundle.metrics.totalDistanceM / 1_000,
+      totalFuelKg: bundle.metrics.totalFuelKg
     },
-    appearance: {
-      color: layer.singleColor ?? SINGLE_COLOR_FALLBACKS[layer.id] ?? "#35C5FF",
-      opacity: layer.opacity,
-      iconSize: layer.id === "wrj-trip-layer" ? uavIconSize : undefined,
-      uavColors: {
-        "UAV-01": palette[0],
-        "UAV-02": palette[1],
-        "UAV-03": palette[2]
+    uavs,
+    notice: COORDINATE_NOTICE
+  } as unknown as CaseSummary;
+}
+
+function sidebarModels(
+  preferences: MissionLayerPreferencesV2 | null
+): LayerViewModel[] {
+  if (preferences === null) return [];
+  return LAYER_METADATA.map(metadata => {
+    const layer = preferences.layers[metadata.missionId];
+    return {
+      id: metadata.id,
+      label: metadata.label,
+      visible: layer.visible,
+      definition: {
+        mode: metadata.mode,
+        capabilities: metadata.capabilities
       },
-      radius: typeof radius === "number" ? radius : undefined,
-      thickness: typeof thickness === "number" ? thickness : undefined,
-      trailLength: typeof trailLength === "number" ? trailLength : undefined,
-      filled: typeof filled === "boolean" ? filled : undefined,
-      stroked: typeof stroked === "boolean" ? stroked : undefined
-    }
-  };
-}
-
-function preferenceFromModel(layer: ControlledLayerViewModel): LayerPreference {
-  const preference: LayerPreference = {
-    visible: layer.isVisible,
-    opacity: layer.opacity
-  };
-
-  if (layer.singleColor) preference.color = layer.singleColor;
-  if (layer.uavPalette) {
-    preference.uavColors = {
-      "UAV-01": layer.uavPalette[0],
-      "UAV-02": layer.uavPalette[1],
-      "UAV-03": layer.uavPalette[2]
+      appearance: {
+        color: "#35C5FF",
+        opacity: layer.opacity,
+        iconSize: metadata.missionId === "trips"
+          ? preferences.markerSize
+          : undefined,
+        thickness: layer.width,
+        trailLength: layer.trailLengthSec,
+        filled: layer.filled,
+        stroked: layer.stroked,
+        uavColors: preferences.uavColors as LayerAppearance["uavColors"]
+      }
     };
-  }
-  for (const capability of ADVANCED_CAPABILITIES) {
-    const value = layer.advancedValues[capability];
-    if (value !== undefined) Object.assign(preference, {[capability]: value});
-  }
-  return preference;
+  });
 }
 
-function preferencesFromState(state: RootState, iconSize: number): LayerPreferencesV1 {
-  const layers: LayerPreferencesV1["layers"] = {};
-  for (const model of selectControlledLayerViewModels(state)) {
-    if (model.available) {
-      const preference = preferenceFromModel(model);
-      if (model.id === "wrj-trip-layer") preference.iconSize = iconSize;
-      layers[model.id] = preference;
-    }
-  }
-  return {version: 1, caseId: "riyue-3d", layers};
-}
-
-function cloneModels(models: ControlledLayerViewModel[]): ControlledLayerViewModel[] {
-  return models.map((model) => ({
-    ...model,
-    uavPalette: model.uavPalette ? [...model.uavPalette] : undefined,
-    advancedValues: {...model.advancedValues}
-  }));
+function missionLayerId(layerId: string): MissionLayerId | undefined {
+  return LAYER_METADATA.find(metadata => metadata.id === layerId)?.missionId;
 }
 
 export function Workspace({
   basemap,
   debugMode,
   dataBase,
-  caseLoader = loadCase,
-  keplerLoader = loadKeplerCase,
+  caseLibraryDependencies,
   MapView = WrjKeplerMap
 }: WorkspaceProps) {
   const dispatch = useDispatch<AppDispatch>();
-  const store = useStore<RootState>();
-  const keplerLayers = useSelector(
-    (state: RootState) => state.keplerGl[WRJ_MAP_ID]?.visState.layers
+  const caseLibrary = useCaseLibrary({
+    dataBase,
+    dependencies: caseLibraryDependencies
+  });
+  const bundle = caseLibrary.bundle;
+  const caseKey = bundle === null
+    ? "no-case"
+    : `${bundle.case.caseId}:${bundle.case.planId}`;
+  const clock = useMissionClock(
+    caseKey,
+    bundle?.metrics.missionMakespanSec ?? 0
   );
-  const controlledModels = useMemo(
-    () => controlledLayerViewModelsFromLayers(keplerLayers ?? []),
-    [keplerLayers]
-  );
-  const [status, setStatus] = useState<LoadStatus>("loading");
-  const [error, setError] = useState<string | null>(null);
-  const [summary, setSummary] = useState<CaseSummary | null>(null);
+  const [preferences, setPreferences] =
+    useState<MissionLayerPreferencesV2 | null>(null);
   const [drawerContent, setDrawerContent] = useState<DrawerContent>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [attempt, setAttempt] = useState(0);
   const [styleType, setStyleType] = useState<"satellite" | "light">("satellite");
-  const [flightPaths, setFlightPaths] = useState<readonly UavFlightPath[]>([]);
-  const [uavIconSize, setUavIconSize] = useState(DEFAULT_UAV_ICON_SIZE);
-  const sidebarLayers = useMemo(
-    () => controlledModels.map((model) => toLayerViewModel(model, uavIconSize)),
-    [controlledModels, uavIconSize]
+
+  const uavIds = useMemo(
+    () => bundle === null
+      ? []
+      : [...new Set(bundle.assignments.map(({uavId}) => uavId))],
+    [bundle]
   );
-  const loadedCaseRef = useRef<string | null>(null);
-  const injectionRef = useRef<{key: string; promise: Promise<void>} | null>(null);
-  const generationRef = useRef(0);
-  const defaultLayersRef = useRef<ControlledLayerViewModel[] | null>(null);
-  const preferencesAppliedRef = useRef<string | null>(null);
-  const injectionKey = `riyue-3d|${dataBase}|${debugMode}|${attempt}`;
+  const liveSorties = useMemo(
+    () => bundle === null
+      ? []
+      : selectSortieStates(bundle.sorties, clock.missionTimeSec),
+    [bundle, clock.missionTimeSec]
+  );
+  const summary = useMemo(
+    () => bundle === null ? null : toLegacySummary(bundle),
+    [bundle]
+  );
+  const layers = useMemo(() => sidebarModels(preferences), [preferences]);
+  const uavs = useMemo(() => uavIds.map(uavId => ({
+    uavId: uavId as UavId,
+    callsign: uavId,
+    color: preferences?.uavColors[uavId] ?? "#FFFFFF"
+  })), [preferences, uavIds]);
+
+  useEffect(() => {
+    if (bundle === null) {
+      setPreferences(null);
+      return;
+    }
+    setPreferences(loadMissionLayerPreferences(
+      bundle.case.caseId,
+      bundle.case.planId,
+      uavIds
+    ));
+    setDrawerContent(null);
+  }, [bundle, uavIds]);
 
   const resetView = useCallback(() => {
-    dispatch(wrapTo(WRJ_MAP_ID, updateMap(DEFAULT_MAP_STATE)));
+    if (bundle === null) return;
+    dispatch(wrapTo(WRJ_MAP_ID, updateMap(caseMapState(bundle))));
+  }, [bundle, dispatch]);
+
+  const changeStyle = useCallback((style: "satellite" | "light") => {
+    setStyleType(style);
+    dispatch(wrapTo(WRJ_MAP_ID, mapStyleChange(style)));
   }, [dispatch]);
 
-  const changeStyle = useCallback(
-    (style: "satellite" | "light") => {
-      setStyleType(style);
-      dispatch(wrapTo(WRJ_MAP_ID, mapStyleChange(style)));
-    },
-    [dispatch]
-  );
+  const updatePreferences = useCallback((
+    updater: (current: MissionLayerPreferencesV2) => MissionLayerPreferencesV2
+  ) => {
+    setPreferences(current => {
+      if (current === null) return current;
+      const next = updater(current);
+      saveMissionLayerPreferences(next);
+      return next;
+    });
+  }, []);
 
-  const persistCurrentLayers = useCallback((nextIconSize?: number) => {
-    saveLayerPreferences(preferencesFromState(
-      store.getState(),
-      nextIconSize ?? uavIconSize
+  const changeLayer = useCallback((
+    layerId: string,
+    changes: Partial<LayerAppearance>
+  ) => {
+    const id = missionLayerId(layerId);
+    if (id === undefined) return;
+    updatePreferences(current => {
+      const layer = current.layers[id];
+      const nextLayer = {
+        ...layer,
+        opacity: changes.opacity ?? layer.opacity,
+        width: changes.thickness ?? layer.width,
+        trailLengthSec: changes.trailLength ?? layer.trailLengthSec,
+        filled: changes.filled ?? layer.filled,
+        stroked: changes.stroked ?? layer.stroked
+      };
+      return {
+        ...current,
+        markerSize: changes.iconSize ?? current.markerSize,
+        uavColors: changes.uavColors === undefined
+          ? current.uavColors
+          : {...current.uavColors, ...changes.uavColors},
+        layers: {...current.layers, [id]: nextLayer}
+      };
+    });
+  }, [updatePreferences]);
+
+  const restoreDefaults = useCallback(() => {
+    if (bundle === null) return;
+    clearMissionLayerPreferences(bundle.case.caseId, bundle.case.planId);
+    setPreferences(createDefaultMissionLayerPreferences(
+      bundle.case.caseId,
+      bundle.case.planId,
+      uavIds
     ));
-  }, [store, uavIconSize]);
-
-  const dispatchAppearance = useCallback((layerId: string, changes: Partial<LayerAppearance>) => {
-    if (changes.color !== undefined) {
-      const action = createSingleLayerColorAction(store.getState(), layerId, changes.color);
-      if (action) dispatch(action);
-    }
-    if (changes.opacity !== undefined) {
-      const action = createLayerOpacityAction(store.getState(), layerId, changes.opacity);
-      if (action) dispatch(action);
-    }
-    if (changes.uavColors) {
-      const currentPalette = selectControlledLayerViewModels(store.getState())
-        .find(({id}) => id === layerId)?.uavPalette;
-      const palette = [
-        changes.uavColors["UAV-01"] ?? currentPalette?.[0] ?? UAV_COLORS["UAV-01"],
-        changes.uavColors["UAV-02"] ?? currentPalette?.[1] ?? UAV_COLORS["UAV-02"],
-        changes.uavColors["UAV-03"] ?? currentPalette?.[2] ?? UAV_COLORS["UAV-03"]
-      ] as const;
-      const action = createUavPaletteAction(store.getState(), layerId, palette);
-      if (action) dispatch(action);
-    }
-    for (const capability of ADVANCED_CAPABILITIES) {
-      const value = changes[capability];
-      if (value === undefined) continue;
-      const action = createLayerAdvancedAction(store.getState(), layerId, capability, value);
-      if (action) dispatch(action);
-    }
-  }, [dispatch, store]);
-
-  const restoreModel = useCallback((model: ControlledLayerViewModel) => {
-    const visibility = createLayerVisibilityAction(store.getState(), model.id, model.isVisible);
-    if (visibility) dispatch(visibility);
-    dispatchAppearance(model.id, toLayerViewModel(model).appearance);
-  }, [dispatch, dispatchAppearance, store]);
-
-  const restoreAllDefaults = useCallback(() => {
-    const defaults = defaultLayersRef.current;
-    if (!defaults) return;
-    clearLayerPreferences();
-    setUavIconSize(DEFAULT_UAV_ICON_SIZE);
-    defaults.forEach(restoreModel);
-  }, [restoreModel]);
+  }, [bundle, uavIds]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -268,159 +300,136 @@ export function Workspace({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [resetView]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const generation = ++generationRef.current;
-    setStatus("loading");
-    setError(null);
-    setSummary(null);
-    setDrawerContent(null);
-    setFlightPaths([]);
-    setUavIconSize(DEFAULT_UAV_ICON_SIZE);
-    preferencesAppliedRef.current = null;
-    defaultLayersRef.current = null;
-
-    const run = async () => {
-      try {
-        const bundle = await caseLoader("riyue-3d", dataBase, controller.signal);
-        if (controller.signal.aborted || generationRef.current !== generation) return;
-        const tripDataset = bundle.datasets.find((dataset) => (
-          dataset.id === "wrj-simulated-trips" && dataset.format === "csv"
-        ));
-        const nextFlightPaths = tripDataset?.format === "csv"
-          ? extractFlightPaths(tripDataset.raw)
-          : [];
-        if (loadedCaseRef.current !== injectionKey) {
-          let injection = injectionRef.current;
-          if (!injection || injection.key !== injectionKey) {
-            const previousInjection = injection?.promise ?? Promise.resolve();
-            injection = {
-              key: injectionKey,
-              promise: previousInjection
-                .catch(() => undefined)
-                .then(() => keplerLoader(dispatch, bundle, debugMode))
-            };
-            injectionRef.current = injection;
-          }
-          await injection.promise;
-          loadedCaseRef.current = injectionKey;
-          if (injectionRef.current === injection) injectionRef.current = null;
-        }
-        if (controller.signal.aborted || generationRef.current !== generation) return;
-        setFlightPaths(nextFlightPaths);
-        setSummary(bundle.summary);
-        setStatus("ready");
-      } catch (caught) {
-        if (
-          controller.signal.aborted ||
-          generationRef.current !== generation ||
-          isAbortError(caught)
-        ) return;
-        setError(errorMessage(caught));
-        setStatus("error");
-      }
-    };
-    void run();
-    return () => {
-      controller.abort();
-      if (generationRef.current === generation) generationRef.current += 1;
-    };
-  }, [caseLoader, dataBase, debugMode, dispatch, injectionKey, keplerLoader]);
-
-  useEffect(() => {
-    if (
-      status !== "ready" ||
-      preferencesAppliedRef.current === injectionKey ||
-      !controlledModels.every(({available}) => available)
-    ) return;
-
-    defaultLayersRef.current = cloneModels(controlledModels);
-    preferencesAppliedRef.current = injectionKey;
-    const preferences = loadLayerPreferences();
-    setUavIconSize(
-      preferences.layers["wrj-trip-layer"]?.iconSize ?? DEFAULT_UAV_ICON_SIZE
-    );
-    for (const [layerId, preference] of Object.entries(preferences.layers)) {
-      if (!preference) continue;
-      if (preference.visible !== undefined) {
-        const action = createLayerVisibilityAction(store.getState(), layerId, preference.visible);
-        if (action) dispatch(action);
-      }
-      const keplerPreference = {...preference};
-      delete keplerPreference.iconSize;
-      dispatchAppearance(layerId, keplerPreference);
-    }
-  }, [controlledModels, dispatch, dispatchAppearance, injectionKey, status, store]);
-
-  const retry = () => setAttempt((value) => value + 1);
+  const selectedUavId = drawerContent?.type === "uav"
+    ? drawerContent.uavId as UavId
+    : null;
   const attribution = basemap.attributionByStyle[styleType];
-  const selectedUavId = drawerContent?.type === "uav" ? drawerContent.uavId as UavId : null;
-  const uavs = summary?.uavs.map((uav) => ({
-    uavId: uav.uavId,
-    callsign: uav.callsign,
-    color: UAV_COLORS[uav.uavId]
-  })) ?? [];
+  const ready = caseLibrary.status === "ready" && bundle !== null;
 
   return (
     <main className="workspace">
       <header className="topbar">
         <div className="brand"><span>WRJ</span><strong>静态侦察规划</strong></div>
-        <div className="case-name"><small>当前算例</small><b>日月湾三维多无人机静态侦察</b></div>
-        <span className={`solution-status ${status}`}><i />{status === "ready" ? "方案可行" : status === "error" ? "方案异常" : "方案加载中"}</span>
+        <div className="case-name">
+          <small>当前算例</small>
+          <b>{bundle?.case.displayName ?? "正在读取算法算例"}</b>
+        </div>
+        <label>
+          <span className="sr-only">选择算例</span>
+          <select
+            aria-label="选择算例"
+            value={caseLibrary.selectedKey ?? ""}
+            disabled={caseLibrary.entries.length === 0}
+            onChange={event => caseLibrary.select(event.currentTarget.value)}
+          >
+            {caseLibrary.entries.map(entry => (
+              <option key={entry.key} value={entry.key}>
+                {entry.displayName}{entry.source === "imported" ? "（本地）" : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <span className={`solution-status ${caseLibrary.status}`}>
+          <i />
+          {ready ? "方案可行" : caseLibrary.status === "error" ? "方案异常" : "方案加载中"}
+        </span>
         {debugMode ? <span className="debug-badge">调试模式</span> : null}
         <div className="top-actions">
-          <button type="button" className={styleType === "satellite" ? "active" : ""} onClick={() => changeStyle("satellite")} disabled={status !== "ready"}>{basemap.primaryLabel}</button>
-          <button type="button" className={styleType === "light" ? "active" : ""} onClick={() => changeStyle("light")} disabled={status !== "ready"}>{basemap.secondaryLabel}</button>
-          <button type="button" onClick={resetView}>重置三维视角</button>
-          <button type="button" onClick={() => setDrawerContent({type: "overview"})} disabled={!summary}>任务概览</button>
+          <button
+            type="button"
+            className={styleType === "satellite" ? "active" : ""}
+            onClick={() => changeStyle("satellite")}
+            disabled={!ready}
+          >
+            {basemap.primaryLabel}
+          </button>
+          <button
+            type="button"
+            className={styleType === "light" ? "active" : ""}
+            onClick={() => changeStyle("light")}
+            disabled={!ready}
+          >
+            {basemap.secondaryLabel}
+          </button>
+          <button type="button" onClick={resetView} disabled={bundle === null}>
+            重置三维视角
+          </button>
+          <button
+            type="button"
+            onClick={() => setDrawerContent({type: "overview"})}
+            disabled={summary === null}
+          >
+            任务概览
+          </button>
         </div>
       </header>
 
       <section className={`workspace-body ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
-        <div className={`sidebar-shell ${status}`} aria-busy={status === "loading"}>
+        <div className={`sidebar-shell ${caseLibrary.status}`} aria-busy={!ready}>
           <LayerSidebar
             collapsed={sidebarCollapsed}
-            layers={sidebarLayers}
+            layers={layers}
             uavs={uavs}
             selectedUavId={selectedUavId}
             onCollapsedChange={setSidebarCollapsed}
             onVisibilityChange={(layerId, visible) => {
-              const action = createLayerVisibilityAction(store.getState(), layerId, visible);
-              if (action) dispatch(action);
-              persistCurrentLayers();
+              const id = missionLayerId(layerId);
+              if (id === undefined) return;
+              updatePreferences(current => ({
+                ...current,
+                layers: {
+                  ...current.layers,
+                  [id]: {...current.layers[id], visible}
+                }
+              }));
             }}
-            onLayerChange={(layerId, changes) => {
-              const nextIconSize = layerId === "wrj-trip-layer"
-                ? changes.iconSize
-                : undefined;
-              if (nextIconSize !== undefined) setUavIconSize(nextIconSize);
-              const keplerChanges = {...changes};
-              delete keplerChanges.iconSize;
-              dispatchAppearance(layerId, keplerChanges);
-              persistCurrentLayers(nextIconSize);
-            }}
-            onRestoreDefaults={restoreAllDefaults}
-            onSelectUav={(uavId) => setDrawerContent({type: "uav", uavId})}
+            onLayerChange={changeLayer}
+            onRestoreDefaults={restoreDefaults}
+            onSelectUav={uavId => setDrawerContent({type: "uav", uavId})}
           />
-          {status !== "ready" ? <div className="sidebar-state" aria-label={status === "loading" ? "图层数据加载中" : "图层数据不可用"} /> : null}
+          {!ready ? (
+            <div
+              className="sidebar-state"
+              aria-label={caseLibrary.status === "loading"
+                ? "图层数据加载中"
+                : "图层数据不可用"}
+            />
+          ) : null}
         </div>
 
         <section className="map-panel">
           <MapView
             basemap={basemap}
-            flightPaths={flightPaths}
-            uavIconSize={uavIconSize}
+            bundle={bundle}
+            missionTimeSec={clock.missionTimeSec}
+            verticalScale={1}
+            preferences={preferences}
+            onSelectSortie={assignmentId => {
+              const sortie = liveSorties.find(item => item.assignmentId === assignmentId);
+              if (sortie !== undefined) {
+                setDrawerContent({
+                  type: "uav",
+                  uavId: sortie.uavId as UavSummary["uavId"]
+                });
+              }
+            }}
           />
-          {status === "loading" ? <div className="state-overlay"><span className="spinner" />正在加载算例数据…</div> : null}
-          {status === "error" ? (
-            <div className="state-overlay error-state">
-              <strong>算例加载失败</strong>
-              <p>{error}</p>
-              <button type="button" onClick={retry}>重新加载</button>
+          {caseLibrary.status === "loading" && bundle === null ? (
+            <div className="state-overlay">
+              <span className="spinner" />正在加载算例数据…
             </div>
           ) : null}
-          <div className="map-tag"><b>真实地理环境</b><span>模拟任务数据 · 不可用于真实飞行</span></div>
-          {summary ? (
+          {caseLibrary.status === "error" ? (
+            <div className="state-overlay error-state">
+              <strong>算例加载失败</strong>
+              <p>{caseLibrary.error}</p>
+              <button type="button" onClick={caseLibrary.retry}>重新加载</button>
+            </div>
+          ) : null}
+          <div className="map-tag">
+            <span>{COORDINATE_NOTICE}</span>
+          </div>
+          {summary !== null ? (
             <DetailDrawer
               summary={summary}
               content={drawerContent}
