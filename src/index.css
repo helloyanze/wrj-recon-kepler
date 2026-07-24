@@ -27,7 +27,7 @@ button { color: inherit; }
 
 .workspace {
   display: grid;
-  grid-template-rows: 56px minmax(0, 1fr);
+  grid-template-rows: 60px minmax(0, 1fr);
   width: 100%;
   height: 100%;
   min-width: 1120px;
@@ -39,8 +39,8 @@ button { color: inherit; }
   z-index: 30;
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 0 16px;
+  gap: 10px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--border);
   background: rgba(14, 22, 31, 0.98);
   box-shadow: 0 2px 14px rgba(0, 0, 0, 0.24);
@@ -58,10 +58,17 @@ button { color: inherit; }
   font-weight: 800;
   letter-spacing: 1px;
 }
-.brand strong { font-size: 16px; letter-spacing: 0.6px; }
-.case-name { display: flex; flex-direction: column; gap: 2px; min-width: 260px; }
-.case-name small { color: var(--text-muted); font-size: 9px; letter-spacing: 1.2px; }
-.case-name b { font-size: 12px; font-weight: 550; }
+.brand strong { font-size: 15px; letter-spacing: 0.5px; }
+.case-selector select {
+  width: clamp(170px, 17vw, 250px);
+  min-height: 30px;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  padding: 4px 26px 4px 8px;
+  background: #111c27;
+  color: var(--text);
+  font-size: 11px;
+}
 .solution-status {
   display: inline-flex;
   align-items: center;
@@ -72,12 +79,28 @@ button { color: inherit; }
   white-space: nowrap;
 }
 .solution-status i { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); }
-.solution-status.ready { color: var(--success); }
-.solution-status.ready i { background: var(--success); box-shadow: 0 0 8px rgba(80, 202, 123, 0.55); }
+.solution-status.valid { color: var(--success); }
+.solution-status.valid i { background: var(--success); box-shadow: 0 0 8px rgba(80, 202, 123, 0.55); }
+.solution-status.warning { color: var(--warning); }
+.solution-status.warning i { background: var(--warning); box-shadow: 0 0 8px rgba(255, 157, 60, 0.42); }
 .solution-status.error { color: var(--danger); }
 .solution-status.error i { background: var(--danger); }
 .debug-badge { padding: 4px 7px; border: 1px solid rgba(22, 135, 248, 0.4); color: #6db8ff; font-size: 10px; }
-.top-actions { display: flex; gap: 6px; margin-left: auto; }
+.top-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.height-controls {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: rgba(7, 13, 20, 0.52);
+}
+.top-actions .height-controls button {
+  min-width: 31px;
+  min-height: 26px;
+  padding: 3px 6px;
+  border-color: transparent;
+}
 .top-actions button, .error-state button {
   min-height: 32px;
   border: 1px solid var(--border-strong);
@@ -239,23 +262,26 @@ button { color: inherit; }
   font-size: 10px;
   cursor: pointer;
 }
-.sidebar-shell section[aria-label="无人机编队"] {
+.sidebar-shell section[aria-label="无人机任务"] {
   flex: 0 0 auto;
+  max-height: 43%;
   margin-top: auto !important;
   padding: 10px;
   border-top: 1px solid var(--border);
   background: rgba(9, 16, 24, 0.38);
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
-.sidebar-shell section[aria-label="无人机编队"]::before {
-  content: "无人机列表";
+.sidebar-shell section[aria-label="无人机任务"]::before {
+  content: "无人机与架次";
   display: block;
   margin: 0 4px 8px;
   color: var(--text-secondary);
   font-size: 11px;
   font-weight: 650;
 }
-.sidebar-shell section[aria-label="无人机编队"] li + li { margin-top: 4px; }
-.sidebar-shell section[aria-label="无人机编队"] button {
+.sidebar-shell section[aria-label="无人机任务"] > ul > li + li { margin-top: 6px; }
+.sidebar-shell section[aria-label="无人机任务"] button {
   display: grid;
   grid-template-columns: 12px minmax(0, 1fr) auto;
   align-items: center;
@@ -270,10 +296,30 @@ button { color: inherit; }
   font-size: 10px;
   cursor: pointer;
 }
-.sidebar-shell section[aria-label="无人机编队"] button[aria-pressed="true"],
-.sidebar-shell section[aria-label="无人机编队"] button:hover { border-color: var(--border-strong); background: var(--bg-card-hover); }
-.sidebar-shell section[aria-label="无人机编队"] button span:nth-of-type(1) { color: var(--text); text-align: left; }
-.sidebar-shell section[aria-label="无人机编队"] button span:nth-of-type(2) { color: var(--success); }
+.sidebar-shell section[aria-label="无人机任务"] button[aria-pressed="true"],
+.sidebar-shell section[aria-label="无人机任务"] button:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-card-hover);
+}
+.sidebar-shell section[aria-label="无人机任务"] button span:nth-of-type(1) {
+  color: var(--text);
+  text-align: left;
+}
+.sidebar-shell section[aria-label="无人机任务"] button span:nth-of-type(2) {
+  color: var(--success);
+}
+.sidebar-shell section[aria-label="无人机任务"] ul ul {
+  margin: 3px 0 0 18px;
+  border-left: 1px solid var(--border);
+  padding-left: 5px;
+}
+.sidebar-shell section[aria-label="无人机任务"] ul ul button {
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 27px;
+  padding: 0 7px;
+  background: rgba(23, 35, 49, 0.58);
+  font-size: 9px;
+}
 .sidebar-state { position: absolute; inset: 0; z-index: 5; background: rgba(13, 21, 30, 0.38); cursor: wait; }
 .sidebar-shell.error .sidebar-state { cursor: not-allowed; }
 
@@ -305,20 +351,41 @@ button { color: inherit; }
   flex-direction: column;
   gap: 2px;
   padding: 7px 10px;
-  border: 1px solid rgba(151, 169, 187, 0.3);
+  max-width: min(620px, calc(100% - 24px));
+  border: 1px solid rgba(151, 169, 187, 0.24);
   border-radius: 3px;
   background: rgba(10, 17, 25, 0.83);
   backdrop-filter: blur(8px);
   pointer-events: none;
 }
 .map-tag b { font-size: 10px; }
-.map-tag span { color: var(--warning); font-size: 9px; }
+.map-tag span { color: var(--text-secondary); font-size: 9px; }
+.mission-timeline {
+  bottom: 34px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(10px);
+}
+.mission-timeline button {
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  padding: 4px 7px;
+  background: #172331;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.mission-timeline button[aria-pressed="true"] {
+  border-color: rgba(22, 135, 248, 0.78);
+  color: var(--text);
+}
+.mission-timeline input[type="range"] { accent-color: var(--accent); }
+.mission-timeline output,
+.mission-timeline span { font-size: 10px; white-space: nowrap; }
 .map-panel > aside[role="dialog"] {
   position: absolute;
   z-index: 18;
   top: 12px;
   right: 12px;
-  bottom: 12px;
+  bottom: 94px;
   width: 320px;
   overflow-y: auto;
   border: 1px solid rgba(151, 169, 187, 0.25);
@@ -352,6 +419,105 @@ button { color: inherit; }
 .map-panel > aside[role="dialog"] footer p { margin: 0 0 7px; color: var(--warning); font-size: 9px; line-height: 1.5; }
 .map-panel > aside[role="dialog"] footer p:last-child { margin: 0; color: var(--text-muted); }
 
+.import-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(2, 7, 12, 0.72);
+  backdrop-filter: blur(4px);
+}
+.import-case-dialog {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(620px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: #111b26;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+}
+.import-case-dialog > header,
+.import-case-dialog > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: #172331;
+}
+.import-case-dialog > footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+  border-bottom: 0;
+}
+.import-case-dialog h2 { margin: 2px 0 0; font-size: 17px; }
+.import-case-dialog small { color: var(--text-muted); font-size: 9px; letter-spacing: 1px; }
+.import-case-dialog button,
+.import-drop-zone label {
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  padding: 7px 11px;
+  background: #1a2a3a;
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+}
+.import-case-dialog button.primary,
+.import-drop-zone label {
+  border-color: rgba(22, 135, 248, 0.62);
+  background: #126fc9;
+  color: #fff;
+}
+.import-case-dialog button:disabled { cursor: not-allowed; opacity: 0.46; }
+.import-dialog-content { padding: 16px; overflow-y: auto; }
+.import-drop-zone {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 5px;
+  padding: 26px 16px;
+  background: rgba(22, 135, 248, 0.035);
+  color: var(--text-secondary);
+  text-align: center;
+}
+.import-drop-zone.dragging { border-color: var(--accent); background: rgba(22, 135, 248, 0.1); }
+.import-drop-zone input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.import-progress,
+.import-preview,
+.import-error,
+.import-fallback-warning { margin-top: 12px; }
+.import-progress > div,
+.import-preview > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.import-progress progress { width: 100%; margin-top: 7px; accent-color: var(--accent); }
+.import-preview {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px;
+  background: rgba(24, 37, 52, 0.72);
+}
+.import-preview dl {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin: 12px 0;
+}
+.import-preview dl div { padding: 8px; background: rgba(7, 13, 20, 0.5); }
+.import-preview dt { color: var(--text-muted); font-size: 9px; }
+.import-preview dd { margin: 3px 0 0; font-size: 11px; }
+.import-coordinate-notice,
+.import-fallback-warning { color: var(--text-secondary); font-size: 10px; line-height: 1.5; }
+.import-error { color: var(--danger); font-size: 11px; }
+
 .basemap-setup-page { display: grid; place-items: center; width: 100%; height: 100%; padding: 24px; background: radial-gradient(circle at 50% 35%, #172b3e, var(--bg-page) 58%); }
 .basemap-setup-card { display: flex; flex-direction: column; align-items: center; gap: 14px; width: min(560px, 100%); padding: 34px; border: 1px solid var(--border-strong); background: rgba(18, 27, 37, 0.96); box-shadow: 0 24px 70px rgba(0,0,0,.28); }
 .basemap-setup-card h1 { align-self: stretch; margin: 0; font-size: 27px; }
@@ -359,16 +525,30 @@ button { color: inherit; }
 .basemap-setup-card button { align-self: flex-start; border: 1px solid var(--border-strong); padding: 8px 10px; background: var(--bg-panel-strong); color: var(--text); cursor: pointer; }
 
 @media (max-width: 1500px), (max-height: 820px) {
-  .workspace { grid-template-rows: 52px minmax(0, 1fr); }
-  .topbar { gap: 10px; padding: 0 10px; }
-  .case-name { min-width: 230px; }
-  .top-actions button { padding: 5px 8px; }
+  .topbar { gap: 6px; padding: 0 8px; }
+  .brand strong { font-size: 13px; }
+  .brand > span { width: 31px; height: 27px; font-size: 11px; }
+  .case-selector select { width: 168px; }
+  .top-actions button { min-height: 28px; padding: 4px 6px; font-size: 10px; }
+  .top-actions .height-controls button { min-width: 27px; padding: 3px 4px; }
   .sidebar-shell > aside[aria-label="图层"] > header { flex-basis: 43px; }
   .sidebar-shell > aside[aria-label="图层"] > ul { padding: 7px; }
   .sidebar-shell > aside[aria-label="图层"] > ul > li { margin-bottom: 4px; }
   .sidebar-shell > aside[aria-label="图层"] > ul > li > div:first-child { min-height: 37px; }
   .sidebar-shell label { min-height: 26px; }
-  .sidebar-shell section[aria-label="无人机编队"] { padding: 7px; }
-  .sidebar-shell section[aria-label="无人机编队"] button { min-height: 31px; }
-  .map-panel > aside[role="dialog"] { width: 300px; top: 8px; right: 8px; bottom: 8px; }
+  .sidebar-shell section[aria-label="无人机任务"] { padding: 7px; }
+  .sidebar-shell section[aria-label="无人机任务"] > ul > li > button { min-height: 31px; }
+  .mission-timeline {
+    right: 10px !important;
+    bottom: 30px !important;
+    left: 10px !important;
+    gap: 6px !important;
+    padding: 6px 8px !important;
+  }
+  .map-panel > aside[role="dialog"] {
+    width: 300px;
+    top: 8px;
+    right: 8px;
+    bottom: 84px;
+  }
 }

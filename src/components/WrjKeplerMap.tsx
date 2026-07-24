@@ -1,6 +1,5 @@
 import type {ResolvedBasemap} from "../basemap/basemapConfig";
 import type {CaseBundleV2} from "../features/cases/caseBundle";
-import type {UavFlightPath} from "../features/flight/flightPaths";
 import type {
   MissionLayerPreferencesV2,
   VerticalScale
@@ -20,10 +19,6 @@ export interface WrjKeplerMapProps {
   verticalScale?: VerticalScale;
   preferences?: MissionLayerPreferencesV2 | null;
   onSelectSortie?: (assignmentId: string) => void;
-  /** @deprecated Temporary compatibility bridge until Workspace uses CaseBundleV2. */
-  flightPaths?: readonly UavFlightPath[];
-  /** @deprecated Temporary compatibility bridge until Workspace uses mission preferences. */
-  uavIconSize?: number;
 }
 
 export function WrjKeplerMap({

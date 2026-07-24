@@ -196,7 +196,8 @@ describe("dynamic algorithm Workspace", () => {
     expect(screen.getByLabelText("选择算例")).toHaveValue(
       "R10-LONG-TRANSIT-01:PLAN-002:built-in"
     );
-    expect(screen.getAllByText("R10-LONG-TRANSIT-01")).toHaveLength(2);
+    expect(screen.getByRole("option", {name: "R10-LONG-TRANSIT-01"}))
+      .toBeInTheDocument();
     await waitFor(() => expect(latestMapProps?.bundle?.case.caseId)
       .toBe("R10-LONG-TRANSIT-01"));
     expect(latestMapProps).toMatchObject({
@@ -208,6 +209,62 @@ describe("dynamic algorithm Workspace", () => {
       })
     });
     expect(deps.loadBuiltInCase).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders the compact data-driven 3D mission shell without fixed-case controls", async () => {
+    const {dependencies: deps} = renderWorkspace();
+
+    expect(await screen.findByText("方案可行")).toBeInTheDocument();
+    expect(document.querySelector(".topbar")).toHaveTextContent("WRJ静态侦察规划");
+    expect(screen.getByLabelText("选择算例")).toHaveValue(
+      "R10-LONG-TRANSIT-01:PLAN-002:built-in"
+    );
+    expect(screen.getByRole("button", {name: "本地导入算例"})).toBeEnabled();
+    expect(screen.getByRole("button", {name: "公共地图"})).toBeEnabled();
+    expect(screen.getByRole("button", {name: "OSM 简洁图"})).toBeEnabled();
+    expect(screen.getByRole("button", {name: "重置三维视角"})).toBeEnabled();
+    expect(screen.getByRole("button", {name: "任务概览"})).toBeEnabled();
+    expect(screen.getByRole("region", {name: "任务时间轴"})).toBeInTheDocument();
+    expect(screen.getByRole("list", {name: "图层列表"})).toBeInTheDocument();
+    expect(screen.getByText(
+      "算法数据采用 LOCAL_CARTESIAN_M；当前地图位置为日月湾视觉锚定，不代表真实地理定位。"
+    )).toBeInTheDocument();
+
+    const initialBundle = latestMapProps?.bundle;
+    for (const scale of [1, 2, 4] as const) {
+      const button = screen.getByRole("button", {name: `高度 ${scale}×`});
+      expect(button).toHaveAttribute("aria-pressed", String(scale === 1));
+    }
+    fireEvent.click(screen.getByRole("button", {name: "高度 2×"}));
+    await waitFor(() => expect(latestMapProps?.verticalScale).toBe(2));
+    expect(latestMapProps?.bundle).toBe(initialBundle);
+    expect(deps.loadBuiltInCase).toHaveBeenCalledTimes(1);
+
+    for (const legacyText of [
+      "真实 POI",
+      "真实上下文",
+      "任务阶段",
+      "上传到服务器"
+    ]) {
+      expect(screen.queryByText(legacyText)).not.toBeInTheDocument();
+    }
+  });
+
+  it("uses the current bundle validation result for the shell badge", async () => {
+    const invalidBundle: CaseBundleV2 = {
+      ...structuredClone(R10_BUNDLE),
+      validation: {
+        valid: false,
+        warnings: ["需要人工复核"],
+        failureCodes: ["VALIDATION_WARNING"]
+      }
+    };
+    renderWorkspace(dependencies({
+      loadBuiltInCase: vi.fn(async () => invalidBundle)
+    }));
+
+    expect(await screen.findByText("方案需复核")).toBeInTheDocument();
+    expect(screen.queryByText("方案可行")).not.toBeInTheDocument();
   });
 
   it("keeps the loading shell while the catalog is pending", () => {
@@ -238,8 +295,10 @@ describe("dynamic algorithm Workspace", () => {
   });
 
   it("switches cases without injecting legacy Kepler datasets", async () => {
-    const {dependencies: deps} = renderWorkspace();
+    const {dependencies: deps, store} = renderWorkspace();
+    const dispatch = vi.spyOn(store, "dispatch");
     await screen.findByText("方案可行");
+    dispatch.mockClear();
 
     fireEvent.change(screen.getByLabelText("选择算例"), {
       target: {value: "R01-BASELINE-01:PLAN-001:built-in"}
@@ -247,8 +306,13 @@ describe("dynamic algorithm Workspace", () => {
 
     await waitFor(() => expect(latestMapProps?.bundle?.case.caseId)
       .toBe("R01-BASELINE-01"));
-    expect(screen.getAllByText("R01-BASELINE-01")).toHaveLength(2);
+    expect(screen.getByRole("option", {name: "R01-BASELINE-01"}))
+      .toBeInTheDocument();
     expect(deps.loadBuiltInCase).toHaveBeenCalledTimes(2);
+    expect(dispatch).toHaveBeenCalledTimes(1);
+    expect((
+      dispatch.mock.calls[0][0] as unknown as {payload: {type: string}}
+    ).payload.type).toBe(updateMap({}).type);
   });
 
   it("resets the camera from the current algorithm bundle and ignores R in an input", async () => {
@@ -363,7 +427,8 @@ describe("dynamic algorithm Workspace", () => {
 
     await waitFor(() => expect(screen.getByLabelText("选择算例"))
       .toHaveValue("LOCAL-R10:LOCAL-PLAN:imported"));
-    expect(await screen.findByText("本地 R10")).toBeInTheDocument();
+    expect(await screen.findByRole("option", {name: "本地 R10（本地）"}))
+      .toBeInTheDocument();
     expect(repository.save).toHaveBeenCalledTimes(1);
     expect(repository.list).toHaveBeenCalledTimes(2);
   });

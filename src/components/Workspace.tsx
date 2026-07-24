@@ -1,6 +1,6 @@
 import {mapStyleChange, updateMap, wrapTo} from "@kepler.gl/actions";
 import type {ComponentType} from "react";
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useDispatch} from "react-redux";
 import type {AppDispatch} from "../app/store";
 import type {ResolvedBasemap} from "../basemap/basemapConfig";
@@ -14,7 +14,8 @@ import {
   loadMissionLayerPreferences,
   saveMissionLayerPreferences,
   type MissionLayerId,
-  type MissionLayerPreferencesV2
+  type MissionLayerPreferencesV2,
+  type VerticalScale
 } from "../features/mission/missionLayerPreferences";
 import {
   useCaseLibrary,
@@ -71,8 +72,10 @@ export function Workspace({
   const [selectedSortieId, setSelectedSortieId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [styleType, setStyleType] = useState<"satellite" | "light">("satellite");
+  const [verticalScale, setVerticalScale] = useState<VerticalScale>(1);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importDialogBusy, setImportDialogBusy] = useState(false);
+  const previousCaseKeyRef = useRef<string | null>(null);
 
   const uavIds = useMemo(
     () => bundle === null
@@ -89,16 +92,26 @@ export function Workspace({
   useEffect(() => {
     if (bundle === null) {
       setPreferences(null);
+      previousCaseKeyRef.current = null;
       return;
     }
+    const nextCaseKey = `${bundle.case.caseId}:${bundle.case.planId}`;
+    if (
+      previousCaseKeyRef.current !== null
+      && previousCaseKeyRef.current !== nextCaseKey
+    ) {
+      dispatch(wrapTo(WRJ_MAP_ID, updateMap(caseMapState(bundle))));
+    }
+    previousCaseKeyRef.current = nextCaseKey;
     setPreferences(loadMissionLayerPreferences(
       bundle.case.caseId,
       bundle.case.planId,
       uavIds
     ));
+    setVerticalScale(1);
     setDrawerContent(null);
     setSelectedSortieId(null);
-  }, [bundle, uavIds]);
+  }, [bundle, dispatch, uavIds]);
 
   const resetView = useCallback(() => {
     if (bundle === null) return;
@@ -178,6 +191,13 @@ export function Workspace({
     : null;
   const attribution = basemap.attributionByStyle[styleType];
   const ready = caseLibrary.status === "ready" && bundle !== null;
+  const solutionStatus = !ready
+    ? caseLibrary.status === "error"
+      ? {className: "error", label: "方案异常"}
+      : {className: "loading", label: "方案加载中"}
+    : bundle.validation.valid
+      ? {className: "valid", label: "方案可行"}
+      : {className: "warning", label: "方案需复核"};
   const selectedEntry = caseLibrary.entries.find(
     entry => entry.key === caseLibrary.selectedKey
   );
@@ -198,11 +218,7 @@ export function Workspace({
     <main className="workspace">
       <header className="topbar">
         <div className="brand"><span>WRJ</span><strong>静态侦察规划</strong></div>
-        <div className="case-name">
-          <small>当前算例</small>
-          <b>{bundle?.case.displayName ?? "正在读取算法算例"}</b>
-        </div>
-        <label>
+        <label className="case-selector">
           <span className="sr-only">选择算例</span>
           <select
             aria-label="选择算例"
@@ -217,9 +233,9 @@ export function Workspace({
             ))}
           </select>
         </label>
-        <span className={`solution-status ${caseLibrary.status}`}>
+        <span className={`solution-status ${solutionStatus.className}`}>
           <i />
-          {ready ? "方案可行" : caseLibrary.status === "error" ? "方案异常" : "方案加载中"}
+          {solutionStatus.label}
         </span>
         {debugMode ? <span className="debug-badge">调试模式</span> : null}
         <div className="top-actions">
@@ -239,6 +255,21 @@ export function Workspace({
           >
             {basemap.secondaryLabel}
           </button>
+          <div className="height-controls" role="group" aria-label="高度比例">
+            {[1, 2, 4].map(scale => (
+              <button
+                key={scale}
+                type="button"
+                aria-label={`高度 ${scale}×`}
+                aria-pressed={verticalScale === scale}
+                className={verticalScale === scale ? "active" : ""}
+                disabled={!ready}
+                onClick={() => setVerticalScale(scale as VerticalScale)}
+              >
+                {scale}×
+              </button>
+            ))}
+          </div>
           <button type="button" onClick={resetView} disabled={bundle === null}>
             重置三维视角
           </button>
@@ -319,7 +350,7 @@ export function Workspace({
             basemap={basemap}
             bundle={bundle}
             missionTimeSec={clock.missionTimeSec}
-            verticalScale={1}
+            verticalScale={verticalScale}
             preferences={preferences}
             onSelectSortie={assignmentId => {
               setSelectedSortieId(assignmentId);

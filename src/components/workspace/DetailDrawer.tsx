@@ -66,6 +66,11 @@ function Overview({bundle}: {bundle: CaseBundleV2}) {
   return (
     <>
       <MetricList label="算法任务指标" items={items} />
+      <section aria-label="三维显示说明">
+        <p>
+          当前公共/卫星底图为平面地图；仅配置 DEM 地形服务后才具备真实地形起伏。
+        </p>
+      </section>
       {(validation.warnings.length > 0 || validation.failureCodes.length > 0) ? (
         <section aria-label="算法校验结果">
           <h3>校验信息</h3>

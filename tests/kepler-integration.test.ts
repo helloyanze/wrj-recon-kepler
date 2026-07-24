@@ -6,8 +6,6 @@ import {addDataToMap, registerEntry, updateMap, wrapTo} from "@kepler.gl/actions
 import {createAppStore} from "../src/app/store";
 import {caseManifestSchema, caseSummarySchema} from "../src/data/caseSchema";
 import type {CaseBundle, LoadedCaseDataset} from "../src/data/loadCase";
-import {extractFlightPaths, type UavFlightId} from "../src/features/flight/flightPaths";
-import {createUavDeckLayers} from "../src/features/flight/uavDeckLayers";
 import {
   createLayerAdvancedAction,
   createLayerOpacityAction,
@@ -288,78 +286,4 @@ describe("Kepler P0 integration", () => {
       .toBe(animationTime);
   });
 
-  it("keeps reducer Trip styling synchronized with the three real UAV markers", async () => {
-    const store = createAppStore(false);
-    store.dispatch(registerEntry({id: "wrj-map", mint: true}));
-    const bundle = loadBundleFromDisk();
-    await loadKeplerCase(store.dispatch, bundle, false);
-
-    const tripDataset = bundle.datasets.find(({id}) => id === "wrj-simulated-trips");
-    expect(tripDataset?.format).toBe("csv");
-    if (!tripDataset || tripDataset.format !== "csv") {
-      throw new Error("测试 Trip CSV 数据集缺失");
-    }
-    const paths = extractFlightPaths(tripDataset.raw);
-    expect(paths.map(({uavId}) => uavId)).toEqual(["UAV-01", "UAV-02", "UAV-03"]);
-
-    const currentMapState = store.getState().keplerGl["wrj-map"];
-    const currentTime = currentMapState.visState.animationConfig.currentTime;
-    const currentTrip = currentMapState.visState.layers.find(
-      ({id}) => id === "wrj-trip-layer"
-    )!;
-    const [currentMarkerLayer] = createUavDeckLayers({
-      paths,
-      time: currentTime,
-      visible: currentTrip.config.isVisible,
-      palette: currentTrip.config.visConfig.colorRange.colors
-    });
-    const currentMarkers = currentMarkerLayer.props.data as ReadonlyArray<{uavId: UavFlightId}>;
-    expect(currentMarkers.map(({uavId}) => uavId)).toEqual(["UAV-01", "UAV-02", "UAV-03"]);
-
-    const paletteAction = createUavPaletteAction(store.getState(), "wrj-trip-layer", [
-      "#102030",
-      "#405060",
-      "#708090"
-    ]);
-    expect(paletteAction).not.toBeNull();
-    if (paletteAction) store.dispatch(paletteAction);
-
-    const recoloredTrip = store.getState().keplerGl["wrj-map"].visState.layers.find(
-      ({id}) => id === "wrj-trip-layer"
-    )!;
-    const [recoloredMarkerLayer] = createUavDeckLayers({
-      paths,
-      time: currentTime,
-      visible: recoloredTrip.config.isVisible,
-      palette: recoloredTrip.config.visConfig.colorRange.colors
-    });
-    const recoloredMarkers = recoloredMarkerLayer.props.data as ReadonlyArray<{
-      uavId: UavFlightId;
-      color: readonly [number, number, number, number];
-    }>;
-    expect(recoloredMarkers.map(({uavId, color}) => [uavId, color])).toEqual([
-      ["UAV-01", [16, 32, 48, 255]],
-      ["UAV-02", [64, 80, 96, 255]],
-      ["UAV-03", [112, 128, 144, 255]]
-    ]);
-
-    const hideAction = createLayerVisibilityAction(
-      store.getState(),
-      "wrj-trip-layer",
-      false
-    );
-    expect(hideAction).not.toBeNull();
-    if (hideAction) store.dispatch(hideAction);
-    const hiddenTrip = store.getState().keplerGl["wrj-map"].visState.layers.find(
-      ({id}) => id === "wrj-trip-layer"
-    )!;
-    expect(createUavDeckLayers({
-      paths,
-      time: currentTime,
-      visible: hiddenTrip.config.isVisible,
-      palette: hiddenTrip.config.visConfig.colorRange.colors
-    })).toEqual([]);
-    expect(store.getState().keplerGl["wrj-map"].visState.animationConfig.currentTime)
-      .toBe(currentTime);
-  });
 });

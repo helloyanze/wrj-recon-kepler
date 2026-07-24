@@ -45,6 +45,27 @@ describe("App basemap bootstrap", () => {
     expect(screen.queryByRole("heading", {name: "底图配置失败"})).not.toBeInTheDocument();
   });
 
+  it("passes a configured local basemap into the same workspace shell", async () => {
+    const localBasemap = await resolveBasemap({
+      mode: "local",
+      localStyleUrl: "/maps/style.json",
+      localAttribution: "内部地图服务"
+    }, undefined, vi.fn(async () => new Response(JSON.stringify({
+      version: 8,
+      sources: {},
+      layers: []
+    }), {status: 200})));
+    const loader = vi.fn(async () => localBasemap);
+
+    render(<App basemapEnvironment={{mode: "local"}} basemapLoader={loader} />);
+
+    expect(await screen.findByTestId("workspace")).toBeInTheDocument();
+    expect(workspaceProps[0].basemap).toMatchObject({
+      provider: "local",
+      primaryLabel: "本地地图"
+    });
+  });
+
   it("shows loading while the basemap loader is pending", () => {
     const loader = vi.fn(() => new Promise<ResolvedBasemap>(() => undefined));
     render(<App basemapEnvironment={{mode: "public"}} basemapLoader={loader} />);

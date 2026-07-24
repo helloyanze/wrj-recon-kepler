@@ -33,6 +33,14 @@ function props(content: DrawerContent): DetailDrawerProps {
 }
 
 describe("DetailDrawer shell behavior", () => {
+  it("states that the basemap is planar unless a DEM service is configured", () => {
+    render(<DetailDrawer {...props({type: "overview"})} />);
+
+    expect(screen.getByText(
+      "当前公共/卫星底图为平面地图；仅配置 DEM 地形服务后才具备真实地形起伏。"
+    )).toBeInTheDocument();
+  });
+
   it("safely renders nothing for an unknown UAV or sortie", () => {
     const {rerender} = render(
       <DetailDrawer {...props({type: "uav", uavId: "UAV-99"})} />
