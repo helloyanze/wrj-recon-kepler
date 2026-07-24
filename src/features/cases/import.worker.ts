@@ -98,6 +98,7 @@ interface PendingFile {
   path: string;
   chunks: Uint8Array[];
   byteLength: number;
+  directory: boolean;
 }
 
 async function extractZipStreaming(
@@ -166,7 +167,8 @@ async function extractZipStreaming(
     const pending: PendingFile = {
       path: file.name,
       chunks: [],
-      byteLength: 0
+      byteLength: 0,
+      directory: file.name.replaceAll("\\", "/").endsWith("/")
     };
     activeFiles.add(file);
     file.ondata = (error, data, final) => {
@@ -218,7 +220,8 @@ async function extractZipStreaming(
           bytes: concatenateChunks(
             pending.chunks,
             pending.byteLength
-          )
+          ),
+          directory: pending.directory
         });
       }
     };

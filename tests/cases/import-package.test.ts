@@ -164,6 +164,148 @@ function changeDeclaredUncompressedSize(
   return bytes;
 }
 
+interface ZipDirectoryLayout {
+  eocdOffset: number;
+  centralOffset: number;
+  centralSize: number;
+  records: Array<{
+    offset: number;
+    byteLength: number;
+    localOffset: number;
+    name: string;
+  }>;
+}
+
+function readZipDirectoryLayout(bytes: Uint8Array): ZipDirectoryLayout {
+  const view = new DataView(
+    bytes.buffer,
+    bytes.byteOffset,
+    bytes.byteLength
+  );
+  let eocdOffset = -1;
+  for (let offset = bytes.byteLength - 22; offset >= 0; offset -= 1) {
+    if (view.getUint32(offset, true) === 0x06054b50) {
+      eocdOffset = offset;
+      break;
+    }
+  }
+  expect(eocdOffset).toBeGreaterThanOrEqual(0);
+  const entryCount = view.getUint16(eocdOffset + 10, true);
+  const centralSize = view.getUint32(eocdOffset + 12, true);
+  const centralOffset = view.getUint32(eocdOffset + 16, true);
+  const records: ZipDirectoryLayout["records"] = [];
+  let offset = centralOffset;
+  const decoder = new TextDecoder();
+  for (let index = 0; index < entryCount; index += 1) {
+    expect(view.getUint32(offset, true)).toBe(0x02014b50);
+    const nameLength = view.getUint16(offset + 28, true);
+    const extraLength = view.getUint16(offset + 30, true);
+    const commentLength = view.getUint16(offset + 32, true);
+    const byteLength =
+      46 + nameLength + extraLength + commentLength;
+    records.push({
+      offset,
+      byteLength,
+      localOffset: view.getUint32(offset + 42, true),
+      name: decoder.decode(
+        bytes.subarray(offset + 46, offset + 46 + nameLength)
+      )
+    });
+    offset += byteLength;
+  }
+  expect(offset).toBe(centralOffset + centralSize);
+  return {eocdOffset, centralOffset, centralSize, records};
+}
+
+function makeLocalOnlyZip(
+  extraPath = "metadata/region_profile.json",
+  extraBytes = jsonBytes({
+    geometryWkt:
+      "POLYGON ((0 0, 600 0, 600 400, 0 400, 0 0))"
+  })
+): Uint8Array {
+  const source = makeZip({
+    "run/mission_plan.json": jsonBytes(missionPlanFixture),
+    [extraPath]: extraBytes
+  }, 0);
+  const layout = readZipDirectoryLayout(source);
+  expect(layout.records.map(record => record.name)).toEqual([
+    "run/mission_plan.json",
+    extraPath
+  ]);
+  const missionCentral = layout.records[0];
+  const result = new Uint8Array(
+    layout.centralOffset + missionCentral.byteLength + 22
+  );
+  result.set(source.subarray(0, layout.centralOffset), 0);
+  result.set(
+    source.subarray(
+      missionCentral.offset,
+      missionCentral.offset + missionCentral.byteLength
+    ),
+    layout.centralOffset
+  );
+  const newEocdOffset =
+    layout.centralOffset + missionCentral.byteLength;
+  result.set(
+    source.subarray(layout.eocdOffset, layout.eocdOffset + 22),
+    newEocdOffset
+  );
+  const view = new DataView(result.buffer);
+  view.setUint16(newEocdOffset + 8, 1, true);
+  view.setUint16(newEocdOffset + 10, 1, true);
+  view.setUint32(
+    newEocdOffset + 12,
+    missionCentral.byteLength,
+    true
+  );
+  view.setUint32(
+    newEocdOffset + 16,
+    layout.centralOffset,
+    true
+  );
+  return result;
+}
+
+function makeCentralOnlyRegionZip(): Uint8Array {
+  const source = makeZip({
+    "run/mission_plan.json": jsonBytes(missionPlanFixture),
+    "metadata/region_profile.json": jsonBytes({
+      geometryWkt:
+        "POLYGON ((0 0, 600 0, 600 400, 0 400, 0 0))"
+    })
+  }, 0);
+  const layout = readZipDirectoryLayout(source);
+  const regionLocalOffset = layout.records[1].localOffset;
+  const removedBytes = layout.centralOffset - regionLocalOffset;
+  const result = new Uint8Array(source.byteLength - removedBytes);
+  result.set(source.subarray(0, regionLocalOffset), 0);
+  result.set(
+    source.subarray(layout.centralOffset),
+    regionLocalOffset
+  );
+  const newEocdOffset = layout.eocdOffset - removedBytes;
+  const view = new DataView(result.buffer);
+  view.setUint32(newEocdOffset + 16, regionLocalOffset, true);
+  return result;
+}
+
+function markMissionCentralEntryAsDirectory(
+  source: Uint8Array
+): Uint8Array {
+  const bytes = source.slice();
+  const layout = readZipDirectoryLayout(bytes);
+  expect(layout.records[0].name).toMatch(/mission_plan\.json$/);
+  const view = new DataView(bytes.buffer);
+  const attributesOffset = layout.records[0].offset + 38;
+  view.setUint32(
+    attributesOffset,
+    view.getUint32(attributesOffset, true) | 0x10,
+    true
+  );
+  return bytes;
+}
+
 describe("algorithm ZIP package parsing", () => {
   it("exports the exact archive limits", () => {
     expect(ZIP_LIMITS).toEqual({
@@ -343,6 +485,35 @@ describe("algorithm ZIP package parsing", () => {
       "run/mission_plan.json": jsonBytes(missionPlanFixture),
       "run\\mission_plan.json": jsonBytes(missionPlanFixture)
     }))).rejects.toThrow(/duplicate.*run\/mission_plan\.json/i);
+  });
+
+  it("rejects a local-only optional file omitted from the central directory", async () => {
+    await expect(parse(makeLocalOnlyZip())).rejects.toThrow(
+      /local-only.*metadata\/region_profile\.json/i
+    );
+  });
+
+  it("validates ignored OS files against the central directory", async () => {
+    await expect(parse(makeLocalOnlyZip(
+      "__MACOSX/._mission_plan.json",
+      new Uint8Array([0])
+    ))).rejects.toThrow(
+      /local-only.*__MACOSX\/\._mission_plan\.json/i
+    );
+  });
+
+  it("rejects a central-only file missing from the local stream", async () => {
+    await expect(parse(makeCentralOnlyRegionZip())).rejects.toThrow(
+      /central-only: metadata\/region_profile\.json/i
+    );
+  });
+
+  it("rejects file-directory type disagreement before mission conversion", async () => {
+    await expect(parse(markMissionCentralEntryAsDirectory(
+      makeMissionZip()
+    ))).rejects.toThrow(
+      /type mismatch.*mission_plan\.json.*central.*directory.*local.*file/i
+    );
   });
 
   it("rejects symlink-like central-directory entries", async () => {

@@ -30,6 +30,7 @@ export interface ZipEntryMetadata {
 export interface ExtractedZipEntry {
   path: string;
   bytes: Uint8Array;
+  directory: boolean;
 }
 
 export type ImportProgressStage = "unzip" | "validate" | "convert";
@@ -303,8 +304,62 @@ export function validateExtractedEntries(
     }
     extractedByPath.set(normalizedPath, {
       path: normalizedPath,
-      bytes: entry.bytes
+      bytes: entry.bytes,
+      directory: entry.directory
     });
+  }
+
+  const metadataByPath = new Map<string, ZipEntryMetadata>();
+  for (const metadataEntry of metadataEntries) {
+    if (metadataByPath.has(metadataEntry.normalizedPath)) {
+      throw new Error(
+        `Duplicate ZIP central directory path: ${metadataEntry.normalizedPath}`
+      );
+    }
+    metadataByPath.set(metadataEntry.normalizedPath, metadataEntry);
+  }
+
+  const localOnly = [...extractedByPath.keys()]
+    .filter(path => !metadataByPath.has(path))
+    .sort(compareStrings);
+  const centralOnly = [...metadataByPath.keys()]
+    .filter(path => !extractedByPath.has(path))
+    .sort(compareStrings);
+  const typeMismatches = [...metadataByPath.entries()]
+    .flatMap(([path, metadataEntry]) => {
+      const extracted = extractedByPath.get(path);
+      if (
+        extracted === undefined ||
+        extracted.directory === metadataEntry.directory
+      ) {
+        return [];
+      }
+      return [
+        `${path} (central ${metadataEntry.directory ? "directory" : "file"}, ` +
+        `local ${extracted.directory ? "directory" : "file"})`
+      ];
+    })
+    .sort(compareStrings);
+
+  if (
+    localOnly.length > 0 ||
+    centralOnly.length > 0 ||
+    typeMismatches.length > 0
+  ) {
+    const details = [
+      localOnly.length > 0
+        ? `local-only: ${localOnly.join(", ")}`
+        : undefined,
+      centralOnly.length > 0
+        ? `central-only: ${centralOnly.join(", ")}`
+        : undefined,
+      typeMismatches.length > 0
+        ? `type mismatch: ${typeMismatches.join(", ")}`
+        : undefined
+    ].filter((detail): detail is string => detail !== undefined);
+    throw new Error(
+      `ZIP central/local entry mismatch: ${details.join("; ")}`
+    );
   }
 
   for (const metadataEntry of metadataEntries) {
@@ -314,7 +369,8 @@ export function validateExtractedEntries(
     const extracted = extractedByPath.get(metadataEntry.normalizedPath);
     if (extracted === undefined) {
       throw new Error(
-        `ZIP entry was not extracted: ${metadataEntry.normalizedPath}`
+        `ZIP central/local validation invariant failed for ` +
+        metadataEntry.normalizedPath
       );
     }
     if (extracted.bytes.byteLength !== metadataEntry.uncompressedBytes) {
@@ -331,7 +387,7 @@ export function validateExtractedEntries(
     normalizedPath: normalizeZipEntryPath(entry.path),
     compressedBytes: 0,
     uncompressedBytes: entry.bytes.byteLength,
-    directory: false,
+    directory: entry.directory,
     unixMode: 0
   }));
   validateZipArchiveLimits(0, actualMetadata, {
@@ -349,7 +405,7 @@ export function convertExtractedAlgorithmPackage(
   for (const entry of extractedEntries) {
     const normalizedPath = normalizeZipEntryPath(entry.path);
     if (
-      entry.path.replaceAll("\\", "/").endsWith("/") ||
+      entry.directory ||
       isIgnoredOsPath(normalizedPath)
     ) {
       continue;
