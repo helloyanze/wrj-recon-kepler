@@ -3,15 +3,25 @@ import {useContext, type Context} from "react";
 import {afterEach, describe, expect, it, vi} from "vitest";
 import type {ResolvedBasemap} from "../src/basemap/basemapConfig";
 import {
-  FlightOverlayContext,
+  MissionOverlayContext,
+  createMissionOverlayLayers,
   mergeDeckRenderCallbacks
 } from "../src/components/kepler/UavMapContainer";
 import {WrjKeplerMap} from "../src/components/WrjKeplerMap";
-import type {UavFlightPath} from "../src/features/flight/flightPaths";
+import {convertMissionPlan} from "../src/features/cases/convertMissionPlan";
+import type {CaseBundleV2} from "../src/features/cases/caseBundle";
+import {
+  createDefaultMissionLayerPreferences,
+  type MissionLayerPreferencesV2
+} from "../src/features/mission/missionLayerPreferences";
+import {missionPlanFixture} from "./fixtures/missionPlanFixture";
 
 interface OverlayValue {
-  paths: readonly UavFlightPath[];
-  iconSize: number;
+  bundle: CaseBundleV2 | null;
+  missionTimeSec: number;
+  verticalScale: 1 | 2 | 4;
+  preferences: MissionLayerPreferencesV2 | null;
+  onSelectSortie?: (assignmentId: string) => void;
 }
 
 const runtime = vi.hoisted(() => ({
@@ -28,14 +38,17 @@ vi.mock("@kepler.gl/components", () => ({
     return (
       <div
         data-testid="kepler-gl"
-        data-paths={overlay.paths.length}
-        data-icon-size={overlay.iconSize}
+        data-case-id={overlay.bundle?.case.caseId ?? ""}
+        data-mission-time={overlay.missionTimeSec}
+        data-vertical-scale={overlay.verticalScale}
+        data-has-preferences={overlay.preferences !== null}
+        data-has-selection={overlay.onSelectSortie !== undefined}
       />
     );
   })
 }));
 
-runtime.overlayContext = FlightOverlayContext;
+runtime.overlayContext = MissionOverlayContext;
 
 vi.mock("../src/hooks/useContainerSize", () => ({
   useContainerSize: () => ({ref: vi.fn(), width: 960, height: 640})
@@ -71,6 +84,19 @@ const MAPBOX_BASEMAP: ResolvedBasemap = {
   }
 };
 
+const bundle = convertMissionPlan({
+  missionPlan: missionPlanFixture,
+  sourceName: "fixture",
+  sourceRun: "20260721T192032",
+  importedAt: "2026-07-21T19:20:32.000Z",
+  sha256: "a".repeat(64)
+});
+const preferences = createDefaultMissionLayerPreferences(
+  bundle.case.caseId,
+  bundle.case.planId,
+  bundle.assignments.map(({uavId}) => uavId)
+);
+
 afterEach(() => {
   cleanup();
   runtime.keplerProps.length = 0;
@@ -105,57 +131,58 @@ describe("WrjKeplerMap", () => {
     expect(runtime.keplerProps[0].mapStyles).toBeUndefined();
   });
 
-  it("provides empty paths and a 32 pixel icon size by default", () => {
+  it("provides an inactive mission overlay by default", () => {
     render(<WrjKeplerMap basemap={PUBLIC_BASEMAP} />);
 
-    expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-paths", "0");
-    expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-icon-size", "32");
+    expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-case-id", "");
+    expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-mission-time", "0");
+    expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-vertical-scale", "1");
+    expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-has-preferences", "false");
   });
 
-  it("provides custom flight paths and icon size to the injected map container", () => {
-    const flightPaths: readonly UavFlightPath[] = [
-      {
-        uavId: "UAV-01",
-        coordinates: [
-          [110, 18, 100, 10],
-          [111, 19, 200, 20]
-        ]
-      }
-    ];
+  it("provides the complete synchronized mission overlay value", () => {
+    const onSelectSortie = vi.fn();
+    render(
+      <WrjKeplerMap
+        basemap={PUBLIC_BASEMAP}
+        bundle={bundle}
+        missionTimeSec={17.5}
+        verticalScale={4}
+        preferences={preferences}
+        onSelectSortie={onSelectSortie}
+      />
+    );
 
-    render(<WrjKeplerMap basemap={PUBLIC_BASEMAP} flightPaths={flightPaths} uavIconSize={56} />);
-
-    expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-paths", "1");
-    expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-icon-size", "56");
+    expect(screen.getByTestId("kepler-gl")).toHaveAttribute(
+      "data-case-id",
+      bundle.case.caseId
+    );
+    expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-mission-time", "17.5");
+    expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-vertical-scale", "4");
+    expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-has-preferences", "true");
+    expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-has-selection", "true");
   });
 });
 
 describe("mergeDeckRenderCallbacks", () => {
-  it("preserves callbacks and appends UAV layers after the original deck layers", () => {
+  it("preserves callbacks and appends the five mission layers exactly once", () => {
     const onDeckLoad = vi.fn();
     const onDeckAfterRender = vi.fn();
     const originalLayer = {id: "original"};
+    const missionLayers = createMissionOverlayLayers({
+      bundle,
+      missionTimeSec: 5,
+      verticalScale: 2,
+      preferences
+    });
+    expect(missionLayers).toHaveLength(5);
     const callbacks = mergeDeckRenderCallbacks(
       {
         onDeckLoad,
         onDeckAfterRender,
         onDeckRender: vi.fn(() => ({layers: [originalLayer], marker: "kept"}))
       },
-      {
-        paths: [
-          {
-            uavId: "UAV-01",
-            coordinates: [
-              [110, 18, 100, 10],
-              [111, 19, 200, 20]
-            ]
-          }
-        ],
-        time: 10,
-        visible: true,
-        palette: ["#123456"],
-        iconSize: 40
-      }
+      missionLayers
     );
 
     const result = callbacks.onDeckRender?.({layers: [{id: "before-original"}]});
@@ -164,14 +191,61 @@ describe("mergeDeckRenderCallbacks", () => {
     expect(result).toMatchObject({marker: "kept"});
     expect((result?.layers as Array<{id: string}>).map(({id}) => id)).toEqual([
       "original",
-      "wrj-uav-flight-markers"
+      "wrj-algorithm-region",
+      "wrj-algorithm-strips",
+      "wrj-algorithm-routes",
+      "wrj-algorithm-trips",
+      "wrj-algorithm-uav-triangles"
+    ]);
+  });
+
+  it("does not create mission layers without both a bundle and preferences", () => {
+    expect(createMissionOverlayLayers({
+      bundle: null,
+      missionTimeSec: 0,
+      verticalScale: 1,
+      preferences
+    })).toEqual([]);
+    expect(createMissionOverlayLayers({
+      bundle,
+      missionTimeSec: 0,
+      verticalScale: 1,
+      preferences: null
+    })).toEqual([]);
+  });
+
+  it("does not duplicate mission layers already returned by Kepler", () => {
+    const missionLayers = createMissionOverlayLayers({
+      bundle,
+      missionTimeSec: 5,
+      verticalScale: 1,
+      preferences
+    });
+    const callbacks = mergeDeckRenderCallbacks(
+      {onDeckRender: () => ({layers: [{id: "kepler"}, missionLayers[0]]})},
+      missionLayers
+    );
+
+    const result = callbacks.onDeckRender?.({layers: []});
+    expect((result?.layers as Array<{id: string}>).map(({id}) => id)).toEqual([
+      "kepler",
+      "wrj-algorithm-region",
+      "wrj-algorithm-strips",
+      "wrj-algorithm-routes",
+      "wrj-algorithm-trips",
+      "wrj-algorithm-uav-triangles"
     ]);
   });
 
   it("keeps null from the original onDeckRender callback", () => {
     const callbacks = mergeDeckRenderCallbacks(
       {onDeckRender: () => null},
-      {paths: [], time: null, visible: true, iconSize: 32}
+      createMissionOverlayLayers({
+        bundle,
+        missionTimeSec: 5,
+        verticalScale: 1,
+        preferences
+      })
     );
 
     expect(callbacks.onDeckRender?.({layers: []})).toBeNull();

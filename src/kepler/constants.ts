@@ -1,4 +1,7 @@
 export const WRJ_MAP_ID = "wrj-map";
+export const MIN_CASE_MAP_ZOOM = 4;
+export const MAX_CASE_MAP_ZOOM = 14;
+export const ZERO_EXTENT_CASE_MAP_ZOOM = 12;
 
 export const DEFAULT_MAP_STATE = {
   latitude: 18.625,

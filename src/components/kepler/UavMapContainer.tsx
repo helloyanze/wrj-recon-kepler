@@ -3,71 +3,53 @@ import {
   injectComponents,
   type MapContainerProps
 } from "@kepler.gl/components";
-import {createContext, useContext} from "react";
-import type {UavFlightPath} from "../../features/flight/flightPaths";
+import {createContext, useContext, useMemo} from "react";
+import type {CaseBundleV2} from "../../features/cases/caseBundle";
 import {
-  createUavDeckLayers,
-  type CreateUavDeckLayersOptions
-} from "../../features/flight/uavDeckLayers";
-import {UAV_COLORS} from "../../kepler/constants";
+  createMissionDeckLayers
+} from "../../features/mission/missionDeckLayers";
+import type {
+  MissionLayerPreferencesV2,
+  VerticalScale
+} from "../../features/mission/missionLayerPreferences";
 
-export interface FlightOverlayValue {
-  paths: readonly UavFlightPath[];
-  iconSize: number;
+export interface MissionOverlayValue {
+  bundle: CaseBundleV2 | null;
+  missionTimeSec: number;
+  verticalScale: VerticalScale;
+  preferences: MissionLayerPreferencesV2 | null;
+  onSelectSortie?: (assignmentId: string) => void;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const FlightOverlayContext = createContext<FlightOverlayValue>({paths: [], iconSize: 32});
+export const MissionOverlayContext = createContext<MissionOverlayValue>({
+  bundle: null,
+  missionTimeSec: 0,
+  verticalScale: 1,
+  preferences: null
+});
 
 type DeckRenderCallbacks = NonNullable<MapContainerProps["deckRenderCallbacks"]>;
-
-interface TripLayerShape {
-  id?: unknown;
-  config?: {
-    isVisible?: unknown;
-    visConfig?: {
-      colorRange?: {
-        colors?: unknown;
-      };
-    };
-  };
-}
-
-const DEFAULT_PALETTE = [
-  UAV_COLORS["UAV-01"],
-  UAV_COLORS["UAV-02"],
-  UAV_COLORS["UAV-03"]
-] as const;
-
-function validPaletteColor(value: unknown, fallback: string): string {
-  return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
-}
+type MissionDeckLayers = ReturnType<typeof createMissionDeckLayers>;
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function getUavDeckLayerOptions(
-  props: Pick<MapContainerProps, "visState">,
-  overlay: FlightOverlayValue
-): CreateUavDeckLayersOptions {
-  const visState = props.visState;
-  const layers = visState.layers as unknown as readonly TripLayerShape[];
-  const tripLayer = layers.find(({id}) => id === "wrj-trip-layer");
-  const rawColors = tripLayer?.config?.visConfig?.colorRange?.colors;
-  const colors = Array.isArray(rawColors) ? rawColors : [];
-  const rawTime: unknown = visState.animationConfig.currentTime;
-
-  return {
-    paths: overlay.paths,
-    iconSize: overlay.iconSize,
-    time: typeof rawTime === "number" && Number.isFinite(rawTime) ? rawTime : null,
-    visible: tripLayer?.config?.isVisible === true,
-    palette: DEFAULT_PALETTE.map((fallback, index) => validPaletteColor(colors[index], fallback))
-  };
+export function createMissionOverlayLayers(
+  overlay: MissionOverlayValue
+): MissionDeckLayers {
+  if (overlay.bundle === null || overlay.preferences === null) return [];
+  return createMissionDeckLayers({
+    bundle: overlay.bundle,
+    missionTimeSec: overlay.missionTimeSec,
+    verticalScale: overlay.verticalScale,
+    preferences: overlay.preferences,
+    onSelectSortie: overlay.onSelectSortie
+  });
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function mergeDeckRenderCallbacks(
   callbacks: MapContainerProps["deckRenderCallbacks"],
-  layerOptions: CreateUavDeckLayersOptions
+  missionLayers: MissionDeckLayers
 ): DeckRenderCallbacks {
   return {
     ...callbacks,
@@ -78,22 +60,36 @@ export function mergeDeckRenderCallbacks(
       if (renderedProps === null) return null;
 
       const layers = Array.isArray(renderedProps.layers) ? renderedProps.layers : [];
+      const existingLayerIds = new Set(layers.map(deckLayerId));
       return {
         ...renderedProps,
-        layers: [...layers, ...createUavDeckLayers(layerOptions)]
+        layers: [
+          ...layers,
+          ...missionLayers.filter(layer => !existingLayerIds.has(layer.id))
+        ]
       };
     }
   };
+}
+
+function deckLayerId(layer: unknown): unknown {
+  return typeof layer === "object" && layer !== null && "id" in layer
+    ? layer.id
+    : undefined;
 }
 
 export function UavMapContainerFactory(...dependencies: Parameters<typeof MapContainerFactory>) {
   const MapContainer = MapContainerFactory(...dependencies);
 
   function UavMapContainer(props: MapContainerProps) {
-    const overlay = useContext(FlightOverlayContext);
-    const deckRenderCallbacks = mergeDeckRenderCallbacks(
-      props.deckRenderCallbacks,
-      getUavDeckLayerOptions(props, overlay)
+    const overlay = useContext(MissionOverlayContext);
+    const missionLayers = useMemo(
+      () => createMissionOverlayLayers(overlay),
+      [overlay]
+    );
+    const deckRenderCallbacks = useMemo(
+      () => mergeDeckRenderCallbacks(props.deckRenderCallbacks, missionLayers),
+      [props.deckRenderCallbacks, missionLayers]
     );
 
     return <MapContainer {...props} deckRenderCallbacks={deckRenderCallbacks} />;

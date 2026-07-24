@@ -2,8 +2,10 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {describe, expect, it} from "vitest";
+import type {CaseBundleV2} from "../src/features/cases/caseBundle";
 import {createUavDeckLayers} from "../src/features/flight/uavDeckLayers";
 import type {UavFlightId, UavFlightPath} from "../src/features/flight/flightPaths";
+import {caseMapState} from "../src/features/mission/caseMapState";
 
 const UAV_MASK_PATH = resolve("public/assets/uav-fixed-wing-mask.svg");
 
@@ -152,5 +154,60 @@ describe("createUavDeckLayers", () => {
 
     expect(markers[0].uavId).toBe("UAV-02");
     expect(getColor(markers[0])).toEqual([34, 51, 68, 255]);
+  });
+});
+
+describe("caseMapState", () => {
+  function caseBundle(points: readonly [number, number, number][]): CaseBundleV2 {
+    const closedRegion = points.length > 0
+      ? [...points, points[0]]
+      : [[110.235, 18.625, 0], [110.235, 18.625, 0]];
+    return {
+      displayTransform: {
+        anchorLongitude: 110.235,
+        anchorLatitude: 18.625,
+        sourceCenterXM: 0,
+        sourceCenterYM: 0,
+        xAxis: "EAST",
+        yAxis: "NORTH"
+      },
+      region: {source: "DERIVED_FROM_STRIPS", polygon: closedRegion},
+      strips: [],
+      sorties: []
+    } as unknown as CaseBundleV2;
+  }
+
+  it("builds a bounded case-centred 3D reset view", () => {
+    const state = caseMapState(caseBundle([
+      [109.9, 18.2, 0],
+      [110.5, 19, 9_999]
+    ]));
+
+    expect(state).toMatchObject({
+      latitude: 18.625,
+      longitude: 110.235,
+      pitch: 55,
+      bearing: -18,
+      dragRotate: true
+    });
+    expect(state.zoom).toBeGreaterThanOrEqual(4);
+    expect(state.zoom).toBeLessThanOrEqual(14);
+  });
+
+  it("ignores altitude when calculating zoom", () => {
+    const seaLevel = caseMapState(caseBundle([
+      [110.1, 18.5, 0],
+      [110.4, 18.8, 0]
+    ]));
+    const highAltitude = caseMapState(caseBundle([
+      [110.1, 18.5, -50_000],
+      [110.4, 18.8, 500_000]
+    ]));
+
+    expect(highAltitude.zoom).toBe(seaLevel.zoom);
+  });
+
+  it("uses zoom 12 for a zero horizontal extent", () => {
+    expect(caseMapState(caseBundle([[110.235, 18.625, 30_000]])).zoom).toBe(12);
   });
 });
