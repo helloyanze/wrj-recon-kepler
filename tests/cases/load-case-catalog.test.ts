@@ -403,6 +403,36 @@ describe("algorithm case catalog loaders", () => {
     expect(caseBundleSchema.safeParse(value).success).toBe(false);
   });
 
+  it("rejects duplicate sortie strip identities that mask a missing strip", () => {
+    const secondStrip = {
+      ...bundle.strips[0],
+      stripId: "ST-002",
+      index: 1
+    };
+    const duplicateSortieStrips = {
+      ...bundle,
+      assignments: [
+        {
+          ...bundle.assignments[0],
+          stripIds: ["ST-001", "ST-002"],
+          stripEndIndex: 1
+        }
+      ],
+      sorties: [
+        {
+          ...bundle.sorties[0],
+          stripIds: ["ST-001", "ST-001"]
+        }
+      ],
+      strips: [...bundle.strips, secondStrip],
+      metrics: {...bundle.metrics, stripCount: 2}
+    };
+
+    expect(caseBundleSchema.safeParse(duplicateSortieStrips).success).toBe(
+      false
+    );
+  });
+
   it("parses the committed R10 generated bundle", async () => {
     const raw = await readFile(
       resolve(

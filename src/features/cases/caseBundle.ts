@@ -283,8 +283,10 @@ export const caseBundleSchema: z.ZodType<CaseBundleV2> = z
       right: readonly string[]
     ): boolean => {
       if (left.length !== right.length) return false;
+      const leftIds = new Set(left);
       const rightIds = new Set(right);
-      return rightIds.size === right.length &&
+      return leftIds.size === left.length &&
+        rightIds.size === right.length &&
         left.every(id => rightIds.has(id));
     };
 
