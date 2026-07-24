@@ -155,6 +155,31 @@ describe("algorithm case catalog loaders", () => {
     );
   });
 
+  it("reports the exact catalog URL for invalid JSON", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{")));
+
+    await expect(loadCaseCatalog("/mirror-data")).rejects.toThrow(
+      "解析 /mirror-data/integration-cases/catalog.json 的 JSON 失败"
+    );
+  });
+
+  it("reports the exact bundle URL for HTTP failures", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response("missing", {status: 404, statusText: "Not Found"})
+        )
+    );
+
+    await expect(
+      loadBuiltInCase(catalogEntry, "/mirror-data")
+    ).rejects.toThrow(
+      "加载 /mirror-data/integration-cases/R10-LONG-TRANSIT-01/bundle.json 失败：404 Not Found"
+    );
+  });
+
   it("reports the exact bundle URL for invalid JSON", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{")));
 
@@ -205,6 +230,21 @@ describe("algorithm case catalog loaders", () => {
       loadCaseCatalog("/data", controller.signal)
     ).rejects.toBe(abortError);
     expect(fetchMock).toHaveBeenCalledWith(catalogUrl, {
+      signal: controller.signal
+    });
+  });
+
+  it("preserves bundle AbortError and passes the caller signal to fetch", async () => {
+    const controller = new AbortController();
+    const abortError = new DOMException("Aborted", "AbortError");
+    const fetchMock = vi.fn().mockRejectedValue(abortError);
+    vi.stubGlobal("fetch", fetchMock);
+    controller.abort();
+
+    await expect(
+      loadBuiltInCase(catalogEntry, "/data", controller.signal)
+    ).rejects.toBe(abortError);
+    expect(fetchMock).toHaveBeenCalledWith(bundleUrl, {
       signal: controller.signal
     });
   });
