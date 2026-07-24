@@ -20,8 +20,8 @@ describe("resolveBasemap", () => {
     expect(result).toMatchObject({
       provider: "public",
       mapStylesReplaceDefault: true,
-      primaryLabel: "公共地图",
-      secondaryLabel: "OSM 简洁图",
+      primaryLabel: "深色地图",
+      secondaryLabel: "亮色地图",
       statusLabel: "公共底图"
     });
     expect(result.mapboxToken).toBe("");
@@ -79,28 +79,33 @@ describe("resolveBasemap", () => {
     ).rejects.toThrow("{y}");
   });
 
-  it("creates a public raster style with Carto subdomains and OSM fallback", async () => {
+  it("creates public dark and light raster styles with Carto subdomains", async () => {
     const result = await resolveBasemap({mode: "public"});
     const [satellite, light] = result.mapStyles!;
 
     expect(satellite).toMatchObject({id: "satellite", style: {version: 8}});
     expect(satellite.style.sources.raster.tiles).toEqual([
-      "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-      "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-      "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-      "https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
+      "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+      "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+      "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+      "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
     ]);
     expect(satellite.style.sources.raster.attribution).toBe(
       "© OpenStreetMap contributors · © CARTO"
     );
     expect(result.attributionByStyle).toEqual({
       satellite: "© OpenStreetMap contributors · © CARTO",
-      light: OSM_ATTRIBUTION
+      light: "© OpenStreetMap contributors · © CARTO"
     });
     expect(light.style.sources.raster.tiles).toEqual([
-      "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+      "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+      "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+      "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+      "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
     ]);
-    expect(light.style.sources.raster.attribution).toBe(OSM_ATTRIBUTION);
+    expect(light.style.sources.raster.attribution).toBe(
+      "© OpenStreetMap contributors · © CARTO"
+    );
     expect(createRasterStyle(["https://tiles.example/{z}/{x}/{y}.png"], "Example", 512)).toEqual({
       version: 8,
       sources: {

@@ -64,10 +64,13 @@ type Fetcher = (input: string, init?: RequestInit) => Promise<Response>;
 
 const OSM_TILES = ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"];
 const OSM_ATTRIBUTION = "© OpenStreetMap contributors";
-const CARTO_TILES = ["a", "b", "c", "d"].map(
-  (subdomain) => `https://${subdomain}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png`
-);
 const CARTO_ATTRIBUTION = "© OpenStreetMap contributors · © CARTO";
+
+function cartoTiles(style: "dark_all" | "light_all"): string[] {
+  return ["a", "b", "c", "d"].map(
+    (subdomain) => `https://${subdomain}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}.png`
+  );
+}
 
 export function createRasterStyle(
   tiles: string[],
@@ -127,14 +130,14 @@ function publicBasemap(): RasterResolvedBasemap {
     provider: "public",
     mapboxToken: "",
     mapStyles: [
-      {id: "satellite", style: createRasterStyle(CARTO_TILES, CARTO_ATTRIBUTION)},
-      {id: "light", style: createRasterStyle(OSM_TILES, OSM_ATTRIBUTION)}
+      {id: "satellite", style: createRasterStyle(cartoTiles("dark_all"), CARTO_ATTRIBUTION)},
+      {id: "light", style: createRasterStyle(cartoTiles("light_all"), CARTO_ATTRIBUTION)}
     ],
     mapStylesReplaceDefault: true,
-    primaryLabel: "公共地图",
-    secondaryLabel: "OSM 简洁图",
+    primaryLabel: "深色地图",
+    secondaryLabel: "亮色地图",
     statusLabel: "公共底图",
-    attributionByStyle: {satellite: CARTO_ATTRIBUTION, light: OSM_ATTRIBUTION}
+    attributionByStyle: {satellite: CARTO_ATTRIBUTION, light: CARTO_ATTRIBUTION}
   };
 }
 
