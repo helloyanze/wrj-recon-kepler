@@ -72,6 +72,7 @@ export function Workspace({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [styleType, setStyleType] = useState<"satellite" | "light">("satellite");
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importDialogBusy, setImportDialogBusy] = useState(false);
 
   const uavIds = useMemo(
     () => bundle === null
@@ -156,7 +157,7 @@ export function Workspace({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         if (importDialogOpen) {
-          setImportDialogOpen(false);
+          if (!importDialogBusy) setImportDialogOpen(false);
         } else {
           setDrawerContent(null);
         }
@@ -170,7 +171,7 @@ export function Workspace({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [importDialogOpen, resetView]);
+  }, [importDialogBusy, importDialogOpen, resetView]);
 
   const selectedUavId = drawerContent?.type === "uav"
     ? drawerContent.uavId
@@ -248,7 +249,13 @@ export function Workspace({
           >
             任务概览
           </button>
-          <button type="button" onClick={() => setImportDialogOpen(true)}>
+          <button
+            type="button"
+            onClick={() => {
+              setImportDialogBusy(false);
+              setImportDialogOpen(true);
+            }}
+          >
             本地导入算例
           </button>
           {selectedEntry?.source === "imported" ? (
@@ -362,7 +369,11 @@ export function Workspace({
         <ImportCaseDialog
           open
           dependencies={caseImportDependencies}
-          onClose={() => setImportDialogOpen(false)}
+          onClose={() => {
+            setImportDialogBusy(false);
+            setImportDialogOpen(false);
+          }}
+          onBusyChange={setImportDialogBusy}
           onSaved={async key => {
             await caseLibrary.refreshImports();
             caseLibrary.select(key);

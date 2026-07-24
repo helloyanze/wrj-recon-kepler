@@ -368,6 +368,80 @@ describe("dynamic algorithm Workspace", () => {
     expect(repository.list).toHaveBeenCalledTimes(2);
   });
 
+  it("keeps the import dialog open when Escape is pressed during save", async () => {
+    const worker = new WorkspaceImportWorker();
+    const save = deferred<void>();
+    const localBundle: CaseBundleV2 = {
+      ...structuredClone(R10_BUNDLE),
+      case: {
+        caseId: "LOCAL-PENDING",
+        planId: "LOCAL-PLAN",
+        displayName: "待保存算例"
+      }
+    };
+    let stored: CaseBundleV2 | undefined;
+    const repository: CaseRepository = {
+      persistent: true,
+      list: vi.fn(async () => stored === undefined ? [] : [{
+        caseId: stored.case.caseId,
+        planId: stored.case.planId,
+        displayName: stored.case.displayName,
+        importedAt: stored.provenance.importedAt,
+        sourceName: stored.provenance.sourceName,
+        sourceRun: stored.provenance.sourceRun,
+        metrics: stored.metrics,
+        warnings: stored.validation.warnings
+      }]),
+      get: vi.fn(async () => stored),
+      save: vi.fn(async next => {
+        await save.promise;
+        stored = next;
+      }),
+      remove: vi.fn()
+    };
+    renderWorkspace(dependencies({
+      openCaseRepository: vi.fn(async () => repository)
+    }), false, {
+      createWorker: vi.fn(() => worker),
+      openCaseRepository: vi.fn(async () => repository)
+    });
+    await screen.findByText("方案可行");
+    fireEvent.click(screen.getByRole("button", {name: "本地导入算例"}));
+    fireEvent.change(screen.getByLabelText("选择 ZIP 文件"), {
+      target: {files: [importFile()]}
+    });
+    await waitFor(() => expect(worker.postMessage).toHaveBeenCalled());
+    const request = postedParse(worker);
+    act(() => worker.respond({
+      type: "success",
+      requestId: request.requestId,
+      bundle: localBundle,
+      preview: {
+        caseId: localBundle.case.caseId,
+        uavCount: 2,
+        sortieCount: 5,
+        batchCount: 3,
+        stripCount: 20,
+        durationSec: 3598,
+        warnings: []
+      }
+    }));
+    fireEvent.click(await screen.findByRole("button", {name: "确认导入"}));
+    await waitFor(() => expect(repository.save).toHaveBeenCalled());
+
+    fireEvent.keyDown(window, {key: "Escape"});
+    expect(screen.getByRole("dialog", {name: "本地导入算例"}))
+      .toBeInTheDocument();
+    expect(screen.getByRole("button", {name: "取消"})).toBeDisabled();
+
+    await act(async () => {
+      save.resolve();
+      await save.promise;
+    });
+    await waitFor(() => expect(screen.getByLabelText("选择算例"))
+      .toHaveValue("LOCAL-PENDING:LOCAL-PLAN:imported"));
+  });
+
   it("only offers deletion for imported selections after confirmation", async () => {
     const localBundle: CaseBundleV2 = {
       ...structuredClone(R10_BUNDLE),

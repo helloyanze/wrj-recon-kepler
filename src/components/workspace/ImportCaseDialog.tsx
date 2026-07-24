@@ -10,6 +10,7 @@ export interface ImportCaseDialogProps {
   dependencies?: CaseImportDependencies;
   onClose(): void;
   onSaved(key: string, bundle: CaseBundleV2): void | Promise<void>;
+  onBusyChange?(busy: boolean): void;
 }
 
 const STAGE_LABELS = {
@@ -32,13 +33,31 @@ export function ImportCaseDialog({
   open,
   dependencies,
   onClose,
-  onSaved
+  onSaved,
+  onBusyChange
 }: ImportCaseDialogProps) {
   const importer = useCaseImport({dependencies});
   const cancelImport = importer.cancel;
   const [overwrite, setOverwrite] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const previouslyOpen = useRef(open);
+  const mounted = useRef(false);
+  const saveGeneration = useRef(0);
+  const saving = submitting;
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      saveGeneration.current += 1;
+      onBusyChange?.(false);
+    };
+  }, [onBusyChange]);
+
+  useEffect(() => {
+    onBusyChange?.(saving);
+  }, [onBusyChange, saving]);
 
   useEffect(() => {
     if (previouslyOpen.current && !open) cancelImport();
@@ -64,17 +83,30 @@ export function ImportCaseDialog({
   };
 
   const close = (): void => {
+    if (saving) return;
     importer.cancel();
     onClose();
   };
 
   const confirm = (): void => {
+    const generation = ++saveGeneration.current;
+    setSubmitting(true);
     void importer.confirm(overwrite).then(async key => {
-      if (importer.preview === null) return;
+      if (
+        !mounted.current ||
+        saveGeneration.current !== generation ||
+        importer.preview === null
+      ) {
+        return;
+      }
       await onSaved(key, importer.preview.bundle);
+      if (!mounted.current || saveGeneration.current !== generation) return;
       importer.reset();
       onClose();
     }).catch(() => {
+      if (mounted.current && saveGeneration.current === generation) {
+        setSubmitting(false);
+      }
       // The hook exposes the readable save error in the dialog.
     });
   };
@@ -85,9 +117,9 @@ export function ImportCaseDialog({
   const canConfirm =
     preview !== null &&
     !processing &&
-    importer.status !== "saving" &&
+    !saving &&
     (!importer.duplicate || overwrite);
-  const progressLabel = importer.status === "saving"
+  const progressLabel = saving
     ? "保存"
     : importer.progress === null
       ? null
@@ -106,7 +138,14 @@ export function ImportCaseDialog({
             <small>ALGORITHM CASE PACKAGE</small>
             <h2 id="import-case-title">本地导入算例</h2>
           </div>
-          <button type="button" aria-label="关闭导入窗口" onClick={close}>×</button>
+            <button
+              type="button"
+              aria-label="关闭导入窗口"
+              disabled={saving}
+              onClick={close}
+            >
+              ×
+            </button>
         </header>
 
         <div className="import-dialog-content">
@@ -134,7 +173,7 @@ export function ImportCaseDialog({
                 aria-label="选择 ZIP 文件"
                 type="file"
                 accept=".zip,application/zip"
-                disabled={processing || importer.status === "saving"}
+                disabled={processing || saving}
                 onChange={event => {
                   chooseFile(event.currentTarget.files?.[0]);
                   event.currentTarget.value = "";
@@ -147,14 +186,14 @@ export function ImportCaseDialog({
             <div className="import-progress" aria-live="polite">
               <div>
                 <span>{progressLabel}中…</span>
-                <b>{importer.status === "saving"
+                <b>{saving
                   ? "正在写入"
                   : `${Math.round(importer.progress?.percent ?? 0)}%`}</b>
               </div>
               <progress
                 aria-label={`${progressLabel}进度`}
                 max={100}
-                value={importer.status === "saving"
+                value={saving
                   ? 100
                   : importer.progress?.percent ?? 0}
               />
@@ -213,7 +252,7 @@ export function ImportCaseDialog({
         </div>
 
         <footer>
-          <button type="button" onClick={close}>取消</button>
+          <button type="button" disabled={saving} onClick={close}>取消</button>
           <button
             type="button"
             className="primary"
@@ -222,7 +261,7 @@ export function ImportCaseDialog({
           >
             {importer.status === "error" && preview !== null
               ? "重试保存"
-              : importer.status === "saving"
+              : saving
                 ? "保存中…"
                 : "确认导入"}
           </button>

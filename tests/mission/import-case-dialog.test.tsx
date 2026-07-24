@@ -56,6 +56,14 @@ function harness(existing?: CaseBundleV2) {
   return {worker, repository, dependencies};
 }
 
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>(resolvePromise => {
+    resolve = resolvePromise;
+  });
+  return {promise, resolve};
+}
+
 function latestParse(worker: FakeWorker): Extract<
 ImportWorkerRequest, {type: "parse"}> {
   const call = worker.postMessage.mock.calls.find(
@@ -284,5 +292,57 @@ describe("ImportCaseDialog", () => {
     )).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", {name: "取消"}));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("cannot close while saving and does not notify after an unexpected unmount", async () => {
+    const save = deferred<void>();
+    const {worker, repository, dependencies} = harness();
+    vi.mocked(repository.save).mockReturnValue(save.promise);
+    const onClose = vi.fn();
+    const onSaved = vi.fn();
+    const onBusyChange = vi.fn();
+    const rendered = render(
+      <ImportCaseDialog
+        open
+        dependencies={dependencies}
+        onClose={onClose}
+        onSaved={onSaved}
+        onBusyChange={onBusyChange}
+      />
+    );
+    fireEvent.change(screen.getByLabelText("选择 ZIP 文件"), {
+      target: {files: [zipFile()]}
+    });
+    await waitFor(() => expect(worker.postMessage).toHaveBeenCalled());
+    const request = latestParse(worker);
+    act(() => worker.respond({
+      type: "success",
+      requestId: request.requestId,
+      bundle,
+      preview: {
+        caseId: bundle.case.caseId,
+        uavCount: 2,
+        sortieCount: 5,
+        batchCount: 3,
+        stripCount: 20,
+        durationSec: 3598,
+        warnings: []
+      }
+    }));
+    fireEvent.click(await screen.findByRole("button", {name: "确认导入"}));
+
+    await waitFor(() => expect(onBusyChange).toHaveBeenLastCalledWith(true));
+    expect(screen.getByRole("button", {name: "取消"})).toBeDisabled();
+    expect(screen.getByRole("button", {name: "关闭导入窗口"})).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", {name: "取消"}));
+    fireEvent.click(screen.getByRole("button", {name: "关闭导入窗口"}));
+    expect(onClose).not.toHaveBeenCalled();
+
+    rendered.unmount();
+    await act(async () => {
+      save.resolve();
+      await save.promise;
+    });
+    expect(onSaved).not.toHaveBeenCalled();
   });
 });
