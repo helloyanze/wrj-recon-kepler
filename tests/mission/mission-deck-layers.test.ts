@@ -168,6 +168,8 @@ describe("mission triangle mask", () => {
 
     expect(document.querySelector("parsererror")).toBeNull();
     expect(document.documentElement.getAttribute("viewBox")).toBe("0 0 64 64");
+    expect(document.documentElement.getAttribute("width")).toBe("64");
+    expect(document.documentElement.getAttribute("height")).toBe("64");
     expect(svg).toMatch(/fill=["']#fff(?:fff)?["']/i);
     expect(svg).toContain("M32 4");
     expect(document.querySelector("script, foreignObject")).toBeNull();
