@@ -28,12 +28,8 @@ import {
   DetailDrawer,
   type DrawerContent
 } from "./workspace/DetailDrawer";
-import {
-  LayerSidebar,
-  type LayerAppearance,
-  type LayerViewModel,
-  type UavId
-} from "./workspace/LayerSidebar";
+import {LayerSidebar} from "./workspace/LayerSidebar";
+import {MissionTimeline} from "./workspace/MissionTimeline";
 import {WrjKeplerMap, type WrjKeplerMapProps} from "./WrjKeplerMap";
 
 export interface WorkspaceProps {
@@ -46,43 +42,6 @@ export interface WorkspaceProps {
 
 const COORDINATE_NOTICE =
   "算法数据采用 LOCAL_CARTESIAN_M；当前地图位置为日月湾视觉锚定，不代表真实地理定位。";
-
-const LAYER_METADATA: ReadonlyArray<{
-  id: string;
-  missionId: MissionLayerId;
-  label: string;
-  mode: "single" | "uav";
-  capabilities: LayerViewModel["definition"]["capabilities"];
-}> = [
-  {
-    id: "wrj-region-layer",
-    missionId: "region",
-    label: "算法任务区",
-    mode: "single",
-    capabilities: ["filled", "stroked"]
-  },
-  {
-    id: "wrj-strips-layer",
-    missionId: "strips",
-    label: "侦察条带",
-    mode: "uav",
-    capabilities: ["thickness"]
-  },
-  {
-    id: "wrj-routes-layer",
-    missionId: "routes",
-    label: "静态规划航迹",
-    mode: "uav",
-    capabilities: ["thickness"]
-  },
-  {
-    id: "wrj-trip-layer",
-    missionId: "trips",
-    label: "动态飞行尾迹",
-    mode: "uav",
-    capabilities: ["thickness", "trailLength"]
-  }
-];
 
 function toLegacySummary(bundle: CaseBundleV2): CaseSummary {
   const uavIds = [...new Set(bundle.assignments.map(({uavId}) => uavId))];
@@ -132,40 +91,6 @@ function toLegacySummary(bundle: CaseBundleV2): CaseSummary {
   } as unknown as CaseSummary;
 }
 
-function sidebarModels(
-  preferences: MissionLayerPreferencesV2 | null
-): LayerViewModel[] {
-  if (preferences === null) return [];
-  return LAYER_METADATA.map(metadata => {
-    const layer = preferences.layers[metadata.missionId];
-    return {
-      id: metadata.id,
-      label: metadata.label,
-      visible: layer.visible,
-      definition: {
-        mode: metadata.mode,
-        capabilities: metadata.capabilities
-      },
-      appearance: {
-        color: "#35C5FF",
-        opacity: layer.opacity,
-        iconSize: metadata.missionId === "trips"
-          ? preferences.markerSize
-          : undefined,
-        thickness: layer.width,
-        trailLength: layer.trailLengthSec,
-        filled: layer.filled,
-        stroked: layer.stroked,
-        uavColors: preferences.uavColors as LayerAppearance["uavColors"]
-      }
-    };
-  });
-}
-
-function missionLayerId(layerId: string): MissionLayerId | undefined {
-  return LAYER_METADATA.find(metadata => metadata.id === layerId)?.missionId;
-}
-
 export function Workspace({
   basemap,
   debugMode,
@@ -189,6 +114,7 @@ export function Workspace({
   const [preferences, setPreferences] =
     useState<MissionLayerPreferencesV2 | null>(null);
   const [drawerContent, setDrawerContent] = useState<DrawerContent>(null);
+  const [selectedSortieId, setSelectedSortieId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [styleType, setStyleType] = useState<"satellite" | "light">("satellite");
 
@@ -208,13 +134,6 @@ export function Workspace({
     () => bundle === null ? null : toLegacySummary(bundle),
     [bundle]
   );
-  const layers = useMemo(() => sidebarModels(preferences), [preferences]);
-  const uavs = useMemo(() => uavIds.map(uavId => ({
-    uavId: uavId as UavId,
-    callsign: uavId,
-    color: preferences?.uavColors[uavId] ?? "#FFFFFF"
-  })), [preferences, uavIds]);
-
   useEffect(() => {
     if (bundle === null) {
       setPreferences(null);
@@ -226,6 +145,7 @@ export function Workspace({
       uavIds
     ));
     setDrawerContent(null);
+    setSelectedSortieId(null);
   }, [bundle, uavIds]);
 
   const resetView = useCallback(() => {
@@ -250,27 +170,22 @@ export function Workspace({
   }, []);
 
   const changeLayer = useCallback((
-    layerId: string,
-    changes: Partial<LayerAppearance>
+    id: MissionLayerId,
+    changes: Partial<MissionLayerPreferencesV2["layers"][MissionLayerId]>
   ) => {
-    const id = missionLayerId(layerId);
-    if (id === undefined) return;
     updatePreferences(current => {
       const layer = current.layers[id];
       const nextLayer = {
         ...layer,
         opacity: changes.opacity ?? layer.opacity,
-        width: changes.thickness ?? layer.width,
-        trailLengthSec: changes.trailLength ?? layer.trailLengthSec,
+        visible: changes.visible ?? layer.visible,
+        width: changes.width ?? layer.width,
+        trailLengthSec: changes.trailLengthSec ?? layer.trailLengthSec,
         filled: changes.filled ?? layer.filled,
         stroked: changes.stroked ?? layer.stroked
       };
       return {
         ...current,
-        markerSize: changes.iconSize ?? current.markerSize,
-        uavColors: changes.uavColors === undefined
-          ? current.uavColors
-          : {...current.uavColors, ...changes.uavColors},
         layers: {...current.layers, [id]: nextLayer}
       };
     });
@@ -301,7 +216,7 @@ export function Workspace({
   }, [resetView]);
 
   const selectedUavId = drawerContent?.type === "uav"
-    ? drawerContent.uavId as UavId
+    ? drawerContent.uavId
     : null;
   const attribution = basemap.attributionByStyle[styleType];
   const ready = caseLibrary.status === "ready" && bundle !== null;
@@ -367,25 +282,44 @@ export function Workspace({
       <section className={`workspace-body ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <div className={`sidebar-shell ${caseLibrary.status}`} aria-busy={!ready}>
           <LayerSidebar
+            bundle={bundle}
+            preferences={preferences}
+            liveSorties={liveSorties}
+            loading={!ready}
             collapsed={sidebarCollapsed}
-            layers={layers}
-            uavs={uavs}
             selectedUavId={selectedUavId}
+            selectedSortieId={selectedSortieId}
             onCollapsedChange={setSidebarCollapsed}
-            onVisibilityChange={(layerId, visible) => {
-              const id = missionLayerId(layerId);
-              if (id === undefined) return;
+            onLayerChange={changeLayer}
+            onUavColorChange={(uavId, color) => {
               updatePreferences(current => ({
                 ...current,
-                layers: {
-                  ...current.layers,
-                  [id]: {...current.layers[id], visible}
-                }
+                uavColors: {...current.uavColors, [uavId]: color}
               }));
             }}
-            onLayerChange={changeLayer}
+            onMarkerSizeChange={markerSize => {
+              updatePreferences(current => ({...current, markerSize}));
+            }}
             onRestoreDefaults={restoreDefaults}
-            onSelectUav={uavId => setDrawerContent({type: "uav", uavId})}
+            onSelectUav={uavId => {
+              setSelectedSortieId(null);
+              setDrawerContent({
+                type: "uav",
+                uavId: uavId as UavSummary["uavId"]
+              });
+            }}
+            onSelectSortie={assignmentId => {
+              setSelectedSortieId(assignmentId);
+              const sortie = bundle?.sorties.find(
+                item => item.assignmentId === assignmentId
+              );
+              if (sortie !== undefined) {
+                setDrawerContent({
+                  type: "uav",
+                  uavId: sortie.uavId as UavSummary["uavId"]
+                });
+              }
+            }}
           />
           {!ready ? (
             <div
@@ -405,6 +339,7 @@ export function Workspace({
             verticalScale={1}
             preferences={preferences}
             onSelectSortie={assignmentId => {
+              setSelectedSortieId(assignmentId);
               const sortie = liveSorties.find(item => item.assignmentId === assignmentId);
               if (sortie !== undefined) {
                 setDrawerContent({
@@ -413,6 +348,18 @@ export function Workspace({
                 });
               }
             }}
+          />
+          <MissionTimeline
+            missionTimeSec={clock.missionTimeSec}
+            makespanSec={clock.makespanSec}
+            playing={clock.playing}
+            rate={clock.rate}
+            sorties={bundle?.sorties ?? []}
+            liveSorties={liveSorties}
+            disabled={!ready}
+            onToggle={clock.toggle}
+            onSeek={clock.seek}
+            onRateChange={clock.setRate}
           />
           {caseLibrary.status === "loading" && bundle === null ? (
             <div className="state-overlay">

@@ -1,355 +1,386 @@
-import {useEffect, useRef, useState} from "react";
-import type {UavSummary} from "../../data/caseSchema";
+import {useMemo, useState} from "react";
+import type {CaseBundleV2, NormalizedSortie} from "../../features/cases/caseBundle";
+import type {
+  MissionLayerId,
+  MissionLayerPreference,
+  MissionLayerPreferencesV2
+} from "../../features/mission/missionLayerPreferences";
+import type {
+  LiveSortieState,
+  SortieStatus
+} from "../../features/mission/missionInterpolation";
 
-export type UavId = UavSummary["uavId"];
-
-export type LayerCapability =
-  | "radius"
-  | "thickness"
-  | "trailLength"
-  | "filled"
-  | "stroked";
-
-export interface LayerDefinition {
-  mode: "single" | "uav";
-  capabilities: readonly LayerCapability[];
-}
-
-export interface LayerAppearance {
-  color: string;
-  opacity: number;
-  iconSize?: number;
-  radius?: number;
-  thickness?: number;
-  trailLength?: number;
-  filled?: boolean;
-  stroked?: boolean;
-  uavColors?: Partial<Record<UavId, string>>;
-}
-
-export interface LayerViewModel {
-  id: string;
-  label: string;
-  visible: boolean;
-  definition: LayerDefinition;
-  appearance: LayerAppearance;
-}
-
-export interface UavRosterItem {
-  uavId: UavId;
-  callsign: string;
-  color: string;
-}
+export type UavId = string;
 
 export interface LayerSidebarProps {
+  bundle: CaseBundleV2 | null;
+  preferences: MissionLayerPreferencesV2 | null;
+  liveSorties: readonly LiveSortieState[];
+  loading: boolean;
   collapsed: boolean;
-  layers: readonly LayerViewModel[];
-  uavs: readonly UavRosterItem[];
-  selectedUavId?: UavId | null;
+  selectedUavId?: string | null;
+  selectedSortieId?: string | null;
   onCollapsedChange: (collapsed: boolean) => void;
-  onVisibilityChange: (layerId: string, visible: boolean) => void;
-  onLayerChange: (layerId: string, changes: Partial<LayerAppearance>) => void;
+  onLayerChange: (
+    layerId: MissionLayerId,
+    changes: Partial<MissionLayerPreference>
+  ) => void;
+  onUavColorChange: (uavId: string, color: string) => void;
+  onMarkerSizeChange: (size: number) => void;
   onRestoreDefaults: () => void;
-  onSelectUav: (uavId: UavId) => void;
+  onSelectUav: (uavId: string) => void;
+  onSelectSortie: (assignmentId: string) => void;
 }
 
-const UAV_IDS: readonly UavId[] = ["UAV-01", "UAV-02", "UAV-03"];
-const MIN_LINE_WIDTH = 0.5;
-const MAX_LINE_WIDTH = 20;
-
-function numericValue(value: string): number {
-  return Number(value);
+interface LayerDefinition {
+  id: MissionLayerId;
+  label: string;
+  mode: "single" | "uav";
 }
 
-function clampLineWidth(value: number | undefined): number {
-  if (value === undefined || !Number.isFinite(value)) return MIN_LINE_WIDTH;
-  return Math.min(MAX_LINE_WIDTH, Math.max(MIN_LINE_WIDTH, value));
-}
+const LAYERS: readonly LayerDefinition[] = [
+  {id: "region", label: "算法任务区", mode: "single"},
+  {id: "strips", label: "侦察条带", mode: "uav"},
+  {id: "routes", label: "静态规划航迹", mode: "uav"},
+  {id: "trips", label: "动态飞行尾迹", mode: "uav"}
+];
 
-function nonNegativeValue(input: HTMLInputElement): number | undefined {
+const STATUS_LABELS: Readonly<Record<SortieStatus, string>> = {
+  waiting: "待起飞",
+  flying: "飞行中",
+  landed: "已降落",
+  completed: "已完成"
+};
+
+const STATUS_PRIORITY: Readonly<Record<SortieStatus, number>> = {
+  completed: 0,
+  waiting: 1,
+  landed: 2,
+  flying: 3
+};
+
+function numberValue(input: HTMLInputElement): number | null {
   const value = input.valueAsNumber;
-  return Number.isFinite(value) && value >= 0 ? value : undefined;
+  return Number.isFinite(value) ? value : null;
 }
 
-function defaultExpandedLayerId(layers: readonly LayerViewModel[]): string | null {
-  return layers.find(({id}) => id === "wrj-routes-layer")?.id ?? layers[0]?.id ?? null;
+function liveStatus(
+  liveByAssignment: ReadonlyMap<string, LiveSortieState>,
+  assignmentId: string
+): SortieStatus {
+  return liveByAssignment.get(assignmentId)?.status ?? "waiting";
 }
 
-function AdvancedControls({
-  layer,
-  onChange
+function aggregateStatus(
+  sorties: readonly NormalizedSortie[],
+  liveByAssignment: ReadonlyMap<string, LiveSortieState>
+): SortieStatus {
+  return sorties.reduce<SortieStatus>((result, sortie) => {
+    const status = liveStatus(liveByAssignment, sortie.assignmentId);
+    return STATUS_PRIORITY[status] > STATUS_PRIORITY[result] ? status : result;
+  }, "completed");
+}
+
+function LayerLegend({
+  definition,
+  preferences
 }: {
-  layer: LayerViewModel;
-  onChange: (changes: Partial<LayerAppearance>) => void;
+  definition: LayerDefinition;
+  preferences: MissionLayerPreferencesV2;
 }) {
-  const {appearance, definition, label} = layer;
-  const has = (capability: LayerCapability) => definition.capabilities.includes(capability);
-  const hasIconSize = layer.id === "wrj-trip-layer";
-
-  if (
-    !hasIconSize
-    && definition.capabilities.every((capability) => capability === "thickness")
-  ) return null;
-
+  const background = definition.mode === "single"
+    ? "#35C5FF"
+    : `linear-gradient(180deg, ${Object.values(preferences.uavColors).join(", ")})`;
   return (
-    <fieldset>
-      <legend>高级</legend>
-      {has("radius") ? (
-        <label>
-          半径
-          <input
-            aria-label={`${label} 半径`}
-            type="number"
-            min="0"
-            value={appearance.radius ?? 0}
-            onChange={(event) => {
-              const value = nonNegativeValue(event.currentTarget);
-              if (value !== undefined) onChange({radius: value});
-            }}
-          />
-        </label>
-      ) : null}
-      {has("trailLength") ? (
-        <label>
-          轨迹长度
-          <input
-            aria-label={`${label} 轨迹长度`}
-            type="number"
-            min="0"
-            value={appearance.trailLength ?? 0}
-            onChange={(event) => {
-              const value = nonNegativeValue(event.currentTarget);
-              if (value !== undefined) onChange({trailLength: value});
-            }}
-          />
-        </label>
-      ) : null}
-      {hasIconSize ? (
-        <label>
-          无人机图标大小
-          <input
-            aria-label={`${label} 无人机图标大小`}
-            type="range"
-            min="16"
-            max="64"
-            step="1"
-            value={appearance.iconSize ?? 32}
-            onChange={(event) => onChange({iconSize: numericValue(event.currentTarget.value)})}
-          />
-        </label>
-      ) : null}
-      {has("filled") ? (
-        <label>
-          <input
-            aria-label={`${label} 填充`}
-            type="checkbox"
-            checked={appearance.filled ?? false}
-            onChange={(event) => onChange({filled: event.currentTarget.checked})}
-          />
-          填充
-        </label>
-      ) : null}
-      {has("stroked") ? (
-        <label>
-          <input
-            aria-label={`${label} 描边`}
-            type="checkbox"
-            checked={appearance.stroked ?? false}
-            onChange={(event) => onChange({stroked: event.currentTarget.checked})}
-          />
-          描边
-        </label>
-      ) : null}
-    </fieldset>
+    <span
+      aria-hidden="true"
+      className="layer-legend-swatch"
+      data-testid={`layer-legend-${definition.id}`}
+      style={{background}}
+    />
   );
 }
 
-function legendBackground(layer: LayerViewModel): string {
-  if (layer.definition.mode === "single") return layer.appearance.color;
-  const colors = UAV_IDS.map((uavId) => layer.appearance.uavColors?.[uavId] ?? "#596978");
-  return `linear-gradient(180deg, ${colors[0]} 0 33.33%, ${colors[1]} 33.33% 66.66%, ${colors[2]} 66.66% 100%)`;
-}
-
 function LayerEditor({
-  layer,
-  onChange
+  definition,
+  preference,
+  preferences,
+  disabled,
+  onLayerChange,
+  onUavColorChange,
+  onMarkerSizeChange
 }: {
-  layer: LayerViewModel;
-  onChange: (changes: Partial<LayerAppearance>) => void;
+  definition: LayerDefinition;
+  preference: MissionLayerPreference;
+  preferences: MissionLayerPreferencesV2;
+  disabled: boolean;
+  onLayerChange: LayerSidebarProps["onLayerChange"];
+  onUavColorChange: LayerSidebarProps["onUavColorChange"];
+  onMarkerSizeChange: LayerSidebarProps["onMarkerSizeChange"];
 }) {
-  const {appearance, definition, label} = layer;
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const hasThickness = definition.capabilities.includes("thickness");
-  const hasAdvancedControls = definition.capabilities.some(
-    (capability) => capability !== "thickness"
-  ) || layer.id === "wrj-trip-layer";
-  const thickness = clampLineWidth(appearance.thickness);
+  const isRegion = definition.id === "region";
+  const isTrip = definition.id === "trips";
 
   return (
-    <section aria-label={`${label} 设置`}>
-      <fieldset>
+    <section aria-label={`${definition.label} 设置`}>
+      <fieldset disabled={disabled}>
         <legend>基础</legend>
-        {definition.mode === "uav" ? UAV_IDS.map((uavId) => (
-          <label key={uavId}>
-            {uavId} 颜色
-            <input
-              aria-label={`${label} ${uavId} 颜色`}
-              type="color"
-              value={appearance.uavColors?.[uavId] ?? "#000000"}
-              onChange={(event) => onChange({
-                uavColors: {
-                  ...appearance.uavColors,
-                  [uavId]: event.currentTarget.value
-                }
-              })}
-            />
-          </label>
-        )) : (
-          <label>
-            颜色
-            <input
-              aria-label={`${label} 颜色`}
-              type="color"
-              value={appearance.color}
-              onChange={(event) => onChange({color: event.currentTarget.value})}
-            />
-          </label>
-        )}
+        {definition.mode === "uav"
+          ? Object.entries(preferences.uavColors).map(([uavId, color]) => (
+              <label key={uavId}>
+                {uavId} 颜色
+                <input
+                  aria-label={`${definition.label} ${uavId} 颜色`}
+                  type="color"
+                  value={color}
+                  onChange={event => onUavColorChange(uavId, event.currentTarget.value)}
+                />
+              </label>
+            ))
+          : null}
         <label>
           不透明度
           <input
-            aria-label={`${label} 不透明度`}
+            aria-label={`${definition.label} 不透明度`}
             type="range"
             min="0"
             max="1"
             step="0.01"
-            value={appearance.opacity}
-            onChange={(event) => onChange({opacity: numericValue(event.currentTarget.value)})}
+            value={preference.opacity}
+            onChange={event => {
+              const value = numberValue(event.currentTarget);
+              if (value !== null) onLayerChange(definition.id, {opacity: value});
+            }}
           />
         </label>
-        {hasThickness ? (
+        {!isRegion ? (
           <label>
             线宽
             <span className="layer-range-input">
               <input
-                aria-label={`${label} 线宽`}
+                aria-label={`${definition.label} 线宽`}
                 type="range"
-                min={MIN_LINE_WIDTH}
-                max={MAX_LINE_WIDTH}
+                min="0.5"
+                max="20"
                 step="0.5"
-                value={thickness}
-                onChange={(event) => onChange({
-                  thickness: numericValue(event.currentTarget.value)
-                })}
+                value={preference.width ?? 2}
+                onChange={event => {
+                  const value = numberValue(event.currentTarget);
+                  if (value !== null) onLayerChange(definition.id, {width: value});
+                }}
               />
-              <output aria-label={`${label} 线宽值`}>{thickness} px</output>
+              <output aria-label={`${definition.label} 线宽值`}>
+                {preference.width ?? 2} px
+              </output>
             </span>
           </label>
         ) : null}
       </fieldset>
-      {hasAdvancedControls ? (
+
+      {isRegion || isTrip ? (
         <div className="layer-advanced">
           <button
             type="button"
+            disabled={disabled}
             aria-expanded={advancedOpen}
-            aria-label={`${advancedOpen ? "收起" : "展开"} ${label} 高级设置`}
-            onClick={() => setAdvancedOpen((open) => !open)}
+            aria-label={`${advancedOpen ? "收起" : "展开"} ${definition.label} 高级设置`}
+            onClick={() => setAdvancedOpen(open => !open)}
           >
             <span>高级设置</span>
             <span aria-hidden="true">{advancedOpen ? "⌃" : "⌄"}</span>
           </button>
-          {advancedOpen ? <AdvancedControls layer={layer} onChange={onChange} /> : null}
+          {advancedOpen ? (
+            <fieldset disabled={disabled}>
+              <legend>高级</legend>
+              {isRegion ? (
+                <>
+                  <label>
+                    <input
+                      aria-label={`${definition.label} 填充`}
+                      type="checkbox"
+                      checked={preference.filled ?? true}
+                      onChange={event => onLayerChange(definition.id, {
+                        filled: event.currentTarget.checked
+                      })}
+                    />
+                    填充
+                  </label>
+                  <label>
+                    <input
+                      aria-label={`${definition.label} 描边`}
+                      type="checkbox"
+                      checked={preference.stroked ?? true}
+                      onChange={event => onLayerChange(definition.id, {
+                        stroked: event.currentTarget.checked
+                      })}
+                    />
+                    描边
+                  </label>
+                </>
+              ) : null}
+              {isTrip ? (
+                <>
+                  <label>
+                    轨迹长度
+                    <input
+                      aria-label={`${definition.label} 轨迹长度`}
+                      type="number"
+                      min="0"
+                      max="3600"
+                      step="1"
+                      value={preference.trailLengthSec ?? 240}
+                      onChange={event => {
+                        const value = numberValue(event.currentTarget);
+                        if (value !== null && value >= 0) {
+                          onLayerChange(definition.id, {trailLengthSec: value});
+                        }
+                      }}
+                    />
+                  </label>
+                  <label>
+                    无人机图标大小
+                    <input
+                      aria-label={`${definition.label} 无人机图标大小`}
+                      type="range"
+                      min="16"
+                      max="64"
+                      step="1"
+                      value={preferences.markerSize}
+                      onChange={event => {
+                        const value = numberValue(event.currentTarget);
+                        if (value !== null) onMarkerSizeChange(value);
+                      }}
+                    />
+                  </label>
+                </>
+              ) : null}
+            </fieldset>
+          ) : null}
         </div>
       ) : null}
     </section>
   );
 }
 
-export function UavRoster({
-  uavs,
+function UavMissionRoster({
+  bundle,
+  preferences,
+  liveSorties,
   selectedUavId,
-  onSelect
-}: {
-  uavs: readonly UavRosterItem[];
-  selectedUavId?: UavId | null;
-  onSelect: (uavId: UavId) => void;
-}) {
+  selectedSortieId,
+  disabled,
+  onSelectUav,
+  onSelectSortie
+}: Pick<
+  LayerSidebarProps,
+  | "bundle"
+  | "preferences"
+  | "liveSorties"
+  | "selectedUavId"
+  | "selectedSortieId"
+  | "onSelectUav"
+  | "onSelectSortie"
+> & {disabled: boolean}) {
+  const liveByAssignment = useMemo(
+    () => new Map(liveSorties.map(item => [item.assignmentId, item])),
+    [liveSorties]
+  );
+  const groups = useMemo(() => {
+    const grouped = new Map<string, NormalizedSortie[]>();
+    for (const sortie of bundle?.sorties ?? []) {
+      const current = grouped.get(sortie.uavId) ?? [];
+      current.push(sortie);
+      grouped.set(sortie.uavId, current);
+    }
+    return [...grouped.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([uavId, items]) => ({
+        uavId,
+        sorties: items.sort((left, right) => (
+          left.plannedLaunchTimeSec - right.plannedLaunchTimeSec
+          || left.assignmentId.localeCompare(right.assignmentId)
+        ))
+      }));
+  }, [bundle]);
+
   return (
-    <section aria-label="无人机编队" style={{marginTop: "auto"}}>
-      <ul aria-label="无人机编队">
-        {uavs.map((uav) => (
-          <li key={uav.uavId}>
-            <button
-              type="button"
-              aria-label={`${uav.uavId} ${uav.callsign} 已规划`}
-              aria-pressed={selectedUavId === uav.uavId}
-              onClick={() => onSelect(uav.uavId)}
-            >
-              <i
-                aria-hidden="true"
-                data-testid={`uav-color-${uav.uavId}`}
-                style={{
-                  backgroundColor: uav.color,
-                  borderRadius: "50%",
-                  display: "inline-block",
-                  height: 10,
-                  width: 10
-                }}
-              />
-              <span>{uav.uavId} / {uav.callsign}</span>
-              <span>已规划</span>
-            </button>
-          </li>
-        ))}
+    <section aria-label="无人机任务" style={{marginTop: "auto"}}>
+      <ul aria-label="无人机任务">
+        {groups.map(group => {
+          const status = aggregateStatus(group.sorties, liveByAssignment);
+          return (
+            <li key={group.uavId} data-testid={`uav-group-${group.uavId}`}>
+              <button
+                type="button"
+                disabled={disabled}
+                aria-label={`无人机 ${group.uavId} ${STATUS_LABELS[status]}`}
+                aria-pressed={selectedUavId === group.uavId}
+                onClick={() => onSelectUav(group.uavId)}
+              >
+                <i
+                  aria-hidden="true"
+                  data-testid={`uav-color-${group.uavId}`}
+                  style={{
+                    backgroundColor: preferences?.uavColors[group.uavId] ?? "#FFFFFF",
+                    borderRadius: "50%",
+                    display: "inline-block",
+                    height: 10,
+                    width: 10
+                  }}
+                />
+                <span>{group.uavId}</span>
+                <span>{STATUS_LABELS[status]}</span>
+              </button>
+              <ul aria-label={`${group.uavId} 架次`}>
+                {group.sorties.map(sortie => {
+                  const sortieStatus = liveStatus(liveByAssignment, sortie.assignmentId);
+                  return (
+                    <li key={sortie.assignmentId}>
+                      <button
+                        type="button"
+                        disabled={disabled}
+                        aria-label={`架次 ${sortie.assignmentId} ${STATUS_LABELS[sortieStatus]}`}
+                        aria-pressed={selectedSortieId === sortie.assignmentId}
+                        onClick={() => onSelectSortie(sortie.assignmentId)}
+                      >
+                        <span>{sortie.assignmentId}</span>
+                        <span>{STATUS_LABELS[sortieStatus]}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
 }
 
 export function LayerSidebar({
+  bundle,
+  preferences,
+  liveSorties,
+  loading,
   collapsed,
-  layers,
-  uavs,
   selectedUavId,
+  selectedSortieId,
   onCollapsedChange,
-  onVisibilityChange,
   onLayerChange,
+  onUavColorChange,
+  onMarkerSizeChange,
   onRestoreDefaults,
-  onSelectUav
+  onSelectUav,
+  onSelectSortie
 }: LayerSidebarProps) {
-  const userSelectedExpansion = useRef(false);
-  const [expandedLayerId, setExpandedLayerId] = useState<string | null>(() => (
-    defaultExpandedLayerId(layers)
-  ));
-
-  useEffect(() => {
-    setExpandedLayerId((current) => {
-      if (layers.length === 0) {
-        userSelectedExpansion.current = false;
-        return null;
-      }
-      const currentExists = current !== null && layers.some(({id}) => id === current);
-      if (!currentExists) {
-        userSelectedExpansion.current = false;
-        return defaultExpandedLayerId(layers);
-      }
-      const preferred = defaultExpandedLayerId(layers);
-      return !userSelectedExpansion.current && preferred !== null ? preferred : current;
-    });
-  }, [layers]);
-
-  const toggleExpandedLayer = (layerId: string) => {
-    userSelectedExpansion.current = true;
-    setExpandedLayerId((current) => current === layerId ? null : layerId);
-  };
+  const [expandedLayerId, setExpandedLayerId] = useState<MissionLayerId>("routes");
+  const disabled = loading || preferences === null;
 
   if (collapsed) {
     return (
-      <aside
-        aria-label="图层"
-        data-collapsed="true"
-        style={{width: 44}}
-      >
+      <aside aria-label="图层" data-collapsed="true" style={{width: 44}}>
         <button
           type="button"
           aria-label="展开图层"
@@ -364,6 +395,7 @@ export function LayerSidebar({
   return (
     <aside
       aria-label="图层"
+      aria-busy={loading}
       data-collapsed="false"
       style={{display: "flex", flexDirection: "column", width: 300}}
     >
@@ -372,6 +404,7 @@ export function LayerSidebar({
         <div>
           <button
             type="button"
+            disabled={disabled}
             aria-label="恢复全部图层默认设置"
             onClick={onRestoreDefaults}
           >
@@ -387,54 +420,70 @@ export function LayerSidebar({
         </div>
       </header>
       <ul aria-label="图层列表">
-        {layers.map((layer) => {
-          const expanded = expandedLayerId === layer.id;
+        {LAYERS.map(definition => {
+          const preference = preferences?.layers[definition.id];
+          const expanded = expandedLayerId === definition.id;
           return (
-            <li key={layer.id}>
+            <li key={definition.id}>
               <div
-                data-testid={`layer-row-${layer.id}`}
-                onClick={() => toggleExpandedLayer(layer.id)}
+                data-testid={`layer-row-${definition.id}`}
+                onClick={() => setExpandedLayerId(definition.id)}
               >
-                <span
-                  aria-hidden="true"
-                  className="layer-legend-swatch"
-                  data-testid={`layer-legend-${layer.id}`}
-                  style={{background: legendBackground(layer)}}
-                />
+                {preferences !== null ? (
+                  <LayerLegend definition={definition} preferences={preferences} />
+                ) : <span className="layer-legend-swatch" aria-hidden="true" />}
                 <button
                   type="button"
-                  aria-label={`编辑 ${layer.label}`}
+                  aria-label={`编辑 ${definition.label}`}
                   aria-expanded={expanded}
-                  onClick={(event) => {
+                  disabled={disabled}
+                  onClick={event => {
                     event.stopPropagation();
-                    toggleExpandedLayer(layer.id);
+                    setExpandedLayerId(definition.id);
                   }}
                 >
-                  {layer.label}
+                  {definition.label}
                 </button>
                 <button
                   type="button"
-                  aria-label={`${layer.visible ? "隐藏" : "显示"} ${layer.label}`}
-                  aria-pressed={layer.visible}
-                  onClick={(event) => {
+                  disabled={disabled}
+                  aria-label={`${preference?.visible === false ? "显示" : "隐藏"} ${definition.label}`}
+                  aria-pressed={preference?.visible ?? false}
+                  onClick={event => {
                     event.stopPropagation();
-                    onVisibilityChange(layer.id, !layer.visible);
+                    if (preference !== undefined) {
+                      onLayerChange(definition.id, {visible: !preference.visible});
+                    }
                   }}
                 >
-                  <span aria-hidden="true">{layer.visible ? "◉" : "○"}</span>
+                  <span aria-hidden="true">{preference?.visible === false ? "○" : "◉"}</span>
                 </button>
               </div>
-              {expanded ? (
+              {expanded && preference !== undefined && preferences !== null ? (
                 <LayerEditor
-                  layer={layer}
-                  onChange={(changes) => onLayerChange(layer.id, changes)}
+                  definition={definition}
+                  preference={preference}
+                  preferences={preferences}
+                  disabled={disabled}
+                  onLayerChange={onLayerChange}
+                  onUavColorChange={onUavColorChange}
+                  onMarkerSizeChange={onMarkerSizeChange}
                 />
               ) : null}
             </li>
           );
         })}
       </ul>
-      <UavRoster uavs={uavs} selectedUavId={selectedUavId} onSelect={onSelectUav} />
+      <UavMissionRoster
+        bundle={bundle}
+        preferences={preferences}
+        liveSorties={liveSorties}
+        selectedUavId={selectedUavId}
+        selectedSortieId={selectedSortieId}
+        disabled={disabled}
+        onSelectUav={onSelectUav}
+        onSelectSortie={onSelectSortie}
+      />
     </aside>
   );
 }
