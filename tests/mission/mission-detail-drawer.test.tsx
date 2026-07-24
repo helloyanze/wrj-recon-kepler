@@ -206,7 +206,7 @@ describe("algorithm mission DetailDrawer", () => {
     expect(screen.getByRole("dialog", {name: "ASG-01 架次详情"})).toBeInTheDocument();
     for (const value of [
       "ASG-01", "UAV-01", "第 1 批", "10.0 s", "CLIMB",
-      "STRIP-01、STRIP-02", "4.25 kg",
+      "STRIP-01、STRIP-02", "12.35 km", "4.25 kg",
       "X 105.0 m / Y 210.0 m / Z 900.0 m",
       "900.0 m", "72.5 m/s", NOTICE
     ]) {

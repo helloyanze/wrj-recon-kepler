@@ -171,6 +171,7 @@ function SortieDetails({
         ["当前航段", live?.segmentType ?? "暂无"],
         ["当前条带", live?.stripId ?? "暂无"],
         ["负责条带", sortie.stripIds.join("、")],
+        ["规划航程", `${(sortie.totalDistanceM / 1_000).toFixed(2)} km`],
         ["规划燃油", `${sortie.totalFuelKg.toFixed(2)} kg`],
         ["本地坐标", localPositionLabel(live?.localPosition ?? null)],
         ["真实高度", `${(live?.altitudeM ?? 0).toFixed(1)} m`],
