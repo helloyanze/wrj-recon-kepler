@@ -43,6 +43,7 @@ const MAKESPAN_TOLERANCE_SEC = 1e-3;
 const OVERLAP_TOLERANCE_SEC = 1e-6;
 const MAX_REGION_WKT_CHARACTERS = 100_000;
 const MAX_REGION_WKT_VERTICES = 2_000;
+const MAX_STRIP_COVERAGE_VERTICES = 2_000;
 
 export function convertMissionPlan(
   input: ConvertMissionPlanInput
@@ -337,6 +338,15 @@ function validateStripCoveragePolygons(
   strips: readonly MissionStrip[]
 ): void {
   for (const strip of strips) {
+    if (
+      strip.coveragePolygon.length >
+      MAX_STRIP_COVERAGE_VERTICES
+    ) {
+      throw new Error(
+        `Strip ${strip.stripId} coveragePolygon ${MAX_STRIP_COVERAGE_VERTICES}-` +
+        `vertex limit exceeded by ${strip.coveragePolygon.length} vertices`
+      );
+    }
     const polygon = removeClosingPoint(
       strip.coveragePolygon.map(
         point => [point.xM, point.yM] as PlanarPoint
@@ -553,15 +563,17 @@ function parseRegionProfilePolygon(
     return null;
   }
 
-  const match =
-    /^\s*polygon\s*\(\(\s*([^()]*)\s*\)\)\s*$/i.exec(
-      regionProfile.geometryWkt
-    );
-  if (match === null) {
+  const trimmedWkt = regionProfile.geometryWkt.trim();
+  const prefixMatch = /^polygon\s*\(\(/i.exec(trimmedWkt);
+  if (prefixMatch === null || !trimmedWkt.endsWith("))")) {
     return null;
   }
 
-  const tokens = match[1].split(",");
+  const body = trimmedWkt.slice(prefixMatch[0].length, -2);
+  if (body.includes("(") || body.includes(")")) {
+    return null;
+  }
+  const tokens = body.split(",");
   if (tokens.length > MAX_REGION_WKT_VERTICES) {
     return null;
   }

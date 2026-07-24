@@ -586,6 +586,17 @@ describe("convertMissionPlan", () => {
     );
   });
 
+  it("falls back quickly for malformed under-limit WKT with a long whitespace body", () => {
+    const geometryWkt = `POLYGON((${` `.repeat(5_000)}`;
+    const startedAt = performance.now();
+
+    const bundle = convert(makePlan(), {geometryWkt});
+    const elapsedMs = performance.now() - startedAt;
+
+    expect(bundle.region.source).toBe("DERIVED_FROM_STRIPS");
+    expect(elapsedMs).toBeLessThan(250);
+  });
+
   it("falls back before pairwise checks for a WKT over 2000 vertices", () => {
     const vertexCount = 2001;
     const vertices = Array.from({length: vertexCount}, (_, index) => {
@@ -728,6 +739,25 @@ describe("convertMissionPlan", () => {
     expect(() =>
       convert(plan, {geometryWkt: "POLYGON((0 0,10 0,10 10,0 10))"})
     ).toThrow(/ST-0002.*coveragePolygon.*area|ST-0002.*coveragePolygon.*collinear/i);
+  });
+
+  it("rejects a strip coverage polygon over the separate 2000-vertex limit", () => {
+    const plan = makePlan();
+    const vertexCount = 2001;
+    const coveragePolygon = Array.from({length: vertexCount}, (_, index) => {
+      const angle = 2 * Math.PI * index / vertexCount;
+      return {
+        xM: 1000 * Math.cos(angle),
+        yM: 1000 * Math.sin(angle)
+      };
+    });
+    Object.assign(plan.assignmentPlan.stripPlanSnapshot.strips[0], {
+      coveragePolygon
+    });
+
+    expect(() =>
+      convert(plan, {geometryWkt: "POLYGON((0 0,10 0,10 10,0 10))"})
+    ).toThrow(/strip.*ST-0001.*coveragePolygon.*2000.*limit/i);
   });
 
   it("accepts an assignment using the selected strip snapshot flight candidate", () => {
