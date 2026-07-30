@@ -125,8 +125,10 @@ public/data/task2/scenes/<scene-id>/
 
 ## 7. 离线数据生成流水线
 
-`wrj-t2` 保存四组正式演示输入，包括基线引用、`runtime_state.json` 和
-`dynamic_events.json`，并提供统一场景生成命令。每次生成必须：
+`wrj-t2` 保存四组正式演示输入，包括基线引用、`dynamic_events.json`，以及明确的
+`runtime_state.json` 或 `demoTimeSec`。首批离线演示允许使用任务二已定义的显式
+`demoTimeSec` 模式，但来源记录必须标明 `SIMULATED`，不能冒充现场遥测。统一场景生成
+命令每次必须：
 
 1. 运行真实任务二 CLI；
 2. 使用 Python `MissionViewV1` 模型校验输出；
@@ -296,9 +298,9 @@ READY
 
 ### 12.4 硬截止无法满足
 
-- 事件类型为 `TASK_LATEST_FINISH_CHANGED`。基线任务的 `deadlineType` 固定为 `HARD`，
-  事件把 `latestFinishTimeSec` 提前到无法满足的时间。场景生成测试必须证明最终硬截止
-  不可满足。
+- 同一事件批次包含 `TASK_DEADLINE_TYPE_CHANGED(HARD)` 与
+  `TASK_LATEST_FINISH_CHANGED`，把基线任务的完成时间提前到无法满足的时刻。场景生成
+  测试必须证明两项变更都生效且最终硬截止不可满足。
 - 时间轴显示红色截止线，目标任务区域进入警告状态。
 - 安全航段继续显示，必要返航路径生成。
 - 未解决任务使用斜纹区域和 `UNRESOLVED` 文本。
