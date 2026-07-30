@@ -175,10 +175,41 @@ describe("selectScannedCoverage", () => {
       makeBundle(coverageSegment({segmentType: "TURN"})),
       15
     )).toEqual([]);
-    expect(selectScannedCoverage(
-      makeBundle(coverageSegment({localPath: [[0, 0, 100], [0, 0, 100]]})),
-      15
-    )).toEqual([]);
+    const degenerateBundle = makeBundle(coverageSegment({
+      localPath: [[0, 0, 100], [0, 0, 100]]
+    }));
+    expect(selectScannedCoverage(degenerateBundle, 15)).toEqual([]);
+    expect(selectScannedCoverage(degenerateBundle, 20)).toEqual([]);
+    expect(selectScannedCoverage(degenerateBundle, 25)).toEqual([]);
+  });
+
+  it("uses per-vertex timestamps for a non-uniform multi-point path", () => {
+    const segment = coverageSegment({
+      localPath: [[0, 0, 100], [20, 0, 100], [100, 0, 100]],
+      mapPath: [
+        map([0, 0, 100]),
+        map([20, 0, 100]),
+        map([100, 0, 100])
+      ],
+      timedPath: [
+        [...map([0, 0, 100]), 10],
+        [...map([20, 0, 100]), 19],
+        [...map([100, 0, 100]), 20]
+      ]
+    });
+
+    expect(Math.max(...localXs(makeBundle(segment), 15)))
+      .toBeCloseTo(100 / 9, 6);
+  });
+
+  it("deduplicates repeated coverage segments for one assignment and strip", () => {
+    const bundle = makeBundle();
+    bundle.sorties[0].segments = [
+      coverageSegment({segmentId: "SEG-01"}),
+      coverageSegment({segmentId: "SEG-02"})
+    ];
+
+    expect(selectScannedCoverage(bundle, 25)).toHaveLength(1);
   });
 
   it("rejects a non-finite mission time", () => {

@@ -1,7 +1,8 @@
 import type {
   CaseBundleV2,
   LocalPoint,
-  MapPoint
+  MapPoint,
+  TimedMapPoint
 } from "../cases/caseBundle";
 import {
   localToMapPoint,
@@ -28,7 +29,8 @@ export function selectScannedCoverage(
   const stripsById = new Map(
     bundle.strips.map(strip => [strip.stripId, strip])
   );
-  const result: ScannedCoverageDatum[] = [];
+  const coverageByKey = new Map<string, ScannedCoverageDatum>();
+  const completedKeys = new Set<string>();
 
   for (const sortie of bundle.sorties) {
     for (const segment of sortie.segments) {
@@ -48,14 +50,6 @@ export function selectScannedCoverage(
         stripId: strip.stripId,
         uavId: sortie.uavId
       };
-      if (
-        segment.endTimeSec <= segment.startTimeSec
-        || missionTimeSec >= segment.endTimeSec
-      ) {
-        result.push({...datum, polygon: strip.polygon});
-        continue;
-      }
-
       const start = segment.localPath[0];
       const end = segment.localPath.at(-1);
       if (start === undefined || end === undefined) continue;
@@ -65,19 +59,29 @@ export function selectScannedCoverage(
         directionX * directionX + directionY * directionY;
       if (directionLengthSquared <= GEOMETRY_EPSILON) continue;
 
-      const progress = Math.max(
-        0,
-        Math.min(
-          1,
-          (missionTimeSec - segment.startTimeSec)
-            / (segment.endTimeSec - segment.startTimeSec)
-        )
+      const coverageKey = `${sortie.assignmentId}\u0000${strip.stripId}`;
+      if (
+        segment.endTimeSec <= segment.startTimeSec
+        || missionTimeSec >= segment.endTimeSec
+      ) {
+        coverageByKey.set(coverageKey, {...datum, polygon: strip.polygon});
+        completedKeys.add(coverageKey);
+        continue;
+      }
+      if (completedKeys.has(coverageKey)) continue;
+
+      const current = interpolateLocalPosition(
+        segment.localPath,
+        segment.timedPath,
+        missionTimeSec,
+        segment.startTimeSec,
+        segment.endTimeSec
       );
-      const currentX = start[0] + directionX * progress;
-      const currentY = start[1] + directionY * progress;
-      const threshold =
-        (currentX - start[0]) * directionX
-        + (currentY - start[1]) * directionY;
+      const threshold = Math.max(0, Math.min(
+        directionLengthSquared,
+        (current[0] - start[0]) * directionX
+          + (current[1] - start[1]) * directionY
+      ));
       const localPolygon = openPolygon(strip.polygon).map(point =>
         mapToLocalPoint(point, bundle.displayTransform)
       );
@@ -94,11 +98,57 @@ export function selectScannedCoverage(
         localToMapPoint([xM, yM, 0], bundle.displayTransform)
       );
       polygon.push(polygon[0]);
-      result.push({...datum, polygon});
+      coverageByKey.set(coverageKey, {...datum, polygon});
     }
   }
 
-  return result;
+  return [...coverageByKey.values()];
+}
+
+function interpolateLocalPosition(
+  localPath: readonly LocalPoint[],
+  timedPath: readonly TimedMapPoint[],
+  missionTimeSec: number,
+  startTimeSec: number,
+  endTimeSec: number
+): LocalPoint {
+  if (localPath.length === timedPath.length && localPath.length >= 2) {
+    if (missionTimeSec <= timedPath[0][3]) return localPath[0];
+    for (let index = 1; index < timedPath.length; index += 1) {
+      const previousTime = timedPath[index - 1][3];
+      const currentTime = timedPath[index][3];
+      if (missionTimeSec > currentTime) continue;
+      if (currentTime <= previousTime) return localPath[index];
+      return interpolateLocalPoints(
+        localPath[index - 1],
+        localPath[index],
+        (missionTimeSec - previousTime) / (currentTime - previousTime)
+      );
+    }
+    return localPath.at(-1) as LocalPoint;
+  }
+
+  const progress = endTimeSec <= startTimeSec
+    ? 1
+    : (missionTimeSec - startTimeSec) / (endTimeSec - startTimeSec);
+  return interpolateLocalPoints(
+    localPath[0],
+    localPath.at(-1) as LocalPoint,
+    progress
+  );
+}
+
+function interpolateLocalPoints(
+  start: LocalPoint,
+  end: LocalPoint,
+  progress: number
+): LocalPoint {
+  const clampedProgress = Math.max(0, Math.min(1, progress));
+  return [
+    start[0] + (end[0] - start[0]) * clampedProgress,
+    start[1] + (end[1] - start[1]) * clampedProgress,
+    start[2] + (end[2] - start[2]) * clampedProgress
+  ];
 }
 
 function openPolygon(polygon: readonly MapPoint[]): readonly MapPoint[] {
