@@ -1,4 +1,5 @@
-export type MissionLayerId = "region" | "strips" | "routes" | "trips";
+export type MissionLayerId = "region" | "strips" | "scanned" | "routes" | "trips";
+export type LayerUavColorId = "routes" | "trips" | "markers" | "scanned";
 export type VerticalScale = 1 | 2 | 4;
 
 export interface MissionLayerPreference {
@@ -10,16 +11,23 @@ export interface MissionLayerPreference {
   stroked?: boolean;
 }
 
-export interface MissionLayerPreferencesV2 {
-  version: 2;
+export interface MissionStripIdentity {
+  stripId: string;
+  uavId: string;
+}
+
+export interface MissionLayerPreferencesV3 {
+  version: 3;
   caseId: string;
   planId: string;
-  uavColors: Record<string, string>;
+  stripColors: Record<string, string>;
+  layerUavColors: Record<LayerUavColorId, Record<string, string>>;
   markerSize: number;
   layers: Record<MissionLayerId, MissionLayerPreference>;
 }
 
-const STORAGE_PREFIX = "wrj-mission-layer-preferences:v2";
+const STORAGE_PREFIX_V3 = "wrj-mission-layer-preferences:v3";
+const STORAGE_PREFIX_V2 = "wrj-mission-layer-preferences:v2";
 const HEX_COLOR = /^#[0-9A-F]{6}$/i;
 const UAV_PALETTE = [
   "#35C5FF",
@@ -29,10 +37,17 @@ const UAV_PALETTE = [
   "#FF6B7A",
   "#4DDBD1"
 ] as const;
+const UAV_COLOR_LAYER_IDS: readonly LayerUavColorId[] = [
+  "routes",
+  "trips",
+  "markers",
+  "scanned"
+];
 
 const DEFAULT_LAYERS: Readonly<Record<MissionLayerId, MissionLayerPreference>> = {
   region: {visible: true, opacity: 0.18, filled: true, stroked: true},
   strips: {visible: true, opacity: 0.75, width: 2},
+  scanned: {visible: true, opacity: 0.35},
   routes: {visible: true, opacity: 0.55, width: 2},
   trips: {visible: true, opacity: 0.95, width: 4, trailLengthSec: 240}
 };
@@ -41,8 +56,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function sortedUniqueUavIds(uavIds: readonly string[]): string[] {
-  return [...new Set(uavIds)].sort((left, right) => left < right ? -1 : left > right ? 1 : 0);
+function sortedUnique(values: readonly string[]): string[] {
+  return [...new Set(values)].sort((left, right) => (
+    left < right ? -1 : left > right ? 1 : 0
+  ));
 }
 
 function hashString(value: string): number {
@@ -58,7 +75,8 @@ function hslToHex(hue: number, saturation: number, lightness: number): string {
   const normalizedHue = ((hue % 360) + 360) % 360;
   const normalizedSaturation = saturation / 100;
   const normalizedLightness = lightness / 100;
-  const chroma = (1 - Math.abs(2 * normalizedLightness - 1)) * normalizedSaturation;
+  const chroma =
+    (1 - Math.abs(2 * normalizedLightness - 1)) * normalizedSaturation;
   const sector = normalizedHue / 60;
   const secondary = chroma * (1 - Math.abs(sector % 2 - 1));
   const offset = normalizedLightness - chroma / 2;
@@ -74,18 +92,24 @@ function hslToHex(hue: number, saturation: number, lightness: number): string {
   else [red, blue] = [chroma, secondary];
 
   return `#${[red, green, blue]
-    .map((channel) => Math.round((channel + offset) * 255).toString(16).padStart(2, "0"))
+    .map(channel => Math.round((channel + offset) * 255)
+      .toString(16)
+      .padStart(2, "0"))
     .join("")
     .toUpperCase()}`;
 }
 
 function defaultUavColor(uavId: string, sortedIndex: number): string {
-  return UAV_PALETTE[sortedIndex] ?? hslToHex(hashString(uavId) % 360, 72, 58);
+  return UAV_PALETTE[sortedIndex]
+    ?? hslToHex(hashString(uavId) % 360, 72, 58);
 }
 
 function createDefaultUavColors(uavIds: readonly string[]): Record<string, string> {
   return Object.fromEntries(
-    sortedUniqueUavIds(uavIds).map((uavId, index) => [uavId, defaultUavColor(uavId, index)])
+    sortedUnique(uavIds).map((uavId, index) => [
+      uavId,
+      defaultUavColor(uavId, index)
+    ])
   );
 }
 
@@ -93,27 +117,59 @@ function cloneDefaultLayers(): Record<MissionLayerId, MissionLayerPreference> {
   return {
     region: {...DEFAULT_LAYERS.region},
     strips: {...DEFAULT_LAYERS.strips},
+    scanned: {...DEFAULT_LAYERS.scanned},
     routes: {...DEFAULT_LAYERS.routes},
     trips: {...DEFAULT_LAYERS.trips}
   };
 }
 
+function cloneLayerUavColors(
+  colors: Record<string, string>
+): Record<LayerUavColorId, Record<string, string>> {
+  return {
+    routes: {...colors},
+    trips: {...colors},
+    markers: {...colors},
+    scanned: {...colors}
+  };
+}
+
+function createStripColors(
+  strips: readonly MissionStripIdentity[],
+  uavColors: Readonly<Record<string, string>>
+): Record<string, string> {
+  return Object.fromEntries(
+    [...strips]
+      .filter(strip => uavColors[strip.uavId] !== undefined)
+      .sort((left, right) => left.stripId.localeCompare(right.stripId))
+      .map(strip => [strip.stripId, uavColors[strip.uavId]])
+  );
+}
+
 export function createDefaultMissionLayerPreferences(
   caseId: string,
   planId: string,
-  uavIds: readonly string[]
-): MissionLayerPreferencesV2 {
+  uavIds: readonly string[],
+  strips: readonly MissionStripIdentity[] = []
+): MissionLayerPreferencesV3 {
+  const uavColors = createDefaultUavColors(uavIds);
   return {
-    version: 2,
+    version: 3,
     caseId,
     planId,
-    uavColors: createDefaultUavColors(uavIds),
+    stripColors: createStripColors(strips, uavColors),
+    layerUavColors: cloneLayerUavColors(uavColors),
     markerSize: 30,
     layers: cloneDefaultLayers()
   };
 }
 
-function clampNumber(value: unknown, minimum: number, maximum: number, fallback: number): number {
+function clampNumber(
+  value: unknown,
+  minimum: number,
+  maximum: number,
+  fallback: number
+): number {
   if (typeof value !== "number" || !Number.isFinite(value)) return fallback;
   return Math.min(maximum, Math.max(minimum, value));
 }
@@ -128,7 +184,6 @@ function sanitizeLayer(
   fallback: MissionLayerPreference
 ): MissionLayerPreference {
   if (!isRecord(value)) return {...fallback};
-
   const result: MissionLayerPreference = {
     visible: booleanOrDefault(value.visible, fallback.visible),
     opacity: clampNumber(value.opacity, 0, 1, fallback.opacity)
@@ -137,7 +192,7 @@ function sanitizeLayer(
   if (layerId === "region") {
     result.filled = booleanOrDefault(value.filled, fallback.filled ?? true);
     result.stroked = booleanOrDefault(value.stroked, fallback.stroked ?? true);
-  } else {
+  } else if (layerId !== "scanned") {
     result.width = clampNumber(value.width, 0.5, 20, fallback.width ?? 2);
   }
 
@@ -149,56 +204,109 @@ function sanitizeLayer(
       fallback.trailLengthSec ?? 240
     );
   }
-
   return result;
 }
 
-function sanitizePreferences(
+function sanitizeColorMap(
   value: unknown,
-  caseId: string,
-  planId: string,
-  uavIds: readonly string[]
-): MissionLayerPreferencesV2 {
-  const defaults = createDefaultMissionLayerPreferences(caseId, planId, uavIds);
+  defaults: Readonly<Record<string, string>>
+): Record<string, string> {
+  const stored = isRecord(value) ? value : {};
+  return Object.fromEntries(
+    Object.keys(defaults).map(key => {
+      const color = stored[key];
+      return [
+        key,
+        typeof color === "string" && HEX_COLOR.test(color)
+          ? color.toUpperCase()
+          : defaults[key]
+      ];
+    })
+  );
+}
+
+function sanitizeLayers(
+  value: unknown,
+  defaults: MissionLayerPreferencesV3
+): MissionLayerPreferencesV3["layers"] {
+  const layers = isRecord(value) ? value : {};
+  return {
+    region: sanitizeLayer(layers.region, "region", defaults.layers.region),
+    strips: sanitizeLayer(layers.strips, "strips", defaults.layers.strips),
+    scanned: sanitizeLayer(layers.scanned, "scanned", defaults.layers.scanned),
+    routes: sanitizeLayer(layers.routes, "routes", defaults.layers.routes),
+    trips: sanitizeLayer(layers.trips, "trips", defaults.layers.trips)
+  };
+}
+
+function sanitizeV3(
+  value: unknown,
+  defaults: MissionLayerPreferencesV3
+): MissionLayerPreferencesV3 {
+  if (
+    !isRecord(value)
+    || value.version !== 3
+    || value.caseId !== defaults.caseId
+    || value.planId !== defaults.planId
+    || !isRecord(value.stripColors)
+    || !isRecord(value.layerUavColors)
+    || !isRecord(value.layers)
+  ) {
+    return defaults;
+  }
+  const layerUavColors = value.layerUavColors;
+
+  return {
+    ...defaults,
+    stripColors: sanitizeColorMap(value.stripColors, defaults.stripColors),
+    layerUavColors: Object.fromEntries(
+      UAV_COLOR_LAYER_IDS.map(layerId => [
+        layerId,
+        sanitizeColorMap(
+          layerUavColors[layerId],
+          defaults.layerUavColors[layerId]
+        )
+      ])
+    ) as MissionLayerPreferencesV3["layerUavColors"],
+    markerSize: clampNumber(value.markerSize, 16, 64, defaults.markerSize),
+    layers: sanitizeLayers(value.layers, defaults)
+  };
+}
+
+function migrateV2(
+  value: unknown,
+  defaults: MissionLayerPreferencesV3,
+  strips: readonly MissionStripIdentity[]
+): MissionLayerPreferencesV3 {
   if (
     !isRecord(value)
     || value.version !== 2
-    || value.caseId !== caseId
-    || value.planId !== planId
+    || value.caseId !== defaults.caseId
+    || value.planId !== defaults.planId
     || !isRecord(value.uavColors)
     || !isRecord(value.layers)
   ) {
     return defaults;
   }
 
-  const storedUavColors = value.uavColors;
-  const uavColors = Object.fromEntries(
-    Object.keys(defaults.uavColors).map((uavId) => {
-      const storedColor = storedUavColors[uavId];
-      return [
-        uavId,
-        typeof storedColor === "string" && HEX_COLOR.test(storedColor)
-          ? storedColor.toUpperCase()
-          : defaults.uavColors[uavId]
-      ];
-    })
+  const migratedUavColors = sanitizeColorMap(
+    value.uavColors,
+    defaults.layerUavColors.routes
   );
-
   return {
     ...defaults,
-    uavColors,
+    stripColors: createStripColors(strips, migratedUavColors),
+    layerUavColors: cloneLayerUavColors(migratedUavColors),
     markerSize: clampNumber(value.markerSize, 16, 64, defaults.markerSize),
     layers: {
-      region: sanitizeLayer(value.layers.region, "region", defaults.layers.region),
-      strips: sanitizeLayer(value.layers.strips, "strips", defaults.layers.strips),
-      routes: sanitizeLayer(value.layers.routes, "routes", defaults.layers.routes),
-      trips: sanitizeLayer(value.layers.trips, "trips", defaults.layers.trips)
+      ...sanitizeLayers(value.layers, defaults),
+      scanned: {...defaults.layers.scanned}
     }
   };
 }
 
-function storageKey(caseId: string, planId: string): string {
-  return `${STORAGE_PREFIX}:${caseId}:${planId}`;
+function storageKey(prefix: string, caseId: string, planId: string): string {
+  return `${prefix}:${caseId}:${planId}`;
 }
 
 function storage(): Storage | undefined {
@@ -212,24 +320,44 @@ function storage(): Storage | undefined {
 export function loadMissionLayerPreferences(
   caseId: string,
   planId: string,
-  uavIds: readonly string[]
-): MissionLayerPreferencesV2 {
+  uavIds: readonly string[],
+  strips: readonly MissionStripIdentity[] = []
+): MissionLayerPreferencesV3 {
+  const defaults = createDefaultMissionLayerPreferences(
+    caseId,
+    planId,
+    uavIds,
+    strips
+  );
   try {
-    const serialized = storage()?.getItem(storageKey(caseId, planId));
-    if (serialized === undefined || serialized === null) {
-      return createDefaultMissionLayerPreferences(caseId, planId, uavIds);
+    const currentStorage = storage();
+    const serializedV3 = currentStorage?.getItem(
+      storageKey(STORAGE_PREFIX_V3, caseId, planId)
+    );
+    if (serializedV3 !== undefined && serializedV3 !== null) {
+      return sanitizeV3(JSON.parse(serializedV3), defaults);
     }
-    return sanitizePreferences(JSON.parse(serialized), caseId, planId, uavIds);
+
+    const serializedV2 = currentStorage?.getItem(
+      storageKey(STORAGE_PREFIX_V2, caseId, planId)
+    );
+    if (serializedV2 !== undefined && serializedV2 !== null) {
+      return migrateV2(JSON.parse(serializedV2), defaults, strips);
+    }
+    return defaults;
   } catch {
-    return createDefaultMissionLayerPreferences(caseId, planId, uavIds);
+    return defaults;
   }
 }
 
-export function saveMissionLayerPreferences(preferences: MissionLayerPreferencesV2): void {
+export function saveMissionLayerPreferences(
+  preferences: MissionLayerPreferencesV3
+): void {
   try {
-    const uavIds = isRecord(preferences.uavColors) ? Object.keys(preferences.uavColors) : [];
-    const sanitized = sanitizePreferences(preferences, preferences.caseId, preferences.planId, uavIds);
-    storage()?.setItem(storageKey(sanitized.caseId, sanitized.planId), JSON.stringify(sanitized));
+    storage()?.setItem(
+      storageKey(STORAGE_PREFIX_V3, preferences.caseId, preferences.planId),
+      JSON.stringify(preferences)
+    );
   } catch {
     // Browser persistence is best-effort when storage is unavailable or full.
   }
@@ -237,7 +365,9 @@ export function saveMissionLayerPreferences(preferences: MissionLayerPreferences
 
 export function clearMissionLayerPreferences(caseId: string, planId: string): void {
   try {
-    storage()?.removeItem(storageKey(caseId, planId));
+    const currentStorage = storage();
+    currentStorage?.removeItem(storageKey(STORAGE_PREFIX_V3, caseId, planId));
+    currentStorage?.removeItem(storageKey(STORAGE_PREFIX_V2, caseId, planId));
   } catch {
     // Browser persistence is best-effort when storage is unavailable.
   }

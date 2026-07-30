@@ -62,12 +62,48 @@ export function localToMapPoint(
   return [longitude, latitude, zM];
 }
 
+export function mapToLocalPoint(
+  point: MapPoint,
+  transform: DisplayTransform
+): LocalPoint {
+  validateMapPoint(point);
+  validateTransform(transform);
+
+  const [longitude, latitude, altitudeM] = point;
+  const {anchorLongitude, anchorLatitude, sourceCenterXM, sourceCenterYM} = transform;
+  const latitudeCosine = Math.cos(anchorLatitude * RADIANS_PER_DEGREE);
+  const xM = sourceCenterXM
+    + (longitude - anchorLongitude)
+      * RADIANS_PER_DEGREE
+      * EARTH_RADIUS_M
+      * latitudeCosine;
+  const yM = sourceCenterYM
+    + (latitude - anchorLatitude) * RADIANS_PER_DEGREE * EARTH_RADIUS_M;
+  validateFinite(xM, "derived local X");
+  validateFinite(yM, "derived local Y");
+
+  return [xM, yM, altitudeM];
+}
+
 function validateLocalPoint(point: LocalPoint, label: string): void {
   const coordinateNames = ["X", "Y", "Z"] as const;
 
   coordinateNames.forEach((coordinateName, index) => {
     validateFinite(point[index], `${label} coordinate ${coordinateName}`);
   });
+}
+
+function validateMapPoint(point: MapPoint): void {
+  const [longitude, latitude, altitudeM] = point;
+  validateFinite(longitude, "map point longitude");
+  validateFinite(latitude, "map point latitude");
+  validateFinite(altitudeM, "map point altitude");
+  if (longitude < -180 || longitude > 180) {
+    throw new Error("map point longitude must be within [-180, 180]");
+  }
+  if (latitude < -90 || latitude > 90) {
+    throw new Error("map point latitude must be within [-90, 90]");
+  }
 }
 
 function validateFinite(value: number, label: string): void {

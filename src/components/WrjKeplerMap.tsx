@@ -1,7 +1,7 @@
 import type {ResolvedBasemap} from "../basemap/basemapConfig";
 import type {CaseBundleV2} from "../features/cases/caseBundle";
 import type {
-  MissionLayerPreferencesV2,
+  MissionLayerPreferencesV3,
   VerticalScale
 } from "../features/mission/missionLayerPreferences";
 import {useContainerSize} from "../hooks/useContainerSize";
@@ -17,7 +17,7 @@ export interface WrjKeplerMapProps {
   bundle?: CaseBundleV2 | null;
   missionTimeSec?: number;
   verticalScale?: VerticalScale;
-  preferences?: MissionLayerPreferencesV2 | null;
+  preferences?: MissionLayerPreferencesV3 | null;
   onSelectSortie?: (assignmentId: string) => void;
 }
 

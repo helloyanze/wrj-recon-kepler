@@ -19,7 +19,15 @@ afterEach(() => {
 });
 
 async function publicBasemap(): Promise<ResolvedBasemap> {
-  return resolveBasemap({mode: "public"});
+  return resolveBasemap(
+    {mode: "public"},
+    undefined,
+    vi.fn(async () => new Response(JSON.stringify({
+      version: 8,
+      sources: {},
+      layers: []
+    }), {status: 200}))
+  );
 }
 
 function deferred<T>() {
@@ -34,7 +42,8 @@ function deferred<T>() {
 
 describe("App basemap bootstrap", () => {
   it("uses a keyless public basemap without showing the old token setup page", async () => {
-    render(<App basemapEnvironment={{mode: "public"}} />);
+    const loader = vi.fn(publicBasemap);
+    render(<App basemapEnvironment={{mode: "public"}} basemapLoader={loader} />);
 
     expect(await screen.findByTestId("workspace")).toBeInTheDocument();
     expect(workspaceProps[0]).toMatchObject({
@@ -116,9 +125,11 @@ describe("App basemap bootstrap", () => {
   });
 
   it("keeps debugMode and dataBase flowing into Workspace", async () => {
+    const loader = vi.fn(publicBasemap);
     render(
       <App
         basemapEnvironment={{mode: "public"}}
+        basemapLoader={loader}
         debugMode
         dataBase="/custom-data"
       />

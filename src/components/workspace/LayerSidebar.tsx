@@ -1,9 +1,10 @@
 import {useMemo, useState} from "react";
 import type {CaseBundleV2, NormalizedSortie} from "../../features/cases/caseBundle";
 import type {
+  LayerUavColorId,
   MissionLayerId,
   MissionLayerPreference,
-  MissionLayerPreferencesV2
+  MissionLayerPreferencesV3
 } from "../../features/mission/missionLayerPreferences";
 import type {
   LiveSortieState,
@@ -14,7 +15,7 @@ export type UavId = string;
 
 export interface LayerSidebarProps {
   bundle: CaseBundleV2 | null;
-  preferences: MissionLayerPreferencesV2 | null;
+  preferences: MissionLayerPreferencesV3 | null;
   liveSorties: readonly LiveSortieState[];
   loading: boolean;
   collapsed: boolean;
@@ -25,7 +26,12 @@ export interface LayerSidebarProps {
     layerId: MissionLayerId,
     changes: Partial<MissionLayerPreference>
   ) => void;
-  onUavColorChange: (uavId: string, color: string) => void;
+  onStripColorChange: (stripId: string, color: string) => void;
+  onLayerUavColorChange: (
+    layerId: LayerUavColorId,
+    uavId: string,
+    color: string
+  ) => void;
   onMarkerSizeChange: (size: number) => void;
   onRestoreDefaults: () => void;
   onSelectUav: (uavId: string) => void;
@@ -35,14 +41,16 @@ export interface LayerSidebarProps {
 interface LayerDefinition {
   id: MissionLayerId;
   label: string;
-  mode: "single" | "uav";
+  mode: "single" | "strip" | "uav";
+  colorLayer?: LayerUavColorId;
 }
 
 const LAYERS: readonly LayerDefinition[] = [
   {id: "region", label: "算法任务区", mode: "single"},
-  {id: "strips", label: "侦察条带", mode: "uav"},
-  {id: "routes", label: "静态规划航迹", mode: "uav"},
-  {id: "trips", label: "动态飞行尾迹", mode: "uav"}
+  {id: "strips", label: "侦察条带", mode: "strip"},
+  {id: "scanned", label: "已扫描区域", mode: "uav", colorLayer: "scanned"},
+  {id: "routes", label: "静态规划航迹", mode: "uav", colorLayer: "routes"},
+  {id: "trips", label: "动态飞行尾迹", mode: "uav", colorLayer: "trips"}
 ];
 
 const STATUS_LABELS: Readonly<Record<SortieStatus, string>> = {
@@ -86,11 +94,16 @@ function LayerLegend({
   preferences
 }: {
   definition: LayerDefinition;
-  preferences: MissionLayerPreferencesV2;
+  preferences: MissionLayerPreferencesV3;
 }) {
-  const background = definition.mode === "single"
-    ? "#35C5FF"
-    : `linear-gradient(180deg, ${Object.values(preferences.uavColors).join(", ")})`;
+  const colors = definition.mode === "strip"
+    ? Object.values(preferences.stripColors)
+    : definition.colorLayer === undefined
+      ? ["#35C5FF"]
+      : Object.values(preferences.layerUavColors[definition.colorLayer]);
+  const background = colors.length <= 1
+    ? colors[0] ?? "#35C5FF"
+    : `linear-gradient(180deg, ${colors.join(", ")})`;
   return (
     <span
       aria-hidden="true"
@@ -101,21 +114,44 @@ function LayerLegend({
   );
 }
 
+function groupStripsByUav(
+  strips: readonly CaseBundleV2["strips"][number][]
+): Array<[string, CaseBundleV2["strips"]]> {
+  const groups = new Map<string, CaseBundleV2["strips"]>();
+  for (const strip of strips) {
+    const group = groups.get(strip.uavId) ?? [];
+    group.push(strip);
+    groups.set(strip.uavId, group);
+  }
+  return [...groups.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([uavId, group]) => [
+      uavId,
+      [...group].sort((left, right) => (
+        left.index - right.index || left.stripId.localeCompare(right.stripId)
+      ))
+    ]);
+}
+
 function LayerEditor({
   definition,
   preference,
   preferences,
+  bundle,
   disabled,
   onLayerChange,
-  onUavColorChange,
+  onStripColorChange,
+  onLayerUavColorChange,
   onMarkerSizeChange
 }: {
   definition: LayerDefinition;
   preference: MissionLayerPreference;
-  preferences: MissionLayerPreferencesV2;
+  preferences: MissionLayerPreferencesV3;
+  bundle: CaseBundleV2 | null;
   disabled: boolean;
   onLayerChange: LayerSidebarProps["onLayerChange"];
-  onUavColorChange: LayerSidebarProps["onUavColorChange"];
+  onStripColorChange: LayerSidebarProps["onStripColorChange"];
+  onLayerUavColorChange: LayerSidebarProps["onLayerUavColorChange"];
   onMarkerSizeChange: LayerSidebarProps["onMarkerSizeChange"];
 }) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -126,15 +162,44 @@ function LayerEditor({
     <section aria-label={`${definition.label} 设置`}>
       <fieldset disabled={disabled}>
         <legend>基础</legend>
-        {definition.mode === "uav"
-          ? Object.entries(preferences.uavColors).map(([uavId, color]) => (
+        {definition.mode === "strip" ? (
+          <div style={{maxHeight: 220, overflowY: "auto"}}>
+            {groupStripsByUav(bundle?.strips ?? []).map(([uavId, strips]) => (
+              <section key={uavId} aria-label={`${uavId} 侦察条带颜色`}>
+                <strong>{uavId}</strong>
+                {strips.map(strip => (
+                  <label key={strip.stripId}>
+                    {strip.stripId} 颜色
+                    <input
+                      aria-label={`${definition.label} ${strip.stripId} 颜色`}
+                      type="color"
+                      value={preferences.stripColors[strip.stripId] ?? "#FFFFFF"}
+                      onChange={event => onStripColorChange(
+                        strip.stripId,
+                        event.currentTarget.value
+                      )}
+                    />
+                  </label>
+                ))}
+              </section>
+            ))}
+          </div>
+        ) : null}
+        {definition.mode === "uav" && definition.colorLayer !== undefined
+          ? Object.entries(
+              preferences.layerUavColors[definition.colorLayer]
+            ).map(([uavId, color]) => (
               <label key={uavId}>
                 {uavId} 颜色
                 <input
                   aria-label={`${definition.label} ${uavId} 颜色`}
                   type="color"
                   value={color}
-                  onChange={event => onUavColorChange(uavId, event.currentTarget.value)}
+                  onChange={event => onLayerUavColorChange(
+                    definition.colorLayer!,
+                    uavId,
+                    event.currentTarget.value
+                  )}
                 />
               </label>
             ))
@@ -154,7 +219,7 @@ function LayerEditor({
             }}
           />
         </label>
-        {!isRegion ? (
+        {!isRegion && definition.id !== "scanned" ? (
           <label>
             线宽
             <span className="layer-range-input">
@@ -253,6 +318,22 @@ function LayerEditor({
                       }}
                     />
                   </label>
+                  {Object.entries(preferences.layerUavColors.markers)
+                    .map(([uavId, color]) => (
+                      <label key={uavId}>
+                        {uavId} 图标颜色
+                        <input
+                          aria-label={`无人机图标 ${uavId} 颜色`}
+                          type="color"
+                          value={color}
+                          onChange={event => onLayerUavColorChange(
+                            "markers",
+                            uavId,
+                            event.currentTarget.value
+                          )}
+                        />
+                      </label>
+                    ))}
                 </>
               ) : null}
             </fieldset>
@@ -322,7 +403,9 @@ function UavMissionRoster({
                   aria-hidden="true"
                   data-testid={`uav-color-${group.uavId}`}
                   style={{
-                    backgroundColor: preferences?.uavColors[group.uavId] ?? "#FFFFFF",
+                    backgroundColor:
+                      preferences?.layerUavColors.markers[group.uavId]
+                      ?? "#FFFFFF",
                     borderRadius: "50%",
                     display: "inline-block",
                     height: 10,
@@ -369,7 +452,8 @@ export function LayerSidebar({
   selectedSortieId,
   onCollapsedChange,
   onLayerChange,
-  onUavColorChange,
+  onStripColorChange,
+  onLayerUavColorChange,
   onMarkerSizeChange,
   onRestoreDefaults,
   onSelectUav,
@@ -464,9 +548,11 @@ export function LayerSidebar({
                   definition={definition}
                   preference={preference}
                   preferences={preferences}
+                  bundle={bundle}
                   disabled={disabled}
                   onLayerChange={onLayerChange}
-                  onUavColorChange={onUavColorChange}
+                  onStripColorChange={onStripColorChange}
+                  onLayerUavColorChange={onLayerUavColorChange}
                   onMarkerSizeChange={onMarkerSizeChange}
                 />
               ) : null}

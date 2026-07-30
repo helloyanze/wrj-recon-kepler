@@ -2,7 +2,8 @@ import {describe, expect, it} from "vitest";
 import type {DisplayTransform, LocalPoint} from "../../src/features/cases/caseBundle";
 import {
   createDisplayTransform,
-  localToMapPoint
+  localToMapPoint,
+  mapToLocalPoint
 } from "../../src/features/cases/displayTransform";
 
 const earthRadiusM = 6_378_137;
@@ -90,6 +91,22 @@ describe("algorithm display transform", () => {
     ]);
 
     expect(localToMapPoint([50_000, 40_000, altitudeM], transform)[2]).toBe(altitudeM);
+  });
+
+  it("round-trips local and map coordinates without losing altitude", () => {
+    const transform = createDisplayTransform([
+      [-20_000, 10_000, 0],
+      [80_000, 90_000, 2_900]
+    ]);
+    const localPoint: LocalPoint = [12_345.678, 54_321.987, 876.5];
+    const roundTrip = mapToLocalPoint(
+      localToMapPoint(localPoint, transform),
+      transform
+    );
+
+    expect(roundTrip[0]).toBeCloseTo(localPoint[0], 6);
+    expect(roundTrip[1]).toBeCloseTo(localPoint[1], 6);
+    expect(roundTrip[2]).toBe(localPoint[2]);
   });
 
   it("rejects an empty point set with a clear Chinese message", () => {

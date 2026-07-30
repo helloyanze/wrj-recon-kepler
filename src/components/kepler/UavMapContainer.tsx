@@ -9,7 +9,7 @@ import {
   createMissionDeckLayers
 } from "../../features/mission/missionDeckLayers";
 import type {
-  MissionLayerPreferencesV2,
+  MissionLayerPreferencesV3,
   VerticalScale
 } from "../../features/mission/missionLayerPreferences";
 
@@ -17,7 +17,7 @@ export interface MissionOverlayValue {
   bundle: CaseBundleV2 | null;
   missionTimeSec: number;
   verticalScale: VerticalScale;
-  preferences: MissionLayerPreferencesV2 | null;
+  preferences: MissionLayerPreferencesV3 | null;
   onSelectSortie?: (assignmentId: string) => void;
 }
 

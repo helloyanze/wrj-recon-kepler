@@ -59,8 +59,13 @@ const sorties = [
 
 const bundle = {
   case: {caseId: "R10", planId: "PLAN-10", displayName: "R10"},
-  sorties
-} as CaseBundleV2;
+  sorties,
+  strips: [
+    {stripId: "ST-02", index: 1, uavId: "UAV-08", assignmentId: "A-02", line: [], polygon: []},
+    {stripId: "ST-03", index: 2, uavId: "UAV-07", assignmentId: "A-03", line: [], polygon: []},
+    {stripId: "ST-01", index: 0, uavId: "UAV-07", assignmentId: "A-01", line: [], polygon: []}
+  ]
+} as unknown as CaseBundleV2;
 
 function makeProps(): LayerSidebarProps {
   return {
@@ -68,7 +73,8 @@ function makeProps(): LayerSidebarProps {
     preferences: createDefaultMissionLayerPreferences(
       "R10",
       "PLAN-10",
-      ["UAV-07", "UAV-08"]
+      ["UAV-07", "UAV-08"],
+      bundle.strips
     ),
     liveSorties: [
       live(sorties[0], "completed"),
@@ -83,7 +89,8 @@ function makeProps(): LayerSidebarProps {
     selectedSortieId: null,
     onCollapsedChange: vi.fn(),
     onLayerChange: vi.fn(),
-    onUavColorChange: vi.fn(),
+    onStripColorChange: vi.fn(),
+    onLayerUavColorChange: vi.fn(),
     onMarkerSizeChange: vi.fn(),
     onRestoreDefaults: vi.fn(),
     onSelectUav: vi.fn(),
@@ -92,13 +99,19 @@ function makeProps(): LayerSidebarProps {
 }
 
 describe("dynamic mission LayerSidebar", () => {
-  it("renders exactly four algorithm layers in fixed order and no legacy geographic layers", () => {
+  it("renders five algorithm layers in fixed order and no legacy geographic layers", () => {
     render(<LayerSidebar {...makeProps()} />);
 
     const labels = within(screen.getByRole("list", {name: "图层列表"}))
       .getAllByRole("listitem")
       .map(item => within(item).getByRole("button", {name: /^编辑 /}).textContent);
-    expect(labels).toEqual(["算法任务区", "侦察条带", "静态规划航迹", "动态飞行尾迹"]);
+    expect(labels).toEqual([
+      "算法任务区",
+      "侦察条带",
+      "已扫描区域",
+      "静态规划航迹",
+      "动态飞行尾迹"
+    ]);
     expect(screen.queryByText("真实 POI")).not.toBeInTheDocument();
     expect(screen.queryByText("真实上下文")).not.toBeInTheDocument();
   });
@@ -125,7 +138,7 @@ describe("dynamic mission LayerSidebar", () => {
     expect(screen.getByText("已完成")).toBeInTheDocument();
   });
 
-  it("emits visibility, width, trail, marker and shared UAV color updates", () => {
+  it("emits isolated strip, layer-UAV, marker and control updates", () => {
     const props = makeProps();
     render(<LayerSidebar {...props} />);
 
@@ -140,9 +153,37 @@ describe("dynamic mission LayerSidebar", () => {
     fireEvent.change(screen.getByLabelText("静态规划航迹 UAV-07 颜色"), {
       target: {value: "#abcdef"}
     });
-    expect(props.onUavColorChange).toHaveBeenCalledWith("UAV-07", "#abcdef");
+    expect(props.onLayerUavColorChange).toHaveBeenCalledWith(
+      "routes",
+      "UAV-07",
+      "#abcdef"
+    );
+
+    fireEvent.click(screen.getByRole("button", {name: "编辑 侦察条带"}));
+    fireEvent.change(screen.getByLabelText("侦察条带 ST-01 颜色"), {
+      target: {value: "#112233"}
+    });
+    expect(props.onStripColorChange).toHaveBeenCalledWith("ST-01", "#112233");
+
+    fireEvent.click(screen.getByRole("button", {name: "编辑 已扫描区域"}));
+    fireEvent.change(screen.getByLabelText("已扫描区域 UAV-08 颜色"), {
+      target: {value: "#223344"}
+    });
+    expect(props.onLayerUavColorChange).toHaveBeenCalledWith(
+      "scanned",
+      "UAV-08",
+      "#223344"
+    );
 
     fireEvent.click(screen.getByRole("button", {name: "编辑 动态飞行尾迹"}));
+    fireEvent.change(screen.getByLabelText("动态飞行尾迹 UAV-07 颜色"), {
+      target: {value: "#334455"}
+    });
+    expect(props.onLayerUavColorChange).toHaveBeenCalledWith(
+      "trips",
+      "UAV-07",
+      "#334455"
+    );
     fireEvent.click(screen.getByRole("button", {name: "展开 动态飞行尾迹 高级设置"}));
     fireEvent.change(screen.getByLabelText("动态飞行尾迹 轨迹长度"), {
       target: {value: "360"}
@@ -152,6 +193,14 @@ describe("dynamic mission LayerSidebar", () => {
       target: {value: "44"}
     });
     expect(props.onMarkerSizeChange).toHaveBeenCalledWith(44);
+    fireEvent.change(screen.getByLabelText("无人机图标 UAV-07 颜色"), {
+      target: {value: "#445566"}
+    });
+    expect(props.onLayerUavColorChange).toHaveBeenCalledWith(
+      "markers",
+      "UAV-07",
+      "#445566"
+    );
   });
 
   it("opens dynamic UAV and sortie details and disables editing while loading", () => {

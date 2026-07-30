@@ -12,7 +12,7 @@ import {convertMissionPlan} from "../src/features/cases/convertMissionPlan";
 import type {CaseBundleV2} from "../src/features/cases/caseBundle";
 import {
   createDefaultMissionLayerPreferences,
-  type MissionLayerPreferencesV2
+  type MissionLayerPreferencesV3
 } from "../src/features/mission/missionLayerPreferences";
 import {missionPlanFixture} from "./fixtures/missionPlanFixture";
 
@@ -20,7 +20,7 @@ interface OverlayValue {
   bundle: CaseBundleV2 | null;
   missionTimeSec: number;
   verticalScale: 1 | 2 | 4;
-  preferences: MissionLayerPreferencesV2 | null;
+  preferences: MissionLayerPreferencesV3 | null;
   onSelectSortie?: (assignmentId: string) => void;
 }
 
@@ -94,7 +94,8 @@ const bundle = convertMissionPlan({
 const preferences = createDefaultMissionLayerPreferences(
   bundle.case.caseId,
   bundle.case.planId,
-  bundle.assignments.map(({uavId}) => uavId)
+  bundle.assignments.map(({uavId}) => uavId),
+  bundle.strips
 );
 
 afterEach(() => {
@@ -103,7 +104,7 @@ afterEach(() => {
 });
 
 describe("WrjKeplerMap", () => {
-  it("passes public raster styles to the fixed Kepler map instance", () => {
+  it("passes public vector styles to the fixed Kepler map instance", () => {
     render(<WrjKeplerMap basemap={PUBLIC_BASEMAP} />);
 
     expect(runtime.keplerProps).toHaveLength(1);
@@ -165,7 +166,7 @@ describe("WrjKeplerMap", () => {
 });
 
 describe("mergeDeckRenderCallbacks", () => {
-  it("preserves callbacks and appends the five mission layers exactly once", () => {
+  it("preserves callbacks and appends the six mission layers exactly once", () => {
     const onDeckLoad = vi.fn();
     const onDeckAfterRender = vi.fn();
     const originalLayer = {id: "original"};
@@ -175,7 +176,7 @@ describe("mergeDeckRenderCallbacks", () => {
       verticalScale: 2,
       preferences
     });
-    expect(missionLayers).toHaveLength(5);
+    expect(missionLayers).toHaveLength(6);
     const callbacks = mergeDeckRenderCallbacks(
       {
         onDeckLoad,
@@ -192,6 +193,7 @@ describe("mergeDeckRenderCallbacks", () => {
     expect((result?.layers as Array<{id: string}>).map(({id}) => id)).toEqual([
       "original",
       "wrj-algorithm-region",
+      "wrj-algorithm-scanned",
       "wrj-algorithm-strips",
       "wrj-algorithm-routes",
       "wrj-algorithm-trips",
@@ -230,6 +232,7 @@ describe("mergeDeckRenderCallbacks", () => {
     expect((result?.layers as Array<{id: string}>).map(({id}) => id)).toEqual([
       "kepler",
       "wrj-algorithm-region",
+      "wrj-algorithm-scanned",
       "wrj-algorithm-strips",
       "wrj-algorithm-routes",
       "wrj-algorithm-trips",
@@ -261,13 +264,13 @@ describe("mergeDeckRenderCallbacks", () => {
     const nextLayers = nextFrame?.layers as Array<{id: string; props: unknown}>;
 
     expect(nextLayers.find(({id}) => id === "wrj-algorithm-routes"))
-      .toBe(scaleFourLayers[2]);
-    expect(nextLayers.find(({id}) => id === "wrj-algorithm-trips"))
       .toBe(scaleFourLayers[3]);
-    expect(nextLayers.find(({id}) => id === "wrj-algorithm-uav-triangles"))
+    expect(nextLayers.find(({id}) => id === "wrj-algorithm-trips"))
       .toBe(scaleFourLayers[4]);
+    expect(nextLayers.find(({id}) => id === "wrj-algorithm-uav-triangles"))
+      .toBe(scaleFourLayers[5]);
 
-    const route = scaleFourLayers[2].props as {
+    const route = scaleFourLayers[3].props as {
       data: CaseBundleV2["sorties"];
       getPath: (sortie: CaseBundleV2["sorties"][number]) => number[][];
     };
@@ -285,8 +288,8 @@ describe("mergeDeckRenderCallbacks", () => {
         datum: {position: readonly [number, number, number]}
       ) => number[];
     };
-    const scaleOneMarker = scaleOneLayers[4].props as MarkerProps;
-    const scaleFourMarker = scaleFourLayers[4].props as MarkerProps;
+    const scaleOneMarker = scaleOneLayers[5].props as MarkerProps;
+    const scaleFourMarker = scaleFourLayers[5].props as MarkerProps;
     expect(scaleFourMarker.getPosition(scaleFourMarker.data[0])[2]).toBe(
       scaleOneMarker.getPosition(scaleOneMarker.data[0])[2] * 4
     );

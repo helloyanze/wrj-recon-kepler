@@ -13,8 +13,9 @@ import {
   createDefaultMissionLayerPreferences,
   loadMissionLayerPreferences,
   saveMissionLayerPreferences,
+  type LayerUavColorId,
   type MissionLayerId,
-  type MissionLayerPreferencesV2,
+  type MissionLayerPreferencesV3,
   type VerticalScale
 } from "../features/mission/missionLayerPreferences";
 import {
@@ -67,7 +68,7 @@ export function Workspace({
     bundle?.metrics.missionMakespanSec ?? 0
   );
   const [preferences, setPreferences] =
-    useState<MissionLayerPreferencesV2 | null>(null);
+    useState<MissionLayerPreferencesV3 | null>(null);
   const [drawerContent, setDrawerContent] = useState<DrawerContent>(null);
   const [selectedSortieId, setSelectedSortieId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -103,7 +104,8 @@ export function Workspace({
     setPreferences(loadMissionLayerPreferences(
       bundle.case.caseId,
       bundle.case.planId,
-      uavIds
+      uavIds,
+      bundle.strips
     ));
     setVerticalScale(1);
     setDrawerContent(null);
@@ -125,7 +127,7 @@ export function Workspace({
   }, [basemap, bundle, caseLibrary.status, dispatch, styleType]);
 
   const updatePreferences = useCallback((
-    updater: (current: MissionLayerPreferencesV2) => MissionLayerPreferencesV2
+    updater: (current: MissionLayerPreferencesV3) => MissionLayerPreferencesV3
   ) => {
     setPreferences(current => {
       if (current === null) return current;
@@ -137,7 +139,7 @@ export function Workspace({
 
   const changeLayer = useCallback((
     id: MissionLayerId,
-    changes: Partial<MissionLayerPreferencesV2["layers"][MissionLayerId]>
+    changes: Partial<MissionLayerPreferencesV3["layers"][MissionLayerId]>
   ) => {
     updatePreferences(current => {
       const layer = current.layers[id];
@@ -163,7 +165,8 @@ export function Workspace({
     setPreferences(createDefaultMissionLayerPreferences(
       bundle.case.caseId,
       bundle.case.planId,
-      uavIds
+      uavIds,
+      bundle.strips
     ));
   }, [bundle, uavIds]);
 
@@ -314,10 +317,26 @@ export function Workspace({
             selectedSortieId={selectedSortieId}
             onCollapsedChange={setSidebarCollapsed}
             onLayerChange={changeLayer}
-            onUavColorChange={(uavId, color) => {
+            onStripColorChange={(stripId, color) => {
               updatePreferences(current => ({
                 ...current,
-                uavColors: {...current.uavColors, [uavId]: color}
+                stripColors: {...current.stripColors, [stripId]: color}
+              }));
+            }}
+            onLayerUavColorChange={(
+              layerId: LayerUavColorId,
+              uavId,
+              color
+            ) => {
+              updatePreferences(current => ({
+                ...current,
+                layerUavColors: {
+                  ...current.layerUavColors,
+                  [layerId]: {
+                    ...current.layerUavColors[layerId],
+                    [uavId]: color
+                  }
+                }
               }));
             }}
             onMarkerSizeChange={markerSize => {

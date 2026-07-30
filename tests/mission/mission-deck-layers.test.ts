@@ -133,9 +133,14 @@ function makeLayers(
   const preferences = createDefaultMissionLayerPreferences(
     "R10",
     "PLAN-10",
-    ["UAV-04"]
+    ["UAV-04"],
+    bundle.strips
   );
-  preferences.uavColors["UAV-04"] = "#123456";
+  preferences.stripColors["ST-01"] = "#123456";
+  preferences.layerUavColors.scanned["UAV-04"] = "#56789A";
+  preferences.layerUavColors.routes["UAV-04"] = "#234567";
+  preferences.layerUavColors.trips["UAV-04"] = "#345678";
+  preferences.layerUavColors.markers["UAV-04"] = "#456789";
   preferences.markerSize = 44;
   preferences.layers.region = {
     visible: false,
@@ -144,6 +149,7 @@ function makeLayers(
     stroked: true
   };
   preferences.layers.strips = {visible: true, opacity: 0.3, width: 3};
+  preferences.layers.scanned = {visible: true, opacity: 0.35};
   preferences.layers.routes = {visible: false, opacity: 0.4, width: 5};
   preferences.layers.trips = {
     visible: true,
@@ -177,29 +183,41 @@ describe("mission triangle mask", () => {
 });
 
 describe("createMissionDeckLayers", () => {
-  it("always returns the five synchronized layer types in stable order", () => {
+  it("always returns the six synchronized layer types in stable order", () => {
     const layers = makeLayers();
 
     expect(layers.map(({id}) => id)).toEqual([
       "wrj-algorithm-region",
+      "wrj-algorithm-scanned",
       "wrj-algorithm-strips",
       "wrj-algorithm-routes",
       "wrj-algorithm-trips",
       "wrj-algorithm-uav-triangles"
     ]);
     expect(layers[0]).toBeInstanceOf(PolygonLayer);
-    expect(layers[1]).toBeInstanceOf(PathLayer);
+    expect(layers[1]).toBeInstanceOf(PolygonLayer);
     expect(layers[2]).toBeInstanceOf(PathLayer);
-    expect(layers[3]).toBeInstanceOf(TripsLayer);
-    expect(layers[4]).toBeInstanceOf(IconLayer);
+    expect(layers[3]).toBeInstanceOf(PathLayer);
+    expect(layers[4]).toBeInstanceOf(TripsLayer);
+    expect(layers[5]).toBeInstanceOf(IconLayer);
   });
 
-  it("keeps region and strips at sea level while scaling only route and trip altitude", () => {
-    const [regionLayer, stripLayer, routeLayer, tripLayer] = makeLayers();
+  it("keeps region, scan coverage and strips at sea level while scaling only route and trip altitude", () => {
+    const [
+      regionLayer,
+      scannedLayer,
+      stripLayer,
+      routeLayer,
+      tripLayer
+    ] = makeLayers();
     const region = layerProps<{
       data: Array<{polygon: CaseBundleV2["region"]["polygon"]}>;
       getPolygon: (datum: {polygon: CaseBundleV2["region"]["polygon"]}) => number[][];
     }>(regionLayer);
+    const scanned = layerProps<{
+      data: Array<{polygon: CaseBundleV2["strips"][number]["polygon"]}>;
+      getPolygon: (datum: {polygon: CaseBundleV2["strips"][number]["polygon"]}) => number[][];
+    }>(scannedLayer);
     const strips = layerProps<{
       data: CaseBundleV2["strips"];
       getPath: (datum: CaseBundleV2["strips"][number]) => number[][];
@@ -215,6 +233,8 @@ describe("createMissionDeckLayers", () => {
     }>(tripLayer);
 
     expect(region.getPolygon(region.data[0]).every(point => point[2] === 0)).toBe(true);
+    expect(scanned.data).toHaveLength(1);
+    expect(scanned.getPolygon(scanned.data[0]).every(point => point[2] === 0)).toBe(true);
     expect(strips.getPath(strips.data[0])).toEqual([
       [110, 18, 0],
       [111, 18, 0]
@@ -232,7 +252,13 @@ describe("createMissionDeckLayers", () => {
   });
 
   it("reads visibility, opacity, widths, fill, stroke, clock and trail from preferences", () => {
-    const [regionLayer, stripLayer, routeLayer, tripLayer] = makeLayers();
+    const [
+      regionLayer,
+      scannedLayer,
+      stripLayer,
+      routeLayer,
+      tripLayer
+    ] = makeLayers();
 
     expect(regionLayer.props).toMatchObject({
       visible: false,
@@ -244,6 +270,12 @@ describe("createMissionDeckLayers", () => {
       visible: true,
       opacity: 0.3,
       getWidth: 3
+    });
+    expect(scannedLayer.props).toMatchObject({
+      visible: true,
+      opacity: 0.35,
+      filled: true,
+      stroked: false
     });
     expect(routeLayer.props).toMatchObject({
       visible: false,
@@ -259,28 +291,58 @@ describe("createMissionDeckLayers", () => {
     });
   });
 
-  it("uses one UAV color for strips, routes, trip tails and markers", () => {
-    const [, stripLayer, routeLayer, tripLayer, markerLayer] = makeLayers();
+  it("uses isolated colors for scan coverage, strips, routes, trip tails and markers", () => {
+    const [
+      ,
+      scannedLayer,
+      stripLayer,
+      routeLayer,
+      tripLayer,
+      markerLayer
+    ] = makeLayers();
     type UavDatum = {uavId: string};
-    const expectedColor = [18, 52, 86, 255];
+    type StripDatum = UavDatum & {stripId: string};
+    const strip = layerProps<{
+      data: StripDatum[];
+      getColor: (datum: StripDatum) => number[];
+      updateTriggers: {getColor: string};
+    }>(stripLayer);
+    const scanned = layerProps<{
+      data: UavDatum[];
+      getFillColor: (datum: UavDatum) => number[];
+      updateTriggers: {getFillColor: string};
+    }>(scannedLayer);
+    const routes = layerProps<{
+      data: UavDatum[];
+      getColor: (datum: UavDatum) => number[];
+      updateTriggers: {getColor: string};
+    }>(routeLayer);
+    const trips = layerProps<{
+      data: UavDatum[];
+      getColor: (datum: UavDatum) => number[];
+      updateTriggers: {getColor: string};
+    }>(tripLayer);
 
-    for (const layer of [stripLayer, routeLayer, tripLayer]) {
-      const props = layerProps<{
-        data: UavDatum[];
-        getColor: (datum: UavDatum) => number[];
-      }>(layer);
-      expect(props.getColor(props.data[0])).toEqual(expectedColor);
-    }
+    expect(scanned.getFillColor(scanned.data[0])).toEqual([86, 120, 154, 255]);
+    expect(strip.getColor(strip.data[0])).toEqual([18, 52, 86, 255]);
+    expect(routes.getColor(routes.data[0])).toEqual([35, 69, 103, 255]);
+    expect(trips.getColor(trips.data[0])).toEqual([52, 86, 120, 255]);
+    expect(new Set([
+      strip.updateTriggers.getColor,
+      routes.updateTriggers.getColor,
+      trips.updateTriggers.getColor,
+      scanned.updateTriggers.getFillColor
+    ]).size).toBe(4);
 
     const marker = layerProps<{
       data: Array<{uavId: string}>;
       getColor: (datum: {uavId: string}) => number[];
     }>(markerLayer);
-    expect(marker.getColor(marker.data[0])).toEqual(expectedColor);
+    expect(marker.getColor(marker.data[0])).toEqual([69, 103, 137, 255]);
   });
 
   it("shows flying and three-second landed markers with scaled altitude and clockwise heading", () => {
-    const flyingLayer = makeLayers(5)[4];
+    const flyingLayer = makeLayers(5)[5];
     const flying = layerProps<{
       data: Array<{position: readonly [number, number, number]; headingDeg: number | null}>;
       billboard: boolean;
@@ -306,9 +368,9 @@ describe("createMissionDeckLayers", () => {
       mask: true
     });
 
-    expect(layerProps<{data: unknown[]}>(makeLayers(-1)[4]).data).toHaveLength(0);
-    expect(layerProps<{data: unknown[]}>(makeLayers(12.999)[4]).data).toHaveLength(1);
-    expect(layerProps<{data: unknown[]}>(makeLayers(13)[4]).data).toHaveLength(0);
+    expect(layerProps<{data: unknown[]}>(makeLayers(-1)[5]).data).toHaveLength(0);
+    expect(layerProps<{data: unknown[]}>(makeLayers(12.999)[5]).data).toHaveLength(1);
+    expect(layerProps<{data: unknown[]}>(makeLayers(13)[5]).data).toHaveLength(0);
   });
 
   it("keeps pick data identifiable and wires selection only when requested", () => {
@@ -324,7 +386,7 @@ describe("createMissionDeckLayers", () => {
       expect(props.data[0].assignmentId).toBe("ASG-01");
       props.onClick?.({object: props.data[0]});
     }
-    expect(onSelectSortie).toHaveBeenCalledTimes(4);
+    expect(onSelectSortie).toHaveBeenCalledTimes(5);
     expect(onSelectSortie).toHaveBeenNthCalledWith(1, "ASG-01");
 
     for (const layer of makeLayers().slice(1)) {
