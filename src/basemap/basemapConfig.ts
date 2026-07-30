@@ -1,3 +1,5 @@
+import {localizeMapStyle} from "./localizeMapStyle";
+
 export type BasemapMode = "auto" | "public" | "local" | "mapbox";
 export type BasemapProvider = Exclude<BasemapMode, "auto">;
 
@@ -65,12 +67,10 @@ type Fetcher = (input: string, init?: RequestInit) => Promise<Response>;
 const OSM_TILES = ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"];
 const OSM_ATTRIBUTION = "© OpenStreetMap contributors";
 const CARTO_ATTRIBUTION = "© OpenStreetMap contributors · © CARTO";
-
-function cartoTiles(style: "dark_all" | "light_all"): string[] {
-  return ["a", "b", "c", "d"].map(
-    (subdomain) => `https://${subdomain}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}.png`
-  );
-}
+const CARTO_DARK_STYLE_URL =
+  "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
+const CARTO_LIGHT_STYLE_URL =
+  "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 
 export function createRasterStyle(
   tiles: string[],
@@ -95,7 +95,7 @@ export async function resolveBasemap(
   const mapboxToken = nonEmpty(environment.mapboxToken);
   const provider = selectProvider(mode, localStyleUrl, localTileUrl, mapboxToken);
 
-  if (provider === "public") return publicBasemap();
+  if (provider === "public") return publicBasemap(signal, fetcher);
   if (provider === "mapbox") return mapboxBasemap(mapboxToken!);
   return localBasemap(localStyleUrl, localTileUrl, environment.localAttribution, signal, fetcher);
 }
@@ -125,13 +125,20 @@ function selectProvider(
   return mapboxToken ? "mapbox" : "public";
 }
 
-function publicBasemap(): RasterResolvedBasemap {
+async function publicBasemap(
+  signal: AbortSignal | undefined,
+  fetcher: Fetcher
+): Promise<RasterResolvedBasemap> {
+  const [darkStyle, lightStyle] = await Promise.all([
+    loadStyle(CARTO_DARK_STYLE_URL, signal, fetcher, "公共地图样式"),
+    loadStyle(CARTO_LIGHT_STYLE_URL, signal, fetcher, "公共地图样式")
+  ]);
   return {
     provider: "public",
     mapboxToken: "",
     mapStyles: [
-      {id: "satellite", style: createRasterStyle(cartoTiles("dark_all"), CARTO_ATTRIBUTION)},
-      {id: "light", style: createRasterStyle(cartoTiles("light_all"), CARTO_ATTRIBUTION)}
+      {id: "satellite", style: localizeMapStyle(darkStyle)},
+      {id: "light", style: localizeMapStyle(lightStyle)}
     ],
     mapStylesReplaceDefault: true,
     primaryLabel: "深色地图",
@@ -165,7 +172,7 @@ async function localBasemap(
 ): Promise<RasterResolvedBasemap> {
   const attribution = nonEmpty(localAttribution) ?? "本地地图数据 · © OpenStreetMap contributors";
   const style = localStyleUrl
-    ? await loadStyle(localStyleUrl, signal, fetcher)
+    ? localizeMapStyle(await loadStyle(localStyleUrl, signal, fetcher))
     : createRasterStyle(validateXyzUrl(localTileUrl!), attribution);
 
   return {
@@ -183,22 +190,27 @@ async function localBasemap(
   };
 }
 
-async function loadStyle(url: string, signal: AbortSignal | undefined, fetcher: Fetcher): Promise<MapStyleV8> {
+async function loadStyle(
+  url: string,
+  signal: AbortSignal | undefined,
+  fetcher: Fetcher,
+  label = "本地地图样式"
+): Promise<MapStyleV8> {
   let response: Response;
   try {
     response = await fetcher(url, {signal});
   } catch (error) {
     if (isAbortError(error)) throw error;
-    throw configurationError(`无法加载本地地图样式 ${url}：${errorMessage(error)}`);
+    throw configurationError(`无法加载${label} ${url}：${errorMessage(error)}`);
   }
-  if (!response.ok) throw configurationError(`无法加载本地地图样式 ${url}（HTTP ${response.status}）`);
+  if (!response.ok) throw configurationError(`无法加载${label} ${url}（HTTP ${response.status}）`);
 
   let value: unknown;
   try {
     value = await response.json();
   } catch (error) {
     if (isAbortError(error)) throw error;
-    throw configurationError(`本地地图样式 JSON 解析失败（${url}）：${errorMessage(error)}`);
+    throw configurationError(`${label} JSON 解析失败（${url}）：${errorMessage(error)}`);
   }
   return validateMapStyle(value, url);
 }

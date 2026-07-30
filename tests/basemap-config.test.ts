@@ -4,8 +4,38 @@ import {
   createRasterStyle,
   resolveBasemap
 } from "../src/basemap/basemapConfig";
+import {CHINESE_NAME_EXPRESSION} from "../src/basemap/localizeMapStyle";
 
 const OSM_ATTRIBUTION = "© OpenStreetMap contributors";
+const CARTO_ATTRIBUTION = "© OpenStreetMap contributors · © CARTO";
+
+function vectorStyle(name: string) {
+  return {
+    version: 8,
+    name,
+    sources: {carto: {type: "vector"}},
+    layers: [
+      {
+        id: "place-label",
+        type: "symbol",
+        source: "carto",
+        layout: {"text-field": "{name_en}"}
+      },
+      {
+        id: "road-ref",
+        type: "symbol",
+        source: "carto",
+        layout: {"text-field": "{ref}"}
+      }
+    ]
+  };
+}
+
+function publicStyleFetcher() {
+  return vi.fn(async (url: string) => new Response(JSON.stringify(
+    vectorStyle(url.includes("dark-matter") ? "Dark Matter" : "Positron")
+  )));
+}
 
 function abortError(): Error {
   const error = new Error("The operation was aborted");
@@ -14,8 +44,9 @@ function abortError(): Error {
 }
 
 describe("resolveBasemap", () => {
-  it("uses public raster basemaps by default", async () => {
-    const result = await resolveBasemap({});
+  it("loads public vector basemaps and localizes name labels by default", async () => {
+    const fetcher = publicStyleFetcher();
+    const result = await resolveBasemap({}, undefined, fetcher);
 
     expect(result).toMatchObject({
       provider: "public",
@@ -26,6 +57,35 @@ describe("resolveBasemap", () => {
     });
     expect(result.mapboxToken).toBe("");
     expect(result.mapStyles?.map(({id}) => id)).toEqual(["satellite", "light"]);
+    expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
+      "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+      "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+    ]);
+    expect(result.mapStyles?.[0].style.sources.carto.type).toBe("vector");
+    expect(result.mapStyles?.[0].style.layers[0]).toMatchObject({
+      layout: {
+        "text-field": [
+          "coalesce",
+          ["get", "name:zh"],
+          ["get", "name"],
+          ["get", "name_en"]
+        ]
+      }
+    });
+    expect(result.mapStyles?.[0].style.layers[1]).toMatchObject({
+      layout: {"text-field": "{ref}"}
+    });
+  });
+
+  it("reports a public vector style HTTP failure as a configuration error", async () => {
+    const fetcher = vi.fn(async (url: string) => (
+      url.includes("dark-matter")
+        ? new Response("down", {status: 503})
+        : new Response(JSON.stringify(vectorStyle("Positron")))
+    ));
+
+    await expect(resolveBasemap({mode: "public"}, undefined, fetcher))
+      .rejects.toThrow(/底图配置错误：.*HTTP 503/);
   });
 
   it("prefers a local XYZ source over a Mapbox token in auto mode", async () => {
@@ -58,7 +118,7 @@ describe("resolveBasemap", () => {
         mode: "public",
         mapboxToken: "token",
         localTileUrl: "https://tiles.example/{z}/{x}/{y}.png"
-      })
+      }, undefined, publicStyleFetcher())
     ).resolves.toMatchObject({provider: "public"});
   });
 
@@ -79,33 +139,21 @@ describe("resolveBasemap", () => {
     ).rejects.toThrow("{y}");
   });
 
-  it("creates public dark and light raster styles with Carto subdomains", async () => {
-    const result = await resolveBasemap({mode: "public"});
+  it("creates public dark and light vector styles with Carto attribution", async () => {
+    const result = await resolveBasemap(
+      {mode: "public"},
+      undefined,
+      publicStyleFetcher()
+    );
     const [satellite, light] = result.mapStyles!;
 
     expect(satellite).toMatchObject({id: "satellite", style: {version: 8}});
-    expect(satellite.style.sources.raster.tiles).toEqual([
-      "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-      "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-      "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-      "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
-    ]);
-    expect(satellite.style.sources.raster.attribution).toBe(
-      "© OpenStreetMap contributors · © CARTO"
-    );
+    expect(satellite.style.sources.carto.type).toBe("vector");
+    expect(light.style.sources.carto.type).toBe("vector");
     expect(result.attributionByStyle).toEqual({
-      satellite: "© OpenStreetMap contributors · © CARTO",
-      light: "© OpenStreetMap contributors · © CARTO"
+      satellite: CARTO_ATTRIBUTION,
+      light: CARTO_ATTRIBUTION
     });
-    expect(light.style.sources.raster.tiles).toEqual([
-      "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-      "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-      "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-      "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
-    ]);
-    expect(light.style.sources.raster.attribution).toBe(
-      "© OpenStreetMap contributors · © CARTO"
-    );
     expect(createRasterStyle(["https://tiles.example/{z}/{x}/{y}.png"], "Example", 512)).toEqual({
       version: 8,
       sources: {
@@ -120,20 +168,29 @@ describe("resolveBasemap", () => {
     });
   });
 
-  it("isolates raster tile arrays between styles and resolved basemaps", async () => {
+  it("isolates raster inputs and fetched public styles between resolutions", async () => {
     const tiles = ["https://tiles.example/{z}/{x}/{y}.png"];
     const style = createRasterStyle(tiles, "Example");
     tiles.push("https://mutated.example/{z}/{x}/{y}.png");
     expect(style.sources.raster.tiles).toEqual(["https://tiles.example/{z}/{x}/{y}.png"]);
 
-    const first = await resolveBasemap({mode: "public"});
-    first.mapStyles![0].style.sources.raster.tiles!.push("https://mutated.example/{z}/{x}/{y}.png");
-    const second = await resolveBasemap({mode: "public"});
-    expect(second.mapStyles![0].style.sources.raster.tiles).toHaveLength(4);
+    const first = await resolveBasemap({mode: "public"}, undefined, publicStyleFetcher());
+    first.mapStyles![0].style.layers[0].id = "mutated";
+    const second = await resolveBasemap({mode: "public"}, undefined, publicStyleFetcher());
+    expect(second.mapStyles![0].style.layers[0].id).toBe("place-label");
   });
 
-  it("loads and preserves a valid local MapLibre style using the supplied signal", async () => {
-    const style = {version: 8, sources: {local: {type: "vector"}}, layers: []};
+  it("loads and localizes a valid local MapLibre style using the supplied signal", async () => {
+    const style = {
+      version: 8,
+      sources: {local: {type: "vector"}},
+      layers: [{
+        id: "local-name",
+        type: "symbol",
+        source: "local",
+        layout: {"text-field": "{name_en}"}
+      }]
+    };
     const controller = new AbortController();
     const fetcher = vi.fn().mockResolvedValue({
       ok: true,
@@ -149,7 +206,11 @@ describe("resolveBasemap", () => {
 
     expect(fetcher).toHaveBeenCalledWith("https://maps.example/style.json", {signal: controller.signal});
     expect(result).toMatchObject({provider: "local", primaryLabel: "本地地图", secondaryLabel: "公共备用"});
-    expect(result.mapStyles?.[0].style).toBe(style);
+    expect(result.mapStyles?.[0].style).not.toBe(style);
+    expect(result.mapStyles?.[0].style.layers[0]).toMatchObject({
+      layout: {"text-field": CHINESE_NAME_EXPRESSION}
+    });
+    expect(style.layers[0].layout["text-field"]).toBe("{name_en}");
     expect(result.mapStyles?.[1].style.sources.raster.attribution).toBe(OSM_ATTRIBUTION);
     expect(result.attributionByStyle).toEqual({
       satellite: "本地地图数据 · © OpenStreetMap contributors",
