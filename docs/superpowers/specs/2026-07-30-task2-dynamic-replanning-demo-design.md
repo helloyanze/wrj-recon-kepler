@@ -119,7 +119,9 @@ public/data/task2/scenes/<scene-id>/
 - 任务、资源、分配和航迹引用闭合；
 - `provenance.json` 中的哈希与实际文件一致；
 - `PARTIAL_SAFE_FALLBACK` 场景存在有效的 `failure_report.json`；
-- 所有参与地图展示的路径包含有效 `mapPath`。
+- 基线与任务二视图均声明兼容的本地坐标框架；当任务二
+  `coordinateReference.mapCrs` 为空时，使用基线 `displayTransform` 投影
+  `localPath`，不得把任务二当前的本地米制 `mapPath` 直接当作经纬度。
 
 ## 7. 离线数据生成流水线
 
@@ -147,9 +149,12 @@ npm run data:check-task2
 
 ## 8. 航迹时间投影
 
-任务二 `MissionViewSegment.mapPath` 保存地图坐标，航段只提供 `startTimeSec` 和
-`finishTimeSec`，未提供逐点时间。前端按相邻地图点的累计距离比例，在航段起止时间之间
-生成逐点时间：
+任务二航段只提供 `startTimeSec` 和 `finishTimeSec`，未提供逐点时间。当前实现中
+`coordinateReference.mapCrs` 为空，`mapPath` 仍由本地米制点生成，因此前端必须使用
+基线 `displayTransform` 将 `localPath` 投影到与任务一相同的地图锚点。只有后续
+`mapCrs` 明确且受前端支持时，才可直接使用真正的地图路径。
+
+前端按相邻本地点的累计距离比例，在航段起止时间之间生成逐点时间：
 
 ```text
 pointTime = startTime + cumulativeDistance / totalDistance
@@ -159,6 +164,7 @@ pointTime = startTime + cumulativeDistance / totalDistance
 规则：
 
 - 算法航段起止时间保持不变；
+- 地图位置由 `localPath` 和基线展示变换确定，不把本地米制值误判为经纬度；
 - 零长度多点路径按点序号均匀分配时间；
 - 单点路径作为静态位置；
 - 相邻航段边界使用后一个航段处理航向，避免重复点引起图标抖动；
@@ -313,7 +319,8 @@ READY
 - 文件哈希不一致：拒绝播放并提示场景数据可能被修改。
 - 基线与任务二版本或引用不一致：拒绝合并展示。
 - 部分安全回退缺少失败报告：数据包不完整，拒绝播放。
-- 缺少地图路径：明确报错，不把本地米制坐标当成经纬度。
+- 缺少本地路径或基线展示变换：明确报错；`mapCrs` 为空时不把 `mapPath` 的本地米制
+  值当成经纬度。
 - 不使用空数组、默认成功状态或任务一数据静默替代损坏的任务二结果。
 
 错误界面保留文件名、Schema 路径和简短原因；详细堆栈只在调试模式显示。
