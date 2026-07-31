@@ -211,9 +211,29 @@ function changeFor(
   elementType: string,
   elementId: string
 ): ChangeType {
-  return view.planDiff.entries.find(entry =>
+  const raw = view.planDiff.entries.find(entry =>
     entry.elementType === elementType && entry.elementId === elementId
-  )?.changeType ?? "baseline_reused";
+  )?.changeType;
+  switch (raw) {
+    case "ADDED":
+      return "dynamic_new";
+    case "CANCELLED":
+    case "REMOVED":
+      return "dynamic_cancelled";
+    case "REPLACED":
+    case "TRIMMED":
+    case "MODIFIED":
+      return "dynamic_modified";
+    case "baseline_flown":
+    case "baseline_locked":
+    case "baseline_reused":
+    case "dynamic_modified":
+    case "dynamic_new":
+    case "dynamic_cancelled":
+      return raw;
+    default:
+      return "baseline_reused";
+  }
 }
 
 function assertPackageConsistency(
@@ -378,7 +398,10 @@ export function buildDynamicScene(
         : workTaskById.get(segment.stripId) ?? null,
       workUnitId: segment.stripId,
       segmentType: segment.segmentType,
-      changeType: "baseline" as const,
+      changeType: changeFor(view, "TRAJECTORY", sortie.trajectoryId) ===
+        "dynamic_cancelled"
+        ? "dynamic_cancelled" as const
+        : "baseline" as const,
       startTimeSec: segment.startTimeSec,
       finishTimeSec: segment.endTimeSec,
       timedPath: [...segment.timedPath]
@@ -392,7 +415,16 @@ export function buildDynamicScene(
       taskId: segment.taskId,
       workUnitId: segment.workUnitId,
       segmentType: segment.segmentType,
-      changeType: segment.changeType,
+      changeType: (() => {
+        const trajectoryChange = changeFor(
+          view,
+          "TRAJECTORY",
+          trajectory.trajectoryId
+        );
+        return trajectoryChange === "baseline_reused"
+          ? segment.changeType
+          : trajectoryChange;
+      })(),
       startTimeSec: segment.startTimeSec,
       finishTimeSec: segment.finishTimeSec,
       timedPath: buildTimedPath(

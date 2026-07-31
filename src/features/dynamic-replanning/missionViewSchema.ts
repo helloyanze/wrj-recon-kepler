@@ -164,7 +164,7 @@ const missionViewEventSchema = z.object({
 const planDiffEntrySchema = z.object({
   elementType: nonEmptyString,
   elementId: nonEmptyString,
-  changeType: changeTypeSchema,
+  changeType: nonEmptyString,
   beforeHash: z.string().nullable(),
   afterHash: z.string().nullable(),
   triggerEventIds: z.array(nonEmptyString)

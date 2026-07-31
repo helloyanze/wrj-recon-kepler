@@ -121,7 +121,13 @@ function activePathData(
   verticalScale: VerticalScale
 ): RenderedPath[] {
   const progress = transitionProgress(playback, scene);
-  return scene.activePaths.map(path => ({
+  const paths = [
+    ...scene.activePaths,
+    ...scene.baselinePaths.filter(
+      path => path.changeType === "dynamic_cancelled"
+    )
+  ];
+  return paths.map(path => ({
     ...path,
     renderedPath: clippedPath(
       path.timedPath,
