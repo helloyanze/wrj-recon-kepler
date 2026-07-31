@@ -1,6 +1,9 @@
 import type {ResolvedBasemap} from "../basemap/basemapConfig";
 import type {CaseBundleV2} from "../features/cases/caseBundle";
 import type {
+  DynamicOverlayOptions
+} from "../features/dynamic-replanning/dynamicDeckLayers";
+import type {
   MissionLayerPreferencesV3,
   VerticalScale
 } from "../features/mission/missionLayerPreferences";
@@ -18,6 +21,7 @@ export interface WrjKeplerMapProps {
   missionTimeSec?: number;
   verticalScale?: VerticalScale;
   preferences?: MissionLayerPreferencesV3 | null;
+  dynamicOverlay?: DynamicOverlayOptions | null;
   onSelectSortie?: (assignmentId: string) => void;
 }
 
@@ -27,6 +31,7 @@ export function WrjKeplerMap({
   missionTimeSec = 0,
   verticalScale = 1,
   preferences = null,
+  dynamicOverlay = null,
   onSelectSortie
 }: WrjKeplerMapProps) {
   const {ref, width, height} = useContainerSize<HTMLDivElement>();
@@ -36,9 +41,17 @@ export function WrjKeplerMap({
       missionTimeSec,
       verticalScale,
       preferences,
+      dynamic: dynamicOverlay,
       onSelectSortie
     }),
-    [bundle, missionTimeSec, verticalScale, preferences, onSelectSortie]
+    [
+      bundle,
+      missionTimeSec,
+      verticalScale,
+      preferences,
+      dynamicOverlay,
+      onSelectSortie
+    ]
   );
 
   return (

@@ -10,6 +10,9 @@ import {
 import {WrjKeplerMap} from "../src/components/WrjKeplerMap";
 import {convertMissionPlan} from "../src/features/cases/convertMissionPlan";
 import type {CaseBundleV2} from "../src/features/cases/caseBundle";
+import type {
+  DynamicOverlayOptions
+} from "../src/features/dynamic-replanning/dynamicDeckLayers";
 import {
   createDefaultMissionLayerPreferences,
   type MissionLayerPreferencesV3
@@ -21,6 +24,7 @@ interface OverlayValue {
   missionTimeSec: number;
   verticalScale: 1 | 2 | 4;
   preferences: MissionLayerPreferencesV3 | null;
+  dynamic: DynamicOverlayOptions | null;
   onSelectSortie?: (assignmentId: string) => void;
 }
 
@@ -174,7 +178,8 @@ describe("mergeDeckRenderCallbacks", () => {
       bundle,
       missionTimeSec: 5,
       verticalScale: 2,
-      preferences
+      preferences,
+      dynamic: null
     });
     expect(missionLayers).toHaveLength(6);
     const callbacks = mergeDeckRenderCallbacks(
@@ -206,13 +211,15 @@ describe("mergeDeckRenderCallbacks", () => {
       bundle: null,
       missionTimeSec: 0,
       verticalScale: 1,
-      preferences
+      preferences,
+      dynamic: null
     })).toEqual([]);
     expect(createMissionOverlayLayers({
       bundle,
       missionTimeSec: 0,
       verticalScale: 1,
-      preferences: null
+      preferences: null,
+      dynamic: null
     })).toEqual([]);
   });
 
@@ -221,7 +228,8 @@ describe("mergeDeckRenderCallbacks", () => {
       bundle,
       missionTimeSec: 5,
       verticalScale: 1,
-      preferences
+      preferences,
+      dynamic: null
     });
     const callbacks = mergeDeckRenderCallbacks(
       {onDeckRender: () => ({layers: [{id: "kepler"}, missionLayers[0]]})},
@@ -245,7 +253,8 @@ describe("mergeDeckRenderCallbacks", () => {
       bundle,
       missionTimeSec: 5,
       verticalScale: 1,
-      preferences
+      preferences,
+      dynamic: null
     });
     const firstFrame = mergeDeckRenderCallbacks(
       undefined,
@@ -255,7 +264,8 @@ describe("mergeDeckRenderCallbacks", () => {
       bundle,
       missionTimeSec: 5,
       verticalScale: 4,
-      preferences
+      preferences,
+      dynamic: null
     });
     const nextFrame = mergeDeckRenderCallbacks(
       undefined,
@@ -302,7 +312,8 @@ describe("mergeDeckRenderCallbacks", () => {
         bundle,
         missionTimeSec: 5,
         verticalScale: 1,
-        preferences
+        preferences,
+        dynamic: null
       })
     );
 

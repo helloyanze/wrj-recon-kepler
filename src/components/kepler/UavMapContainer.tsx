@@ -6,6 +6,10 @@ import {
 import {createContext, useContext, useMemo} from "react";
 import type {CaseBundleV2} from "../../features/cases/caseBundle";
 import {
+  createDynamicDeckLayers,
+  type DynamicOverlayOptions
+} from "../../features/dynamic-replanning/dynamicDeckLayers";
+import {
   createMissionDeckLayers
 } from "../../features/mission/missionDeckLayers";
 import type {
@@ -18,6 +22,7 @@ export interface MissionOverlayValue {
   missionTimeSec: number;
   verticalScale: VerticalScale;
   preferences: MissionLayerPreferencesV3 | null;
+  dynamic: DynamicOverlayOptions | null;
   onSelectSortie?: (assignmentId: string) => void;
 }
 
@@ -26,16 +31,25 @@ export const MissionOverlayContext = createContext<MissionOverlayValue>({
   bundle: null,
   missionTimeSec: 0,
   verticalScale: 1,
-  preferences: null
+  preferences: null,
+  dynamic: null
 });
 
 type DeckRenderCallbacks = NonNullable<MapContainerProps["deckRenderCallbacks"]>;
-type MissionDeckLayers = ReturnType<typeof createMissionDeckLayers>;
+type MissionDeckLayers =
+  | ReturnType<typeof createMissionDeckLayers>
+  | ReturnType<typeof createDynamicDeckLayers>;
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function createMissionOverlayLayers(
   overlay: MissionOverlayValue
 ): MissionDeckLayers {
+  if (overlay.bundle !== null && overlay.dynamic !== null) {
+    throw new Error("cannot render both static and dynamic mission overlays");
+  }
+  if (overlay.dynamic !== null) {
+    return createDynamicDeckLayers(overlay.dynamic);
+  }
   if (overlay.bundle === null || overlay.preferences === null) return [];
   return createMissionDeckLayers({
     bundle: overlay.bundle,
