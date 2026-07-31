@@ -123,7 +123,7 @@ export const missionViewFixture = {
     totalCompletionRatio: 1,
     retainedPlanRatio: 0.5,
     newActiveResourceCount: 1,
-    totalFinishTimeSec: 120,
+    totalFinishTimeSec: 600,
     totalFuelKg: 1.5
   },
   validation: {
