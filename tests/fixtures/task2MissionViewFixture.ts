@@ -2,32 +2,27 @@ export const missionViewFixture = {
   schemaVersion: "mission_view.v1",
   mission: {
     missionId: "MIS-R01-BASELINE-01",
-    caseId: "R01-BASELINE-01",
-    sourcePlanId: "PLAN-001",
-    sourcePlanVersion: 1,
-    snapshotId: "SNAP-123456789ABC",
-    snapshotKind: "SIMULATED",
-    snapshotTimeSec: 100
+    caseId: "R01-BASELINE-01"
   },
   activePlan: {
     planId: "PLAN-001-T2-V2",
-    planVersion: 2,
-    parentPlanVersion: 1,
     planStatus: "COMPLETE",
-    committedAtMissionTimeSec: 100
+    planVersion: 2,
+    sourcePlanVersion: 1,
+    missionTimeSec: 100
   },
   coordinateReference: {
-    localFrame: "TASK1_PLANAR_METERS",
-    mapCrs: null,
+    frame: "LOCAL_ENU",
     horizontalUnit: "m",
     verticalUnit: "m",
-    xAxis: "EAST",
-    yAxis: "NORTH"
+    mapCrs: null
   },
   tasks: [
     {
       taskId: "REG-001",
       taskType: "AREA_RECON",
+      status: "EXECUTING",
+      priority: 1,
       geometry: {
         type: "Polygon",
         coordinates: [[
@@ -37,75 +32,67 @@ export const missionViewFixture = {
           [0, 0]
         ]]
       },
-      minimumCoverageRatio: 0.95,
-      executionState: "EXECUTING",
-      assignedResourceIds: ["UAV-01"],
-      changeType: "dynamic_modified"
+      minimumCoverageRatio: 0.95
     }
   ],
   resources: [
     {
       resourceId: "UAV-01",
-      model: "WRJ-A",
-      baseId: "BASE-01",
-      operationalState: "ACTIVE",
-      position: [100, 200, 2_500],
-      initialFuelKg: 90,
-      remainingFuelKg: 70,
-      currentTaskId: "REG-001",
-      currentTrajectoryId: "TRJ-DYNAMIC-001",
-      transferable: false,
-      returnedToBase: false
+      platformClass: "SMALL_UAV",
+      carrierResourceId: null,
+      capabilities: ["AREA_RECON"],
+      operationalState: "EXECUTING",
+      position: {xM: 100, yM: 200, zM: 2_500},
+      headingDeg: 90,
+      remainingFuelKg: 70
     }
   ],
   workUnits: [
     {
       workUnitId: "ST-0001",
       taskId: "REG-001",
-      localPath: [
-        [100, 200, 2_500],
-        [500, 200, 2_500]
-      ],
+      status: "REMAINING",
       assignedResourceId: "UAV-01",
-      executionState: "PLANNED",
-      changeType: "dynamic_modified"
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [100, 200, 2_500],
+          [500, 200, 2_500]
+        ]
+      }
     }
   ],
   assignments: [
     {
       assignmentId: "ASG-DYNAMIC-001",
-      taskId: "REG-001",
       resourceId: "UAV-01",
+      taskId: "REG-001",
       workUnitIds: ["ST-0001"],
-      startTimeSec: 100,
-      finishTimeSec: 120,
-      changeType: "dynamic_modified"
+      plannedLaunchTimeSec: 100,
+      plannedFinishTimeSec: 120
     }
   ],
   trajectories: [
     {
       trajectoryId: "TRJ-DYNAMIC-001",
       resourceId: "UAV-01",
-      assignmentId: "ASG-DYNAMIC-001",
       segments: [
         {
           segmentId: "SEG-DYNAMIC-001",
-          taskId: "REG-001",
-          workUnitId: "ST-0001",
           segmentType: "COVERAGE_LINE",
+          phase: "MISSION",
+          localPath: [
+            {xM: 100, yM: 200, zM: 2_500},
+            {xM: 500, yM: 200, zM: 2_500}
+          ],
+          mapPath: [],
           startTimeSec: 100,
           finishTimeSec: 120,
-          localPath: [
-            [100, 200, 2_500],
-            [500, 200, 2_500]
-          ],
-          mapPath: null,
-          distanceM: 400,
-          fuelKg: 1.5,
-          changeType: "dynamic_modified"
+          changeType: "dynamic_modified",
+          taskId: "REG-001",
+          workUnitId: "ST-0001"
         }
-      ],
-      changeType: "dynamic_modified"
+      ]
     }
   ],
   eventTimeline: [
@@ -113,74 +100,79 @@ export const missionViewFixture = {
       eventId: "EV-DEMO-LOST",
       eventType: "RESOURCE_LOST",
       eventTimeSec: 100,
-      affectedObjectKind: "RESOURCE",
-      affectedObjectId: "UAV-01",
-      payload: {}
+      status: "COMMITTED",
+      affectedObjectId: "UAV-01"
     }
   ],
   planDiff: {
     sourcePlanVersion: 1,
-    targetPlanVersion: 2,
+    planVersion: 2,
     entries: [
       {
-        objectKind: "RESOURCE",
-        objectId: "UAV-01",
+        elementType: "RESOURCE",
+        elementId: "UAV-01",
         changeType: "dynamic_modified",
-        reason: "RESOURCE_LOST"
+        beforeHash: "before",
+        afterHash: "after",
+        triggerEventIds: ["EV-DEMO-LOST"]
       }
     ]
   },
   metrics: {
-    totalFinishTimeSec: 120,
-    totalFuelKg: 1.5,
+    highPriorityCompletionRatio: 1,
     totalCompletionRatio: 1,
-    retainedWorkRatio: 0.5,
-    newResourceCount: 1,
-    unresolvedWorkUnitCount: 0
+    retainedPlanRatio: 0.5,
+    newActiveResourceCount: 1,
+    totalFinishTimeSec: 120,
+    totalFuelKg: 1.5
   },
   validation: {
-    valid: true,
-    safe: true,
-    warnings: ["SIMULATED_RUNTIME_STATE"],
+    passed: true,
+    checks: [
+      {
+        name: "safe-return",
+        passed: true,
+        code: null,
+        message: null,
+        affectedObjectIds: []
+      }
+    ],
     failureCodes: []
   },
   alternativeSummaries: [],
   timeChains: [
     {
-      nodeId: "B-DEMO-LOST-EVENT",
+      nodeId: "NODE-EVENT",
       nodeType: "EVENT",
-      missionTimeSec: 100,
-      wallOffsetMs: 0,
-      label: "动态事件到达"
-    },
-    {
-      nodeId: "B-DEMO-LOST-COMMIT",
-      nodeType: "COMMIT",
-      missionTimeSec: 100,
-      wallOffsetMs: 9_600,
-      label: "新方案生效"
+      resourceId: "UAV-01",
+      taskId: null,
+      startTimeSec: 100,
+      finishTimeSec: 100,
+      predecessorNodeIds: []
     }
   ],
   provenance: {
-    baselineCaseId: "R01-BASELINE-01",
-    baselinePlanId: "PLAN-001",
-    baselinePlanVersion: 1,
     eventBatchId: "B-DEMO-LOST",
-    runtimeStateSource: "SIMULATED",
-    algorithm: "deterministic-strip-reassignment-v1"
+    snapshotId: "SNAP-123456789ABC",
+    sourceHashes: {
+      "mission_plan.json": "abc123"
+    }
   }
 } as const;
 
 export const failureReportFixture = {
-  schemaVersion: "task2-failure-report.v1",
-  missionId: "MIS-R01-BASELINE-01",
-  eventBatchId: "B-DEMO-HARD-DEADLINE",
-  planStatus: "PARTIAL_SAFE_FALLBACK",
-  failureCodes: ["HARD_DEADLINE_UNSATISFIABLE"],
-  unresolvedTaskIds: ["REG-001"],
-  unresolvedWorkUnitIds: ["ST-0002"],
-  safeActions: ["RETURN_TO_BASE"],
-  message: "硬截止无法满足；已发布安全返航方案。"
+  attemptId: "FAIL-123456789ABC",
+  sourcePlanVersion: 1,
+  failures: [
+    {
+      code: "HARD_DEADLINE_MISSED",
+      stage: "VALIDATION",
+      message: "硬截止无法满足，已发布安全回退方案。",
+      affectedObjectIds: ["REG-001"],
+      recoverable: false,
+      details: {}
+    }
+  ]
 } as const;
 
 export const sceneConfigFixture = {

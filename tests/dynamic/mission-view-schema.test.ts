@@ -45,7 +45,11 @@ describe("missionViewV1Schema", () => {
   });
 
   it("accepts the explicit safe-fallback report contract", () => {
-    expect(failureReportSchema.parse(failureReportFixture).safeActions)
-      .toEqual(["RETURN_TO_BASE"]);
+    expect(failureReportSchema.parse(failureReportFixture).failures[0])
+      .toMatchObject({
+        code: "HARD_DEADLINE_MISSED",
+        stage: "VALIDATION",
+        affectedObjectIds: ["REG-001"]
+      });
   });
 });
