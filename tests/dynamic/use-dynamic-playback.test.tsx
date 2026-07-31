@@ -5,6 +5,7 @@ import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
 import {caseBundleSchema} from "../../src/features/cases/caseBundle";
 import {buildDynamicScene} from "../../src/features/dynamic-replanning/buildDynamicScene";
+import {decisionTraceV1Schema} from "../../src/features/dynamic-replanning/decisionTraceSchema";
 import {
   sceneConfigSchema,
   sceneProvenanceSchema
@@ -12,6 +13,7 @@ import {
 import {missionViewV1Schema} from "../../src/features/dynamic-replanning/missionViewSchema";
 import {useDynamicPlayback} from "../../src/hooks/useDynamicPlayback";
 import {
+  decisionTraceFixture,
   missionViewFixture,
   sceneConfigFixture,
   sceneProvenanceFixture
@@ -26,6 +28,7 @@ function buildScene(sceneId = "resource-lost") {
     config: sceneConfigSchema.parse({...sceneConfigFixture, sceneId}),
     baseline,
     view: missionViewV1Schema.parse(missionViewFixture),
+    decisionTrace: decisionTraceV1Schema.parse(decisionTraceFixture),
     failureReport: null,
     provenance: sceneProvenanceSchema.parse(sceneProvenanceFixture)
   });

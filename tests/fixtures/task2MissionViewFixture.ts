@@ -175,8 +175,81 @@ export const failureReportFixture = {
   ]
 } as const;
 
+const decisionStages = [
+  "EVENT_INGESTION",
+  "SNAPSHOT_AND_IMPACT",
+  "RESOURCE_ASSESSMENT",
+  "CANDIDATE_GENERATION",
+  "PLANNING_AND_VALIDATION",
+  "RANKING_AND_SELECTION",
+  "PLAN_PUBLICATION"
+] as const;
+
+export const decisionTraceFixture = {
+  schemaVersion: "decision_trace.v1",
+  attemptId: "ATTEMPT-123456789ABC",
+  missionId: "MIS-R01-BASELINE-01",
+  eventBatchId: "B-DEMO-LOST",
+  sourcePlanVersion: 1,
+  resultStatus: "COMPLETE",
+  selectedCandidateId: "CAND-1",
+  stages: decisionStages.map((stageId, index) => ({
+    stageId,
+    status: "COMPLETED" as const,
+    actualDurationMs: 1,
+    affectedEventIds: ["EV-DEMO-LOST"],
+    affectedObjectIds: ["UAV-01"],
+    facts: [],
+    candidateIds: index >= 3 ? ["CAND-1"] : [],
+    validationCheckIds: [],
+    failureCodes: [],
+    artifactRefs: []
+  })),
+  candidates: [
+    {
+      candidateId: "CAND-1",
+      level: "L1_MINIMAL_ADJUSTMENT",
+      lifecycle: "selected",
+      affectedTaskIds: ["REG-001"],
+      affectedResourceIds: ["UAV-01"],
+      allocations: [
+        {
+          taskId: "REG-001",
+          resourceIds: ["UAV-01"],
+          workUnitIds: ["ST-0001"]
+        }
+      ],
+      metrics: missionViewFixture.metrics,
+      validationChecks: [],
+      rejectionCodes: [],
+      failureCodes: [],
+      rank: 1,
+      selected: true
+    }
+  ],
+  selection: {
+    orderedCandidateIds: ["CAND-1"],
+    selectedCandidateId: "CAND-1",
+    reasonCodes: ["LEXICOGRAPHIC_RANKING"]
+  },
+  publication: {
+    planId: "PLAN-001-T2-V2",
+    planVersion: 2,
+    planStatus: "COMPLETE",
+    sourcePlanVersion: 1,
+    planDiffRefs: [
+      {
+        elementType: "RESOURCE",
+        elementId: "UAV-01",
+        changeType: "dynamic_modified"
+      }
+    ],
+    failureReportPath: null
+  }
+} as const;
+
 export const sceneConfigFixture = {
-  schemaVersion: "task2-demo-scene.v1",
+  schemaVersion: "task2-demo-scene.v2",
   sceneId: "resource-lost",
   displayName: "无人机失联",
   summary: "执行中无人机失联，剩余工作转移给可用资源。",
@@ -217,11 +290,13 @@ export const sceneProvenanceFixture = {
   baselinePlanVersion: 1,
   upstreamSha256: {
     "scene.json": fixtureHash,
-    "mission_view.v1.json": fixtureHash
+    "mission_view.v1.json": fixtureHash,
+    "decision_trace.v1.json": fixtureHash
   },
   packagedSha256: {
     "scene.json": fixtureHash,
     "baseline.bundle.json": fixtureHash,
-    "mission_view.v1.json": fixtureHash
+    "mission_view.v1.json": fixtureHash,
+    "decision_trace.v1.json": fixtureHash
   }
 } as const;

@@ -10,6 +10,7 @@ import {
   type DynamicFetch
 } from "../../src/features/dynamic-replanning/loadDynamicScene";
 import {
+  decisionTraceFixture,
   missionViewFixture,
   sceneConfigFixture,
   scenePackageFixture
@@ -29,7 +30,8 @@ async function sceneFiles(
   const files = new Map<string, string>([
     ["scene.json", JSON.stringify(sceneConfigFixture)],
     ["baseline.bundle.json", JSON.stringify(baseline)],
-    ["mission_view.v1.json", JSON.stringify(view)]
+    ["mission_view.v1.json", JSON.stringify(view)],
+    ["decision_trace.v1.json", JSON.stringify(decisionTraceFixture)]
   ]);
   const packagedSha256: Record<string, string> = {};
   for (const [name, value] of files) {
@@ -44,7 +46,9 @@ async function sceneFiles(
     baselinePlanVersion: 1,
     upstreamSha256: {
       "scene.json": packagedSha256["scene.json"],
-      "mission_view.v1.json": packagedSha256["mission_view.v1.json"]
+      "mission_view.v1.json": packagedSha256["mission_view.v1.json"],
+      "decision_trace.v1.json":
+        packagedSha256["decision_trace.v1.json"]
     },
     packagedSha256
   }));

@@ -39,6 +39,7 @@ export function DynamicTimeline({
   onRateChange,
   onRestart
 }: DynamicTimelineProps) {
+  const markersOverlap = Math.abs(eventTimeSec - planCommitTimeSec) < 0.05;
   return (
     <section
       className="task2-timeline"
@@ -55,11 +56,7 @@ export function DynamicTimeline({
           {playing ? "暂停" : "播放"}
         </button>
         {onRestart === undefined ? null : (
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={onRestart}
-          >
+          <button type="button" disabled={disabled} onClick={onRestart}>
             重新播放
           </button>
         )}
@@ -77,6 +74,10 @@ export function DynamicTimeline({
             ))}
           </select>
         </label>
+        <span className="task2-timeline__legend">
+          <i className="event" />事件
+          <i className="commit" />发布
+        </span>
         <output>{missionTimeSec.toFixed(1)} / {makespanSec.toFixed(1)} s</output>
       </div>
       <div className="task2-timeline__track">
@@ -98,7 +99,10 @@ export function DynamicTimeline({
         <span
           className="task2-timeline__marker task2-timeline__marker--commit"
           aria-label="新方案生效时刻"
-          style={{left: markerLeft(planCommitTimeSec, makespanSec)}}
+          style={{
+            left: markerLeft(planCommitTimeSec, makespanSec),
+            transform: markersOverlap ? "translateX(5px)" : undefined
+          }}
         />
       </div>
     </section>

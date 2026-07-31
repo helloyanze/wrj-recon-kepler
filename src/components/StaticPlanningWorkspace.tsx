@@ -32,6 +32,7 @@ import {
 import {LayerSidebar} from "./workspace/LayerSidebar";
 import {ImportCaseDialog} from "./workspace/ImportCaseDialog";
 import {MissionTimeline} from "./workspace/MissionTimeline";
+import {MissionWorkbenchShell} from "./workspace/MissionWorkbenchShell";
 import {WrjKeplerMap, type WrjKeplerMapProps} from "./WrjKeplerMap";
 
 export interface StaticPlanningWorkspaceProps {
@@ -221,7 +222,7 @@ export function StaticPlanningWorkspace({
   }, [caseLibrary, selectedEntry]);
 
   return (
-    <main className="workspace">
+    <MissionWorkbenchShell>
       <header className="topbar">
         {modeSwitch}
         <div className="brand"><span>WRJ</span><strong>静态侦察规划</strong></div>
@@ -434,6 +435,6 @@ export function StaticPlanningWorkspace({
           }}
         />
       ) : null}
-    </main>
+    </MissionWorkbenchShell>
   );
 }

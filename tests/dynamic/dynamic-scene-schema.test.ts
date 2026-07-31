@@ -37,7 +37,7 @@ describe("dynamic scene package schemas", () => {
 
   it("requires the default scene to exist and scene ids to be unique", () => {
     const catalog = {
-      version: 1,
+      version: 2,
       defaultSceneId: "resource-lost",
       scenes: [scenePackageFixture]
     };

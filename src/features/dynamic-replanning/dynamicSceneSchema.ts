@@ -2,6 +2,10 @@ import {z} from "zod";
 
 import type {CaseBundleV2} from "../cases/caseBundle";
 import {
+  type DecisionTraceV1,
+  decisionTraceV1Schema
+} from "./decisionTraceSchema";
+import {
   type FailureReport,
   failureReportSchema,
   type MissionViewV1,
@@ -15,7 +19,7 @@ const positiveInteger = z.number().int().positive();
 const sha256Schema = z.string().regex(/^[a-f0-9]{64}$/iu);
 
 export const sceneConfigSchema = z.object({
-  schemaVersion: z.literal("task2-demo-scene.v1"),
+  schemaVersion: z.literal("task2-demo-scene.v2"),
   sceneId: nonEmptyString,
   displayName: nonEmptyString,
   summary: nonEmptyString,
@@ -67,7 +71,7 @@ export const scenePackageSchema = z.object({
 });
 
 export const dynamicSceneCatalogSchema = z.object({
-  version: z.literal(1),
+  version: z.literal(2),
   defaultSceneId: nonEmptyString,
   scenes: z.array(scenePackageSchema).min(1)
 }).strict().superRefine((catalog, context) => {
@@ -107,6 +111,7 @@ export const sceneProvenanceSchema = z.object({
 export const upstreamScenePackageSchema = z.object({
   config: sceneConfigSchema,
   view: missionViewV1Schema,
+  decisionTrace: decisionTraceV1Schema,
   failureReport: failureReportSchema.nullable(),
   provenance: sceneProvenanceSchema
 }).strict();
@@ -124,6 +129,7 @@ export interface LoadedDynamicScenePackage {
   config: SceneConfig;
   baseline: CaseBundleV2;
   view: MissionViewV1;
+  decisionTrace: DecisionTraceV1;
   failureReport: FailureReport | null;
   provenance: SceneProvenance;
 }

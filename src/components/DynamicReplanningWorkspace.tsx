@@ -1,6 +1,6 @@
 import {updateMap, wrapTo} from "@kepler.gl/actions";
 import type {ComponentType, ReactNode} from "react";
-import {useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {useDispatch} from "react-redux";
 
 import type {AppDispatch} from "../app/store";
@@ -9,34 +9,46 @@ import {
   buildDynamicScene,
   type DynamicScene
 } from "../features/dynamic-replanning/buildDynamicScene";
-import type {
-  DynamicOverlayOptions
-} from "../features/dynamic-replanning/dynamicDeckLayers";
-import type {
-  LoadedDynamicScenePackage
-} from "../features/dynamic-replanning/dynamicSceneSchema";
 import {
   cameraTransitionDuration
 } from "../features/dynamic-replanning/cameraMotion";
+import {
+  automaticDecisionStageIndex,
+  isPlanPublished
+} from "../features/dynamic-replanning/decisionPresentation";
+import type {
+  DynamicOverlayOptions
+} from "../features/dynamic-replanning/dynamicDeckLayers";
+import {
+  clearDynamicLayerPreferences,
+  createDefaultDynamicLayerPreferences,
+  loadDynamicLayerPreferences,
+  saveDynamicLayerPreferences,
+  type DynamicLayerPreferencesV1
+} from "../features/dynamic-replanning/dynamicLayerPreferences";
+import type {
+  LoadedDynamicScenePackage
+} from "../features/dynamic-replanning/dynamicSceneSchema";
+import {caseMapState} from "../features/mission/caseMapState";
 import type {
   VerticalScale
 } from "../features/mission/missionLayerPreferences";
-import {
-  useDynamicPlayback
-} from "../hooks/useDynamicPlayback";
+import {useDynamicPlayback} from "../hooks/useDynamicPlayback";
 import {
   useDynamicSceneLibrary,
   type UseDynamicSceneLibraryOptions
 } from "../hooks/useDynamicSceneLibrary";
 import {WRJ_MAP_ID} from "../kepler/constants";
+import {DecisionProcessPanel} from "./dynamic/DecisionProcessPanel";
 import {
   DynamicDetailDrawer,
   type DynamicDrawerContent
 } from "./dynamic/DynamicDetailDrawer";
+import {DynamicLayerSidebar} from "./dynamic/DynamicLayerSidebar";
 import {DynamicLegend} from "./dynamic/DynamicLegend";
-import {DynamicSceneSidebar} from "./dynamic/DynamicSceneSidebar";
 import {DynamicStatusBanner} from "./dynamic/DynamicStatusBanner";
 import {DynamicTimeline} from "./dynamic/DynamicTimeline";
+import {MissionWorkbenchShell} from "./workspace/MissionWorkbenchShell";
 import {WrjKeplerMap, type WrjKeplerMapProps} from "./WrjKeplerMap";
 
 export interface DynamicReplanningWorkspaceProps {
@@ -85,11 +97,11 @@ function DynamicDataError({
 }) {
   return (
     <section className="task2-data-error" role="alert">
-      <strong>Task 2 场景数据加载失败</strong>
+      <strong>任务二场景数据加载失败</strong>
       <p>{shortError(message)}</p>
       {debugMode ? <pre>{message}</pre> : null}
       <button type="button" onClick={onRetry}>重新加载</button>
-      <p>可切回任务一继续使用静态规划。</p>
+      <p>可以切回任务一继续使用静态规划工作台。</p>
     </section>
   );
 }
@@ -116,11 +128,33 @@ function ReadyDynamicWorkspace({
   const [verticalScale, setVerticalScale] = useState<VerticalScale>(1);
   const [drawerContent, setDrawerContent] =
     useState<DynamicDrawerContent>(null);
+  const [manualStageIndex, setManualStageIndex] =
+    useState<number | null>(null);
+  const [layerPreferences, setLayerPreferences] =
+    useState<DynamicLayerPreferencesV1>(() =>
+      loadDynamicLayerPreferences(
+        scene.config.sceneId,
+        [...scene.resourcesById.keys()]
+      )
+    );
+
+  const resetView = useCallback(() => {
+    dispatch(wrapTo(
+      WRJ_MAP_ID,
+      updateMap(caseMapState(scene.baseline))
+    ));
+  }, [dispatch, scene]);
 
   useEffect(() => {
     setDrawerContent(null);
     setVerticalScale(1);
-  }, [scene.config.sceneId]);
+    setManualStageIndex(null);
+    setLayerPreferences(loadDynamicLayerPreferences(
+      scene.config.sceneId,
+      [...scene.resourcesById.keys()]
+    ));
+    resetView();
+  }, [resetView, scene.config.sceneId, scene.resourcesById]);
 
   useEffect(() => {
     if (!playback.automaticCamera) return;
@@ -146,25 +180,61 @@ function ReadyDynamicWorkspace({
     scene
   ]);
 
+  const updateLayerPreferences = useCallback((
+    next: DynamicLayerPreferencesV1
+  ) => {
+    setLayerPreferences(next);
+    saveDynamicLayerPreferences(next);
+  }, []);
+  const restoreLayerDefaults = useCallback(() => {
+    clearDynamicLayerPreferences(scene.config.sceneId);
+    setLayerPreferences(createDefaultDynamicLayerPreferences(
+      scene.config.sceneId,
+      [...scene.resourcesById.keys()]
+    ));
+  }, [scene]);
+
   const overlay = useMemo<DynamicOverlayOptions>(() => ({
     scene,
     playback,
     verticalScale,
+    preferences: layerPreferences,
     onSelectResource: resourceId =>
       setDrawerContent({type: "resource", resourceId}),
     onSelectTask: taskId =>
       setDrawerContent({type: "task", taskId}),
     onSelectSegment: segmentId =>
       setDrawerContent({type: "segment", segmentId})
-  }), [playback, scene, verticalScale]);
+  }), [layerPreferences, playback, scene, verticalScale]);
+
+  const automaticStageIndex = automaticDecisionStageIndex(playback, scene);
+  const stageIndex = manualStageIndex ?? automaticStageIndex;
+  const selectStage = useCallback((index: number) => {
+    playback.pause();
+    setManualStageIndex(index);
+  }, [playback]);
+  const pauseDecision = useCallback(() => {
+    playback.pause();
+    if (automaticStageIndex !== null) {
+      setManualStageIndex(automaticStageIndex);
+    }
+  }, [automaticStageIndex, playback]);
+  const togglePlayback = useCallback(() => {
+    if (playback.playing) {
+      pauseDecision();
+    } else {
+      setManualStageIndex(null);
+      playback.play();
+    }
+  }, [pauseDecision, playback]);
+  const published = isPlanPublished(playback);
 
   return (
-    <main className="workspace task2-workspace">
-      <header className="topbar task2-topbar">
-        {modeSwitch}
-        <div className="brand">
-          <span>WRJ</span><strong>动态重规划演示</strong>
-        </div>
+    <MissionWorkbenchShell
+      className="task2-workspace"
+      modeSwitch={modeSwitch}
+      title="动态重规划演示"
+      sourceSelector={(
         <label className="case-selector">
           <span className="sr-only">选择动态场景</span>
           <select
@@ -178,30 +248,46 @@ function ReadyDynamicWorkspace({
                 value={entry.sceneId}
                 disabled={entry.disabled}
               >
-                {entry.displayName}
-                {entry.disabled ? "（不可用）" : ""}
+                {entry.displayName}{entry.disabled ? "（不可用）" : ""}
               </option>
             ))}
           </select>
         </label>
+      )}
+      status={published ? (
         <DynamicStatusBanner status={scene.view.activePlan.planStatus} />
-        <div className="height-controls" role="group" aria-label="高度比例">
-          {([1, 2, 4] as const).map(scale => (
-            <button
-              key={scale}
-              type="button"
-              aria-pressed={verticalScale === scale}
-              onClick={() => setVerticalScale(scale)}
-            >
-              {scale}×
-            </button>
-          ))}
-        </div>
-      </header>
-      <section className="task2-workspace__body">
-        <DynamicSceneSidebar
+      ) : (
+        <section className="task2-status" role="status">
+          <strong>决策处理中</strong>
+          <span>任务时间冻结，正在形成方案</span>
+        </section>
+      )}
+      actions={(
+        <>
+          <div className="height-controls" role="group" aria-label="高度比例">
+            {([1, 2, 4] as const).map(scale => (
+              <button
+                key={scale}
+                type="button"
+                aria-pressed={verticalScale === scale}
+                className={verticalScale === scale ? "active" : ""}
+                onClick={() => setVerticalScale(scale)}
+              >
+                {scale}×
+              </button>
+            ))}
+          </div>
+          <button type="button" onClick={resetView}>重置三维视角</button>
+        </>
+      )}
+      sidebarClassName="ready"
+      sidebar={(
+        <DynamicLayerSidebar
           scene={scene}
-          phase={playback.phase}
+          playback={playback}
+          preferences={layerPreferences}
+          onChange={updateLayerPreferences}
+          onRestoreDefaults={restoreLayerDefaults}
           onSelectResource={resourceId =>
             setDrawerContent({type: "resource", resourceId})
           }
@@ -209,36 +295,65 @@ function ReadyDynamicWorkspace({
             setDrawerContent({type: "task", taskId})
           }
         />
-        <section
-          className="map-panel task2-map-panel"
-          onPointerDownCapture={playback.disableAutomaticCamera}
-        >
-          <MapView
-            basemap={basemap}
-            dynamicOverlay={overlay}
-            verticalScale={verticalScale}
-          />
+      )}
+      map={(
+        <MapView
+          basemap={basemap}
+          dynamicOverlay={overlay}
+          verticalScale={verticalScale}
+          onMapInteraction={playback.disableAutomaticCamera}
+        />
+      )}
+      mapOverlays={(
+        <>
           <DynamicLegend />
-          <DynamicTimeline
-            missionTimeSec={playback.missionTimeSec}
-            makespanSec={scene.makespanSec}
-            eventTimeSec={scene.eventTimeSec}
-            planCommitTimeSec={scene.planCommitTimeSec}
-            playing={playback.playing}
-            rate={playback.rate}
-            onToggle={playback.toggle}
-            onSeek={playback.seek}
-            onRateChange={playback.setRate}
-            onRestart={playback.restart}
-          />
           <DynamicDetailDrawer
             scene={scene}
             content={drawerContent}
             onClose={() => setDrawerContent(null)}
           />
-        </section>
-      </section>
-    </main>
+        </>
+      )}
+      timeline={(
+        <DynamicTimeline
+          missionTimeSec={playback.missionTimeSec}
+          makespanSec={scene.makespanSec}
+          eventTimeSec={scene.eventTimeSec}
+          planCommitTimeSec={scene.planCommitTimeSec}
+          playing={playback.playing}
+          rate={playback.rate}
+          onToggle={togglePlayback}
+          onSeek={value => {
+            setManualStageIndex(null);
+            playback.seek(value);
+          }}
+          onRateChange={playback.setRate}
+          onRestart={() => {
+            setManualStageIndex(null);
+            playback.restart();
+          }}
+        />
+      )}
+      rightPanel={(
+        <DecisionProcessPanel
+          scene={scene}
+          stageIndex={stageIndex}
+          manual={manualStageIndex !== null}
+          playing={playback.playing}
+          onSelectStage={selectStage}
+          onPrevious={() => selectStage(Math.max(0, (stageIndex ?? 0) - 1))}
+          onNext={() => selectStage(Math.min(
+            scene.decisionTrace.stages.length - 1,
+            (stageIndex ?? 0) + 1
+          ))}
+          onPause={pauseDecision}
+          onResumeAutomatic={() => {
+            setManualStageIndex(null);
+            playback.play();
+          }}
+        />
+      )}
+    />
   );
 }
 
@@ -275,7 +390,7 @@ export function DynamicReplanningWorkspace({
         </header>
         {error === null ? (
           <section className="task2-loading" role="status">
-            正在加载 Task 2 场景…
+            正在加载任务二场景…
           </section>
         ) : (
           <DynamicDataError

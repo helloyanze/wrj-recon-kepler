@@ -104,7 +104,9 @@ function defaultUavColor(uavId: string, sortedIndex: number): string {
     ?? hslToHex(hashString(uavId) % 360, 72, 58);
 }
 
-function createDefaultUavColors(uavIds: readonly string[]): Record<string, string> {
+export function createDefaultUavColors(
+  uavIds: readonly string[]
+): Record<string, string> {
   return Object.fromEntries(
     sortedUnique(uavIds).map((uavId, index) => [
       uavId,

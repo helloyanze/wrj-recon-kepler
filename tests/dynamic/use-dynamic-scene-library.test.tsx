@@ -10,6 +10,7 @@ import {
 } from "../../src/features/dynamic-replanning/loadDynamicScene";
 import {useDynamicSceneLibrary} from "../../src/hooks/useDynamicSceneLibrary";
 import {
+  decisionTraceFixture,
   missionViewFixture,
   sceneConfigFixture,
   scenePackageFixture
@@ -28,7 +29,8 @@ async function packageFiles(sceneId: string): Promise<Map<string, string>> {
   const files = new Map<string, string>([
     ["scene.json", JSON.stringify(config)],
     ["baseline.bundle.json", baselineText],
-    ["mission_view.v1.json", JSON.stringify(missionViewFixture)]
+    ["mission_view.v1.json", JSON.stringify(missionViewFixture)],
+    ["decision_trace.v1.json", JSON.stringify(decisionTraceFixture)]
   ]);
   const hashes: Record<string, string> = {};
   for (const [name, value] of files) {
@@ -43,7 +45,8 @@ async function packageFiles(sceneId: string): Promise<Map<string, string>> {
     baselinePlanVersion: 1,
     upstreamSha256: {
       "scene.json": hashes["scene.json"],
-      "mission_view.v1.json": hashes["mission_view.v1.json"]
+      "mission_view.v1.json": hashes["mission_view.v1.json"],
+      "decision_trace.v1.json": hashes["decision_trace.v1.json"]
     },
     packagedSha256: hashes
   }));
@@ -54,7 +57,7 @@ describe("useDynamicSceneLibrary", () => {
   it("isolates one broken scene while keeping the catalog usable", async () => {
     const valid = await packageFiles("resource-lost");
     const catalog = {
-      version: 1,
+      version: 2,
       defaultSceneId: "resource-lost",
       scenes: [
         scenePackageFixture,
@@ -96,7 +99,7 @@ describe("useDynamicSceneLibrary", () => {
     const first = await packageFiles("resource-lost");
     const second = await packageFiles("low-fuel-return");
     const catalog = {
-      version: 1,
+      version: 2,
       defaultSceneId: "resource-lost",
       scenes: [
         scenePackageFixture,

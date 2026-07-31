@@ -1,4 +1,5 @@
 import {caseBundleSchema} from "../cases/caseBundle";
+import {decisionTraceV1Schema} from "./decisionTraceSchema";
 import {
   dynamicSceneCatalogSchema,
   type DynamicSceneCatalog,
@@ -155,7 +156,8 @@ export async function loadDynamicScene(
   const required = [
     "scene.json",
     "baseline.bundle.json",
-    "mission_view.v1.json"
+    "mission_view.v1.json",
+    "decision_trace.v1.json"
   ] as const;
   const bytes = new Map<string, Uint8Array>();
   for (const name of required) {
@@ -184,6 +186,14 @@ export async function loadDynamicScene(
       "mission_view.v1.json"
     ),
     missionViewV1Schema
+  );
+  const decisionTrace = parseSchema(
+    "decision_trace.v1.json",
+    parseUtf8Json(
+      bytes.get("decision_trace.v1.json")!,
+      "decision_trace.v1.json"
+    ),
+    decisionTraceV1Schema
   );
 
   let failureReport: LoadedDynamicScenePackage["failureReport"] = null;
@@ -219,6 +229,33 @@ export async function loadDynamicScene(
   if (entry.resultStatus === "COMPLETE" && failureReport !== null) {
     throw new Error(`${entry.sceneId}: complete scene must not include failure_report.json`);
   }
+  if (
+    decisionTrace.resultStatus !== entry.resultStatus ||
+    decisionTrace.missionId !== view.mission.missionId ||
+    decisionTrace.eventBatchId !== view.provenance.eventBatchId ||
+    decisionTrace.sourcePlanVersion !== view.activePlan.sourcePlanVersion ||
+    decisionTrace.publication.planId !== view.activePlan.planId ||
+    decisionTrace.publication.planVersion !== view.activePlan.planVersion
+  ) {
+    throw new Error(`${entry.sceneId}: decision trace does not match package files`);
+  }
+  if (
+    failureReport !== null &&
+    (
+      decisionTrace.publication.failureReportPath !==
+        entry.failureReportUrl ||
+      decisionTrace.attemptId !== failureReport.attemptId
+    )
+  ) {
+    throw new Error(`${entry.sceneId}: decision trace failure reference is inconsistent`);
+  }
 
-  return {config, baseline, view, failureReport, provenance};
+  return {
+    config,
+    baseline,
+    view,
+    decisionTrace,
+    failureReport,
+    provenance
+  };
 }

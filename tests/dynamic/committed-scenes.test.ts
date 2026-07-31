@@ -5,6 +5,7 @@ import {describe, expect, it} from "vitest";
 
 import {caseBundleSchema} from "../../src/features/cases/caseBundle";
 import {buildDynamicScene} from "../../src/features/dynamic-replanning/buildDynamicScene";
+import {decisionTraceV1Schema} from "../../src/features/dynamic-replanning/decisionTraceSchema";
 import {
   dynamicSceneCatalogSchema,
   sceneConfigSchema,
@@ -35,6 +36,7 @@ async function loadDynamicSceneFromDisk(
     "scene.json",
     "baseline.bundle.json",
     "mission_view.v1.json",
+    "decision_trace.v1.json",
     ...(entry.failureReportUrl === null ? [] : [entry.failureReportUrl])
   ];
   const values = new Map<string, unknown>();
@@ -49,6 +51,9 @@ async function loadDynamicSceneFromDisk(
     config: sceneConfigSchema.parse(values.get("scene.json")),
     baseline: caseBundleSchema.parse(values.get("baseline.bundle.json")),
     view: missionViewV1Schema.parse(values.get("mission_view.v1.json")),
+    decisionTrace: decisionTraceV1Schema.parse(
+      values.get("decision_trace.v1.json")
+    ),
     failureReport: entry.failureReportUrl === null
       ? null
       : failureReportSchema.parse(values.get(entry.failureReportUrl)),

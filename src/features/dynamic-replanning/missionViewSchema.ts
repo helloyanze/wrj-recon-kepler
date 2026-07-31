@@ -176,7 +176,7 @@ const planDiffSchema = z.object({
   entries: z.array(planDiffEntrySchema)
 }).strict();
 
-const rankingMetricsSchema = z.object({
+export const rankingMetricsSchema = z.object({
   highPriorityCompletionRatio: ratio,
   totalCompletionRatio: ratio,
   retainedPlanRatio: ratio,

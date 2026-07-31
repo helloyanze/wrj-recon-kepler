@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useCallback, useState} from "react";
 
 import type {
   UseDynamicSceneLibraryOptions
@@ -20,8 +20,28 @@ export interface WorkspaceProps extends StaticPlanningWorkspaceProps {
 }
 
 export function Workspace(props: WorkspaceProps) {
-  const [mode, setMode] = useState<TaskMode>("STATIC");
-  const modeSwitch = <TaskModeSwitch mode={mode} onChange={setMode} />;
+  const [mode, setMode] = useState<TaskMode>(() => {
+    try {
+      return new URLSearchParams(globalThis.location?.search)
+        .get("task") === "2"
+        ? "DYNAMIC"
+        : "STATIC";
+    } catch {
+      return "STATIC";
+    }
+  });
+  const changeMode = useCallback((next: TaskMode) => {
+    setMode(next);
+    try {
+      const url = new URL(globalThis.location.href);
+      if (next === "DYNAMIC") url.searchParams.set("task", "2");
+      else url.searchParams.delete("task");
+      globalThis.history.replaceState(null, "", url);
+    } catch {
+      // URL synchronization is optional in embedded/test environments.
+    }
+  }, []);
+  const modeSwitch = <TaskModeSwitch mode={mode} onChange={changeMode} />;
 
   return mode === "STATIC"
     ? <StaticPlanningWorkspace {...props} modeSwitch={modeSwitch} />

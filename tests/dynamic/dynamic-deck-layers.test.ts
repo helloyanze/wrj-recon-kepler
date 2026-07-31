@@ -5,6 +5,7 @@ import {describe, expect, it, vi} from "vitest";
 
 import {caseBundleSchema} from "../../src/features/cases/caseBundle";
 import {buildDynamicScene} from "../../src/features/dynamic-replanning/buildDynamicScene";
+import {decisionTraceV1Schema} from "../../src/features/dynamic-replanning/decisionTraceSchema";
 import {
   CHANGE_COLORS,
   createDynamicDeckLayers
@@ -19,6 +20,7 @@ import {
 } from "../../src/features/dynamic-replanning/dynamicSceneSchema";
 import {missionViewV1Schema} from "../../src/features/dynamic-replanning/missionViewSchema";
 import {
+  decisionTraceFixture,
   missionViewFixture,
   sceneConfigFixture,
   sceneProvenanceFixture
@@ -31,6 +33,7 @@ const scene = buildDynamicScene({
   config: sceneConfigSchema.parse(sceneConfigFixture),
   baseline,
   view: missionViewV1Schema.parse(missionViewFixture),
+  decisionTrace: decisionTraceV1Schema.parse(decisionTraceFixture),
   failureReport: null,
   provenance: sceneProvenanceSchema.parse(sceneProvenanceFixture)
 });
@@ -54,6 +57,7 @@ describe("dynamic Deck layers", () => {
       "wrj-task2-task-polygons",
       "wrj-task2-baseline-paths",
       "wrj-task2-active-paths",
+      "wrj-task2-work-unit-paths",
       "wrj-task2-event-halo",
       "wrj-task2-resource-markers"
     ]);
@@ -65,18 +69,19 @@ describe("dynamic Deck layers", () => {
         getColor(value: {changeType: "dynamic_new"}): number[];
       };
     }).props.getColor;
-    expect(getColor({changeType: "dynamic_new"}))
-      .toEqual([57, 217, 138, 255]);
+    expect(getColor({changeType: "dynamic_new"}).slice(0, 3))
+      .toEqual([57, 217, 138]);
     expect(CHANGE_COLORS.dynamic_cancelled)
       .toEqual([238, 82, 83, 255]);
   });
 
   it("shows the event halo only during alert and impact", () => {
-    expect(createDynamicDeckLayers(optionsFor("EVENT_ALERT"))[3].props.visible)
-      .toBe(true);
-    expect(createDynamicDeckLayers(
-      optionsFor("ACTIVE_PLAN_RUNNING")
-    )[3].props.visible).toBe(false);
+    const halo = (phase: DynamicPlaybackPhase) =>
+      createDynamicDeckLayers(optionsFor(phase)).find(
+        layer => layer.id === "wrj-task2-event-halo"
+      );
+    expect(halo("EVENT_ALERT")?.props.visible).toBe(true);
+    expect(halo("ACTIVE_PLAN_RUNNING")?.props.visible).toBe(false);
   });
 
   it("routes marker selection through the resource callback", () => {
@@ -84,8 +89,9 @@ describe("dynamic Deck layers", () => {
     const markers = createDynamicDeckLayers({
       ...optionsFor("ACTIVE_PLAN_RUNNING"),
       onSelectResource
-    })[4];
-    const onClick = markers.props.onClick as (
+    }).find(layer => layer.id === "wrj-task2-resource-markers");
+    expect(markers).toBeDefined();
+    const onClick = markers?.props.onClick as (
       info: {object: {resourceId: string}}
     ) => void;
     onClick({object: {resourceId: "UAV-01"}});

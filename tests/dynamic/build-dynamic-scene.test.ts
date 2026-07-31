@@ -9,6 +9,7 @@ import {
   buildDynamicScene,
   buildTimedPath
 } from "../../src/features/dynamic-replanning/buildDynamicScene";
+import {decisionTraceV1Schema} from "../../src/features/dynamic-replanning/decisionTraceSchema";
 import {
   type LoadedDynamicScenePackage,
   sceneConfigSchema,
@@ -19,6 +20,7 @@ import {
   missionViewV1Schema
 } from "../../src/features/dynamic-replanning/missionViewSchema";
 import {
+  decisionTraceFixture,
   failureReportFixture,
   missionViewFixture,
   sceneConfigFixture,
@@ -36,6 +38,7 @@ function loadedPackage(
     config: sceneConfigSchema.parse(sceneConfigFixture),
     baseline,
     view: missionViewV1Schema.parse(view),
+    decisionTrace: decisionTraceV1Schema.parse(decisionTraceFixture),
     failureReport: null,
     provenance: sceneProvenanceSchema.parse(sceneProvenanceFixture)
   };
@@ -108,6 +111,16 @@ describe("buildDynamicScene", () => {
     value.config = sceneConfigSchema.parse({
       ...sceneConfigFixture,
       resultStatus: "PARTIAL_SAFE_FALLBACK"
+    });
+    value.decisionTrace = decisionTraceV1Schema.parse({
+      ...decisionTraceFixture,
+      attemptId: failureReportFixture.attemptId,
+      resultStatus: "PARTIAL_SAFE_FALLBACK",
+      publication: {
+        ...decisionTraceFixture.publication,
+        planStatus: "PARTIAL_SAFE_FALLBACK",
+        failureReportPath: "failure_report.json"
+      }
     });
     expect(() => buildDynamicScene(value)).toThrow(/failure report/u);
 

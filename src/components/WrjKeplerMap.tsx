@@ -23,6 +23,7 @@ export interface WrjKeplerMapProps {
   preferences?: MissionLayerPreferencesV3 | null;
   dynamicOverlay?: DynamicOverlayOptions | null;
   onSelectSortie?: (assignmentId: string) => void;
+  onMapInteraction?: () => void;
 }
 
 export function WrjKeplerMap({
@@ -32,7 +33,8 @@ export function WrjKeplerMap({
   verticalScale = 1,
   preferences = null,
   dynamicOverlay = null,
-  onSelectSortie
+  onSelectSortie,
+  onMapInteraction
 }: WrjKeplerMapProps) {
   const {ref, width, height} = useContainerSize<HTMLDivElement>();
   const overlay = useMemo(
@@ -55,7 +57,13 @@ export function WrjKeplerMap({
   );
 
   return (
-    <div ref={ref} className="wrj-map-container" data-testid="map-container">
+    <div
+      ref={ref}
+      className="wrj-map-container"
+      data-testid="map-container"
+      onPointerDown={onMapInteraction}
+      onWheel={onMapInteraction}
+    >
       {width > 0 && height > 0 ? (
         <MissionOverlayContext.Provider value={overlay}>
           <WrjKeplerGl

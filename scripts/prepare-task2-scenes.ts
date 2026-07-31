@@ -1,5 +1,8 @@
 import {createHash} from "node:crypto";
 import {
+  decisionTraceV1Schema
+} from "../src/features/dynamic-replanning/decisionTraceSchema";
+import {
   lstat,
   mkdir,
   readFile,
@@ -48,7 +51,8 @@ interface OutputEntry {
 const SCENE_FILES = [
   "scene.json",
   "mission_view.v1.json",
-  "dynamic_events.json"
+  "dynamic_events.json",
+  "decision_trace.v1.json"
 ] as const;
 
 function errorMessage(error: unknown): string {
@@ -239,6 +243,9 @@ async function buildExpectedFiles(
     const view = missionViewV1Schema.parse(
       parsedFiles.get("mission_view.v1.json")?.value
     );
+    const decisionTrace = decisionTraceV1Schema.parse(
+      parsedFiles.get("decision_trace.v1.json")?.value
+    );
     const failureReport = failureFile === null
       ? null
       : failureReportSchema.parse(failureFile.value);
@@ -248,6 +255,15 @@ async function buildExpectedFiles(
       view.activePlan.planStatus !== entry.resultStatus
     ) {
       throw new Error(`${entry.sceneId}: status or sceneId mismatch`);
+    }
+    if (
+      decisionTrace.resultStatus !== entry.resultStatus ||
+      decisionTrace.missionId !== view.mission.missionId ||
+      decisionTrace.eventBatchId !== view.provenance.eventBatchId ||
+      decisionTrace.publication.planId !== view.activePlan.planId ||
+      decisionTrace.publication.planVersion !== view.activePlan.planVersion
+    ) {
+      throw new Error(`${entry.sceneId}: decision trace mismatch`);
     }
     if (
       (entry.resultStatus === "PARTIAL_SAFE_FALLBACK") !==
@@ -314,7 +330,7 @@ async function buildExpectedFiles(
   }
 
   expected.set("catalog.json", canonicalJson({
-    version: 1,
+    version: 2,
     defaultSceneId: upstreamCatalog.defaultSceneId,
     scenes: packagedEntries
   }));

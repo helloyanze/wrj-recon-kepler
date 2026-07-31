@@ -5,6 +5,7 @@ import type {
   DynamicTimedPath
 } from "./buildDynamicScene";
 import type {DynamicPlaybackState} from "./dynamicPlayback";
+import {isPlanPublished} from "./decisionPresentation";
 
 export interface DynamicResourceState {
   resourceId: string;
@@ -143,7 +144,8 @@ export function selectDynamicResourceStates(
   playback: DynamicPlaybackState
 ): DynamicResourceState[] {
   const beforeEvent = playback.missionTimeSec < scene.eventTimeSec;
-  const paths = beforeEvent ? scene.baselinePaths : scene.activePaths;
+  const published = isPlanPublished(playback);
+  const paths = published ? scene.activePaths : scene.baselinePaths;
   const lostResourceId = scene.primaryEvent.eventType === "RESOURCE_LOST"
     ? scene.primaryEvent.affectedObjectId
     : null;
@@ -181,7 +183,15 @@ export function selectDynamicResourceStates(
       : stateOnPath(path, playback.missionTimeSec);
     return {
       resourceId: resource.resourceId,
-      operationalState: resource.operationalState,
+      operationalState: published
+        ? resource.operationalState
+        : (
+            !beforeEvent &&
+            scene.primaryEvent.affectedObjectId === resource.resourceId &&
+            scene.primaryEvent.eventType === "RESOURCE_LOW_FUEL"
+          )
+          ? "DEGRADED"
+          : path === null ? "AVAILABLE" : "EXECUTING",
       ...interpolated,
       frozen: false
     };

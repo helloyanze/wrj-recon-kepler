@@ -1,4 +1,7 @@
 import type {
+  DecisionTraceV1
+} from "./decisionTraceSchema";
+import type {
   DisplayTransform,
   LocalPoint as BaselineLocalPoint,
   MapPoint,
@@ -55,6 +58,7 @@ export interface DynamicScene {
   config: SceneConfig;
   baseline: LoadedDynamicScenePackage["baseline"];
   view: MissionViewV1;
+  decisionTrace: DecisionTraceV1;
   events: MissionViewV1["eventTimeline"];
   primaryEvent: MissionViewV1["eventTimeline"][number];
   eventTimeSec: number;
@@ -248,7 +252,14 @@ function assertPackageConsistency(
     MissionViewV1["workUnits"][number]
   >
 ): void {
-  const {baseline, config, failureReport, provenance, view} = loaded;
+  const {
+    baseline,
+    config,
+    decisionTrace,
+    failureReport,
+    provenance,
+    view
+  } = loaded;
   if (baseline.case.caseId !== view.mission.caseId) {
     throw new Error("baseline caseId does not match mission view caseId");
   }
@@ -261,6 +272,40 @@ function assertPackageConsistency(
     view.planDiff.planVersion !== view.activePlan.planVersion
   ) {
     throw new Error("baseline or target plan version metadata is inconsistent");
+  }
+  if (
+    decisionTrace.resultStatus !== config.resultStatus ||
+    decisionTrace.missionId !== view.mission.missionId ||
+    decisionTrace.eventBatchId !== view.provenance.eventBatchId ||
+    decisionTrace.sourcePlanVersion !== view.activePlan.sourcePlanVersion ||
+    decisionTrace.publication.planId !== view.activePlan.planId ||
+    decisionTrace.publication.planVersion !== view.activePlan.planVersion ||
+    decisionTrace.publication.planStatus !== view.activePlan.planStatus
+  ) {
+    throw new Error("decision trace identity is inconsistent");
+  }
+  const viewDiffRefs = new Set(view.planDiff.entries.map(entry =>
+    `${entry.elementType}\u0000${entry.elementId}\u0000${entry.changeType}`
+  ));
+  const traceDiffRefs = new Set(
+    decisionTrace.publication.planDiffRefs.map(entry =>
+      `${entry.elementType}\u0000${entry.elementId}\u0000${entry.changeType}`
+    )
+  );
+  if (
+    viewDiffRefs.size !== traceDiffRefs.size ||
+    [...viewDiffRefs].some(reference => !traceDiffRefs.has(reference))
+  ) {
+    throw new Error("decision trace PlanDiff references are inconsistent");
+  }
+  if (
+    failureReport !== null &&
+    (
+      decisionTrace.attemptId !== failureReport.attemptId ||
+      decisionTrace.publication.failureReportPath !== "failure_report.json"
+    )
+  ) {
+    throw new Error("decision trace failure report reference is inconsistent");
   }
   if (
     config.resultStatus !== view.activePlan.planStatus ||
@@ -349,7 +394,7 @@ function assertPackageConsistency(
 export function buildDynamicScene(
   loaded: LoadedDynamicScenePackage
 ): DynamicScene {
-  const {baseline, config, failureReport, view} = loaded;
+  const {baseline, config, decisionTrace, failureReport, view} = loaded;
   const tasksById = uniqueIndex(view.tasks, item => item.taskId, "taskId");
   const resourcesById = uniqueIndex(
     view.resources,
@@ -458,6 +503,7 @@ export function buildDynamicScene(
     config,
     baseline,
     view,
+    decisionTrace,
     events: view.eventTimeline,
     primaryEvent,
     eventTimeSec: primaryEvent.eventTimeSec,

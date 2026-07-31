@@ -32,8 +32,10 @@ import {
 import {
   cameraTransitionDuration
 } from "../../src/features/dynamic-replanning/cameraMotion";
+import {decisionTraceV1Schema} from "../../src/features/dynamic-replanning/decisionTraceSchema";
 import {missionViewV1Schema} from "../../src/features/dynamic-replanning/missionViewSchema";
 import {
+  decisionTraceFixture,
   missionViewFixture,
   sceneConfigFixture,
   sceneProvenanceFixture
@@ -78,6 +80,7 @@ const scenePackage: LoadedDynamicScenePackage = {
   config: sceneConfigSchema.parse(sceneConfigFixture),
   baseline,
   view: missionViewV1Schema.parse(missionViewFixture),
+  decisionTrace: decisionTraceV1Schema.parse(decisionTraceFixture),
   failureReport: null,
   provenance: sceneProvenanceSchema.parse(sceneProvenanceFixture)
 };

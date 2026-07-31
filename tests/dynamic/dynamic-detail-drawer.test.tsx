@@ -13,12 +13,14 @@ import {
 } from "../../src/components/dynamic/DynamicDetailDrawer";
 import {caseBundleSchema} from "../../src/features/cases/caseBundle";
 import {buildDynamicScene} from "../../src/features/dynamic-replanning/buildDynamicScene";
+import {decisionTraceV1Schema} from "../../src/features/dynamic-replanning/decisionTraceSchema";
 import {
   sceneConfigSchema,
   sceneProvenanceSchema
 } from "../../src/features/dynamic-replanning/dynamicSceneSchema";
 import {missionViewV1Schema} from "../../src/features/dynamic-replanning/missionViewSchema";
 import {
+  decisionTraceFixture,
   missionViewFixture,
   sceneConfigFixture,
   sceneProvenanceFixture
@@ -31,6 +33,7 @@ const scene = buildDynamicScene({
   config: sceneConfigSchema.parse(sceneConfigFixture),
   baseline,
   view: missionViewV1Schema.parse(missionViewFixture),
+  decisionTrace: decisionTraceV1Schema.parse(decisionTraceFixture),
   failureReport: null,
   provenance: sceneProvenanceSchema.parse(sceneProvenanceFixture)
 });

@@ -30,8 +30,8 @@ export function DynamicStatusBanner({
   }
   return (
     <section className="task2-status task2-status--complete" role="status">
-      <strong>方案成功</strong>
-      <span>动态重规划已完成</span>
+      <strong>方案已发布</strong>
+      <span>动态重规划完成</span>
     </section>
   );
 }

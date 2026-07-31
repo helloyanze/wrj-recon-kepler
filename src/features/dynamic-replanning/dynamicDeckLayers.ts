@@ -6,8 +6,16 @@ import type {
   DynamicPathChangeType,
   DynamicScene,
   DynamicTaskPolygon,
-  DynamicTimedPath
+  DynamicTimedPath,
+  DynamicWorkPath
 } from "./buildDynamicScene";
+import type {
+  DynamicLayerPreferencesV1
+} from "./dynamicLayerPreferences";
+import {
+  createDefaultDynamicLayerPreferences
+} from "./dynamicLayerPreferences";
+import {isPlanPublished} from "./decisionPresentation";
 import {
   selectDynamicResourceStates,
   type DynamicResourceState
@@ -30,6 +38,7 @@ export interface DynamicOverlayOptions {
   scene: DynamicScene;
   playback: DynamicPlaybackState;
   verticalScale: VerticalScale;
+  preferences?: DynamicLayerPreferencesV1;
   onSelectResource?: (resourceId: string) => void;
   onSelectTask?: (taskId: string) => void;
   onSelectSegment?: (segmentId: string) => void;
@@ -67,11 +76,33 @@ const HALO_ICON = {
   anchorY: 32
 } as const;
 
+function hexColor(value: string, alpha = 255): DeckColor {
+  const normalized = value.replace(/^#/u, "");
+  return [
+    Number.parseInt(normalized.slice(0, 2), 16),
+    Number.parseInt(normalized.slice(2, 4), 16),
+    Number.parseInt(normalized.slice(4, 6), 16),
+    alpha
+  ];
+}
+
 function colorFor(
-  changeType: DynamicPathChangeType
+  changeType: DynamicPathChangeType,
+  preferences: DynamicLayerPreferencesV1,
+  resourceId?: string
 ): DeckColor {
-  if (changeType === "baseline_flown") return [...CHANGE_COLORS.baseline];
-  return [...CHANGE_COLORS[changeType]];
+  if (
+    preferences.colorMode === "resource" &&
+    resourceId !== undefined &&
+    preferences.resourceColors[resourceId] !== undefined
+  ) {
+    return hexColor(preferences.resourceColors[resourceId]);
+  }
+  const id = changeType === "baseline_flown" ? "baseline" : changeType;
+  return hexColor(
+    preferences.changeColors[id] ??
+    preferences.changeColors.baseline
+  );
 }
 
 function scalePoint(
@@ -106,13 +137,36 @@ function clippedPath(
   if (progress >= 1) {
     return timedPath.map(point => scalePoint(point, verticalScale));
   }
-  const lastIndex = Math.max(
-    1,
-    Math.ceil((timedPath.length - 1) * progress)
-  );
-  return timedPath
-    .slice(0, lastIndex + 1)
-    .map(point => scalePoint(point, verticalScale));
+  const lengths = [0];
+  for (let index = 1; index < timedPath.length; index += 1) {
+    lengths.push(lengths[index - 1] + Math.hypot(
+      timedPath[index][0] - timedPath[index - 1][0],
+      timedPath[index][1] - timedPath[index - 1][1],
+      timedPath[index][2] - timedPath[index - 1][2]
+    ));
+  }
+  const target = (lengths.at(-1) ?? 0) * progress;
+  const result: DeckPoint[] = [scalePoint(timedPath[0], verticalScale)];
+  for (let index = 1; index < timedPath.length; index += 1) {
+    if (lengths[index] <= target) {
+      result.push(scalePoint(timedPath[index], verticalScale));
+      continue;
+    }
+    const previousLength = lengths[index - 1];
+    const legLength = lengths[index] - previousLength;
+    const ratio = legLength <= 0
+      ? 0
+      : (target - previousLength) / legLength;
+    const from = timedPath[index - 1];
+    const to = timedPath[index];
+    result.push(scalePoint([
+      from[0] + (to[0] - from[0]) * ratio,
+      from[1] + (to[1] - from[1]) * ratio,
+      from[2] + (to[2] - from[2]) * ratio
+    ], verticalScale));
+    break;
+  }
+  return result;
 }
 
 function activePathData(
@@ -153,6 +207,10 @@ export function createDynamicDeckLayers({
   scene,
   playback,
   verticalScale,
+  preferences = createDefaultDynamicLayerPreferences(
+    scene.config.sceneId,
+    [...scene.resourcesById.keys()]
+  ),
   onSelectResource,
   onSelectTask,
   onSelectSegment
@@ -168,20 +226,28 @@ export function createDynamicDeckLayers({
     }));
   const eventHaloVisible = playback.phase === "EVENT_ALERT" ||
     playback.phase === "IMPACT_REVEAL";
+  const published = isPlanPublished(playback);
+  const taskAreas = scene.taskPolygons
+    .filter(task => published || task.changeType !== "dynamic_new")
+    .map(task => published
+      ? task
+      : {...task, changeType: "baseline_reused" as const});
+  const workPaths = published ? scene.workPaths : [];
 
   return [
     new PolygonLayer<DynamicTaskPolygon>({
       id: "wrj-task2-task-polygons",
-      data: scene.taskPolygons,
+      data: taskAreas,
+      visible: preferences.layers.taskAreas.visible,
       pickable: true,
       filled: true,
       stroked: true,
-      opacity: 0.2,
+      opacity: preferences.layers.taskAreas.opacity,
       getPolygon: task => task.polygon.map(
         point => scalePoint(point, verticalScale)
       ),
-      getFillColor: task => colorFor(task.changeType),
-      getLineColor: task => colorFor(task.changeType),
+      getFillColor: task => colorFor(task.changeType, preferences),
+      getLineColor: task => colorFor(task.changeType, preferences),
       lineWidthMinPixels: 1,
       ...selectable(onSelectTask, task => task.taskId)
     }),
@@ -190,57 +256,92 @@ export function createDynamicDeckLayers({
       data: scene.baselinePaths.filter(
         path => path.finishTimeSec >= scene.eventTimeSec
       ),
+      visible: preferences.layers.baselineRoutes.visible,
       pickable: true,
       widthUnits: "pixels",
-      getWidth: 2,
+      getWidth: preferences.layers.baselineRoutes.width ?? 2,
       getPath: path => path.timedPath.map(
         point => scalePoint(point, verticalScale)
       ),
-      getColor: () => [...CHANGE_COLORS.baseline],
-      opacity: playback.phase === "RESULT_HOLD" ? 0.2 : 0.65,
+      getColor: path => colorFor("baseline", preferences, path.resourceId),
+      opacity: preferences.layers.baselineRoutes.opacity *
+        (playback.phase === "RESULT_HOLD" ? 0.3 : 1),
       ...selectable(onSelectSegment, path => path.segmentId)
     }),
     new PathLayer<RenderedPath>({
       id: "wrj-task2-active-paths",
       data: activePathData(scene, playback, verticalScale),
-      visible: progress > 0,
+      visible: progress > 0 && preferences.layers.activeRoutes.visible,
       pickable: true,
       widthUnits: "pixels",
-      getWidth: path => path.changeType === "dynamic_modified" ? 5 : 4,
+      getWidth: path => (
+        preferences.layers.activeRoutes.width ?? 4
+      ) + (path.changeType === "dynamic_modified" ? 1 : 0),
       getPath: path => path.renderedPath,
       getColor: path => {
-        const color = colorFor(path.changeType);
+        const color = colorFor(
+          path.changeType,
+          preferences,
+          path.resourceId
+        );
         return path.changeType === "dynamic_cancelled"
           ? [color[0], color[1], color[2], Math.round(255 * (1 - progress))]
-          : color;
+          : [color[0], color[1], color[2], Math.round(color[3] * progress)];
       },
+      opacity: preferences.layers.activeRoutes.opacity,
       ...selectable(onSelectSegment, path => path.segmentId)
+    }),
+    new PathLayer<DynamicWorkPath>({
+      id: "wrj-task2-work-unit-paths",
+      data: workPaths,
+      visible: preferences.layers.workUnits.visible,
+      pickable: true,
+      widthUnits: "pixels",
+      getWidth: preferences.layers.workUnits.width ?? 2,
+      getPath: work => work.path.map(
+        point => scalePoint(point, verticalScale)
+      ),
+      getColor: work => colorFor(work.changeType, preferences),
+      opacity: preferences.layers.workUnits.opacity,
+      ...selectable(onSelectTask, work => work.taskId)
     }),
     new IconLayer<EventHalo>({
       id: "wrj-task2-event-halo",
       data: [{position: scalePoint(scene.eventPosition, verticalScale)}],
-      visible: eventHaloVisible,
+      visible: eventHaloVisible && preferences.layers.event.visible,
       pickable: false,
       billboard: true,
       sizeUnits: "pixels",
       getPosition: item => item.position,
-      getColor: [255, 166, 48, 230],
-      getSize: 68,
+      getColor: hexColor(
+        preferences.changeColors.dynamic_modified,
+        Math.round(255 * preferences.layers.event.opacity)
+      ),
+      getSize: 68 + Math.sin(playback.presentationElapsedMs / 160) * 10,
       getIcon: () => HALO_ICON
     }),
     new IconLayer<ResourceMarker>({
       id: "wrj-task2-resource-markers",
       data: resources,
-      visible: true,
+      visible: preferences.layers.resources.visible,
       pickable: true,
       billboard: false,
       sizeUnits: "pixels",
       getPosition: resource => resource.position,
       getAngle: resource => -(resource.headingDeg ?? 0),
-      getColor: resource => resource.frozen
-        ? [...CHANGE_COLORS.dynamic_cancelled]
-        : [...CHANGE_COLORS.dynamic_new],
-      getSize: 30,
+      getColor: resource => (
+        preferences.colorMode === "resource"
+          ? hexColor(
+              preferences.resourceColors[resource.resourceId] ??
+              preferences.changeColors.dynamic_new
+            )
+          : colorFor(
+              resource.frozen ? "dynamic_cancelled" : "dynamic_new",
+              preferences
+            )
+      ),
+      getSize: preferences.markerSize,
+      opacity: preferences.layers.resources.opacity,
       getIcon: () => UAV_ICON,
       ...selectable(onSelectResource, resource => resource.resourceId)
     })

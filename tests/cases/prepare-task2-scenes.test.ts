@@ -16,6 +16,7 @@ import {
   prepareTask2Scenes
 } from "../../scripts/prepare-task2-scenes";
 import {
+  decisionTraceFixture,
   missionViewFixture,
   sceneConfigFixture,
   scenePackageFixture
@@ -39,6 +40,7 @@ function writeUpstream(inputRoot: string): void {
   const files = new Map<string, string>([
     ["scene.json", JSON.stringify(sceneConfigFixture)],
     ["mission_view.v1.json", JSON.stringify(missionViewFixture)],
+    ["decision_trace.v1.json", JSON.stringify(decisionTraceFixture)],
     ["dynamic_events.json", JSON.stringify({
       batchId: "B-DEMO-LOST",
       missionId: "MIS-R01-BASELINE-01",
@@ -66,7 +68,7 @@ function writeUpstream(inputRoot: string): void {
   }), "utf8");
   mkdirSync(inputRoot, {recursive: true});
   writeFileSync(join(inputRoot, "catalog.json"), JSON.stringify({
-    version: 1,
+    version: 2,
     defaultSceneId: "resource-lost",
     scenes: [{
       ...scenePackageFixture,
