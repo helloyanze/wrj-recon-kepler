@@ -167,6 +167,18 @@ describe("WrjKeplerMap", () => {
     expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-has-preferences", "true");
     expect(screen.getByTestId("kepler-gl")).toHaveAttribute("data-has-selection", "true");
   });
+
+  it("notifies the workspace after the measured Kepler map mounts", () => {
+    const onMapReady = vi.fn();
+    render(
+      <WrjKeplerMap
+        basemap={PUBLIC_BASEMAP}
+        onMapReady={onMapReady}
+      />
+    );
+
+    expect(onMapReady).toHaveBeenCalledOnce();
+  });
 });
 
 describe("mergeDeckRenderCallbacks", () => {

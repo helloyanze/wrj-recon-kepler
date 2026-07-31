@@ -19,11 +19,40 @@ export interface CaseMapState {
 }
 
 export function caseMapState(bundle: CaseBundleV2): CaseMapState {
-  const {
-    anchorLatitude: latitude,
-    anchorLongitude: longitude
-  } = bundle.displayTransform;
-  const horizontalExtentM = calculateHorizontalExtentM(bundle, latitude);
+  const points: MapPoint[] = [
+    ...bundle.region.polygon,
+    ...bundle.strips.flatMap(({line, polygon}) => [...line, ...polygon]),
+    ...bundle.sorties.flatMap(({trip}) =>
+      trip.map(([longitude, latitude, altitudeM]) =>
+        [longitude, latitude, altitudeM] as MapPoint
+      )
+    )
+  ];
+  const state = mapStateForPoints(points, [
+    bundle.displayTransform.anchorLongitude,
+    bundle.displayTransform.anchorLatitude
+  ]);
+  return {
+    ...state,
+    longitude: bundle.displayTransform.anchorLongitude,
+    latitude: bundle.displayTransform.anchorLatitude
+  };
+}
+
+export function mapStateForPoints(
+  points: readonly MapPoint[],
+  fallbackCenter: readonly [longitude: number, latitude: number]
+): CaseMapState {
+  const bounds = calculateBounds(points);
+  const longitude = bounds === null
+    ? fallbackCenter[0]
+    : (bounds.minimumLongitude + bounds.maximumLongitude) / 2;
+  const latitude = bounds === null
+    ? fallbackCenter[1]
+    : (bounds.minimumLatitude + bounds.maximumLatitude) / 2;
+  const horizontalExtentM = bounds === null
+    ? 0
+    : calculateHorizontalExtentM(bounds, latitude);
   const zoom = horizontalExtentM === 0
     ? ZERO_EXTENT_CASE_MAP_ZOOM
     : clamp(
@@ -42,20 +71,15 @@ export function caseMapState(bundle: CaseBundleV2): CaseMapState {
   };
 }
 
-function calculateHorizontalExtentM(
-  bundle: CaseBundleV2,
-  anchorLatitude: number
-): number {
-  const points: MapPoint[] = [
-    ...bundle.region.polygon,
-    ...bundle.strips.flatMap(({line, polygon}) => [...line, ...polygon]),
-    ...bundle.sorties.flatMap(({trip}) =>
-      trip.map(([longitude, latitude, altitudeM]) =>
-        [longitude, latitude, altitudeM] as MapPoint
-      )
-    )
-  ];
-  if (points.length === 0) return 0;
+interface MapBounds {
+  minimumLongitude: number;
+  maximumLongitude: number;
+  minimumLatitude: number;
+  maximumLatitude: number;
+}
+
+function calculateBounds(points: readonly MapPoint[]): MapBounds | null {
+  if (points.length === 0) return null;
 
   let minimumLongitude = Number.POSITIVE_INFINITY;
   let maximumLongitude = Number.NEGATIVE_INFINITY;
@@ -67,13 +91,26 @@ function calculateHorizontalExtentM(
     minimumLatitude = Math.min(minimumLatitude, latitude);
     maximumLatitude = Math.max(maximumLatitude, latitude);
   }
+  return {
+    minimumLongitude,
+    maximumLongitude,
+    minimumLatitude,
+    maximumLatitude
+  };
+}
 
+function calculateHorizontalExtentM(
+  bounds: MapBounds,
+  centerLatitude: number
+): number {
   const longitudeMetresPerDegree =
-    METRES_PER_LATITUDE_DEGREE * Math.cos(anchorLatitude * Math.PI / 180);
+    METRES_PER_LATITUDE_DEGREE * Math.cos(centerLatitude * Math.PI / 180);
   const widthM =
-    Math.abs(maximumLongitude - minimumLongitude) * longitudeMetresPerDegree;
+    Math.abs(bounds.maximumLongitude - bounds.minimumLongitude) *
+    longitudeMetresPerDegree;
   const heightM =
-    Math.abs(maximumLatitude - minimumLatitude) * METRES_PER_LATITUDE_DEGREE;
+    Math.abs(bounds.maximumLatitude - bounds.minimumLatitude) *
+    METRES_PER_LATITUDE_DEGREE;
   return Math.max(widthM, heightM);
 }
 

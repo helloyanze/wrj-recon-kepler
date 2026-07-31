@@ -26,10 +26,12 @@ import {
   saveDynamicLayerPreferences,
   type DynamicLayerPreferencesV1
 } from "../features/dynamic-replanning/dynamicLayerPreferences";
+import {
+  dynamicSceneMapState
+} from "../features/dynamic-replanning/dynamicSceneMapState";
 import type {
   LoadedDynamicScenePackage
 } from "../features/dynamic-replanning/dynamicSceneSchema";
-import {caseMapState} from "../features/mission/caseMapState";
 import type {
   VerticalScale
 } from "../features/mission/missionLayerPreferences";
@@ -141,7 +143,7 @@ function ReadyDynamicWorkspace({
   const resetView = useCallback(() => {
     dispatch(wrapTo(
       WRJ_MAP_ID,
-      updateMap(caseMapState(scene.baseline))
+      updateMap(dynamicSceneMapState(scene))
     ));
   }, [dispatch, scene]);
 
@@ -302,6 +304,7 @@ function ReadyDynamicWorkspace({
           dynamicOverlay={overlay}
           verticalScale={verticalScale}
           onMapInteraction={playback.disableAutomaticCamera}
+          onMapReady={resetView}
         />
       )}
       mapOverlays={(
