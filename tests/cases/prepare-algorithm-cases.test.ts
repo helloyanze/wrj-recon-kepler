@@ -889,6 +889,11 @@ describe("parseCliArgs", () => {
       ],
       {
         cwd: process.cwd(),
+        env: {
+          ...process.env,
+          NO_UPDATE_NOTIFIER: "1",
+          npm_config_update_notifier: "false"
+        },
         timeout: 30_000,
         windowsHide: true
       }

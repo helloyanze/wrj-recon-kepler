@@ -15,6 +15,9 @@ import type {
 import type {
   LoadedDynamicScenePackage
 } from "../features/dynamic-replanning/dynamicSceneSchema";
+import {
+  cameraTransitionDuration
+} from "../features/dynamic-replanning/cameraMotion";
 import type {
   VerticalScale
 } from "../features/mission/missionLayerPreferences";
@@ -126,14 +129,14 @@ function ReadyDynamicWorkspace({
         longitude: scene.eventPosition[0],
         latitude: scene.eventPosition[1],
         zoom: 12,
-        transitionDuration: 650
+        transitionDuration: cameraTransitionDuration(650)
       })));
     } else if (playback.phase === "RESULT_HOLD") {
       dispatch(wrapTo(WRJ_MAP_ID, updateMap({
         longitude: scene.baseline.displayTransform.anchorLongitude,
         latitude: scene.baseline.displayTransform.anchorLatitude,
         zoom: 10,
-        transitionDuration: 800
+        transitionDuration: cameraTransitionDuration(800)
       })));
     }
   }, [

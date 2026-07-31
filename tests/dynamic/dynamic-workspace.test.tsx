@@ -29,6 +29,9 @@ import {
   sceneProvenanceSchema,
   type LoadedDynamicScenePackage
 } from "../../src/features/dynamic-replanning/dynamicSceneSchema";
+import {
+  cameraTransitionDuration
+} from "../../src/features/dynamic-replanning/cameraMotion";
 import {missionViewV1Schema} from "../../src/features/dynamic-replanning/missionViewSchema";
 import {
   missionViewFixture,
@@ -140,9 +143,27 @@ beforeEach(() => {
   };
 });
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe("dynamic workspace", () => {
+  it("disables fly-camera animation when reduced motion is requested", () => {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({
+      matches: true,
+      media: "(prefers-reduced-motion: reduce)",
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    })));
+
+    expect(cameraTransitionDuration(650)).toBe(0);
+  });
+
   it("switches from Task 1 to Task 2 in the same application", () => {
     renderWithStore(
       <Workspace

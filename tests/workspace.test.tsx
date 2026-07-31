@@ -199,8 +199,15 @@ describe("dynamic algorithm Workspace", () => {
     );
     expect(screen.getByRole("option", {name: "R10-LONG-TRANSIT-01"}))
       .toBeInTheDocument();
-    await waitFor(() => expect(latestMapProps?.bundle?.case.caseId)
-      .toBe("R10-LONG-TRANSIT-01"));
+    await waitFor(() => expect(latestMapProps).toMatchObject({
+      bundle: {
+        case: {caseId: "R10-LONG-TRANSIT-01"}
+      },
+      preferences: {
+        caseId: "R10-LONG-TRANSIT-01",
+        planId: "PLAN-002"
+      }
+    }));
     expect(latestMapProps).toMatchObject({
       missionTimeSec: expect.any(Number),
       verticalScale: 1,
