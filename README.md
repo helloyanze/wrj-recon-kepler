@@ -109,6 +109,37 @@ npm run data:validate
 
 模拟生成器为确定性几何与指标管线，每 2 秒采样 Trip，四维坐标顺序为 `[longitude, latitude, altitude, timestamp]`。每次生成会同步更新 GeoJSON、CSV、摘要指标和清单。
 
+### Task 2 动态重规划场景
+
+仓库提交了四个可离线使用的真实算法场景：无人机失联、低油量返航、临时新增侦察区和硬截止安全回退。启动应用后，使用顶部“任务二 动态重规划”切换进入演示；场景默认暂停，点击播放后才开始推进。
+
+重新生成数据时，必须显式提供 Task 1 源仓库和 Task 2 源版本：
+
+```powershell
+$env:WRJ_TASK1_ROOT = "D:\path\to\wrj-task1"
+$env:WRJ_TASK2_COMMIT = "Task 2 的真实 Git 提交号"
+if ([string]::IsNullOrWhiteSpace($env:WRJ_TASK1_ROOT)) {
+  throw "WRJ_TASK1_ROOT is required"
+}
+if ([string]::IsNullOrWhiteSpace($env:WRJ_TASK2_COMMIT)) {
+  throw "WRJ_TASK2_COMMIT is required"
+}
+
+Push-Location ..\wrj-t2-main
+task2-replan export-demo-scenes `
+  --baseline-run tests/contract/R01-BASELINE-01 `
+  --source-case "$env:WRJ_TASK1_ROOT/input/cases/R01-BASELINE-01" `
+  --output ../wrj-recon-kepler/.generated/task2-scenes `
+  --task2-commit $env:WRJ_TASK2_COMMIT `
+  --generated-at 2026-07-30T00:00:00Z
+Pop-Location
+
+npm run data:prepare-task2 -- --input .generated/task2-scenes
+npm run data:check-task2 -- --input .generated/task2-scenes
+```
+
+若拿到的是不含 `.git` 的源码归档，应把 `WRJ_TASK2_COMMIT` 设为明确的归档版本标识（例如本次导入使用的 `unversioned-wrj-t2-main`），不要伪造提交号。导出命令中的 `demoTimeSec` 会生成 `SIMULATED` 运行快照，仅用于可复现演示，不代表实时遥测。
+
 ## 验证
 
 ```powershell

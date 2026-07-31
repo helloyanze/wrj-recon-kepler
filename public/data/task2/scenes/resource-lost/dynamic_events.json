@@ -1,0 +1,1 @@
+{"batchId":"B-DEMO-LOST","events":[{"affectedObjectId":"UAV-02","eventId":"EV-DEMO-LOST","eventTimeSec":100,"eventType":"RESOURCE_LOST","idempotencyKey":null,"normalizedPayloadHash":null,"payload":{"kind":"EMPTY"},"priority":0,"status":"RECEIVED"}],"missionId":"MIS-R01-BASELINE-01","missionTimeSec":100,"snapshotId":"SNAP-PENDING","sourcePlanVersion":1}
