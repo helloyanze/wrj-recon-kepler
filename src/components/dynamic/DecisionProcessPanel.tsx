@@ -1,81 +1,70 @@
-import type {
-  DecisionCandidate,
-  DecisionStage
-} from "../../features/dynamic-replanning/decisionTraceSchema";
-import type {
-  DynamicScene
-} from "../../features/dynamic-replanning/buildDynamicScene";
+import type {DynamicScene} from "../../features/dynamic-replanning/buildDynamicScene";
+import {formatDecisionValue, stageLabel} from "../../features/dynamic-replanning/decisionLabels";
+import {
+  buildCandidatePresentations,
+  buildDecisionStagePresentation,
+  type AuditRow,
+  type CandidatePresentation,
+  type PresentationDatum
+} from "../../features/dynamic-replanning/decisionPresentation";
 
-const STAGE_LABELS: Record<DecisionStage["stageId"], string> = {
-  EVENT_INGESTION: "接收动态事件",
-  SNAPSHOT_AND_IMPACT: "冻结快照并分析影响",
-  RESOURCE_ASSESSMENT: "评估资源可用性",
-  CANDIDATE_GENERATION: "生成候选调整方案",
-  PLANNING_AND_VALIDATION: "规划并逐项校验",
-  RANKING_AND_SELECTION: "排序并选择方案",
-  PLAN_PUBLICATION: "发布新计划"
-};
+function dataList(rows: PresentationDatum[] | AuditRow[], className?: string) {
+  return (
+    <dl className={className}>
+      {rows.map((row, index) => (
+        <div key={`${row.label}-${row.value}-${index}`}>
+          <dt>{row.label}</dt>
+          <dd>{row.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
 
-const FACT_LABELS: Record<string, string> = {
-  EFFECTIVE_EVENT_COUNT: "有效事件",
-  SNAPSHOT_ID: "任务快照",
-  AFFECTED_TASK_COUNT: "受影响任务",
-  AFFECTED_RESOURCE_COUNT: "受影响资源",
-  ASSESSED_RESOURCE_COUNT: "已评估资源",
-  GENERATED_CANDIDATE_COUNT: "已生成候选",
-  VALID_CANDIDATE_COUNT: "通过校验候选",
-  REJECTED_CANDIDATE_COUNT: "被拒绝候选",
-  RANKED_CANDIDATE_COUNT: "参与排序候选",
-  PUBLISHED_PLAN_VERSION: "发布版本",
-  PLAN_STATUS: "计划状态"
-};
-
-const LIFECYCLE_LABELS: Record<DecisionCandidate["lifecycle"], string> = {
-  generated: "已生成",
-  rejected: "已拒绝",
-  valid: "校验通过",
-  selected: "已选中",
-  fallback: "安全回退"
-};
-
-function candidateSummary(candidate: DecisionCandidate) {
-  const metrics = candidate.metrics;
+function candidateCard(candidate: CandidatePresentation, index: number) {
+  const titleId = `decision-candidate-title-${index}`;
+  const evidence = candidate.evidence.filter(row => !(
+    row.label === "对比证据" &&
+    row.value === "暂无记录" &&
+    candidate.comparison !== null &&
+    candidate.comparison !== "暂无记录"
+  ));
   return (
     <article
       key={candidate.candidateId}
-      className={`decision-candidate decision-candidate--${candidate.lifecycle}`}
+      className={`decision-candidate decision-candidate--${candidate.tone}`}
+      aria-labelledby={titleId}
     >
-      <header>
-        <strong>{candidate.candidateId}</strong>
-        <span>{LIFECYCLE_LABELS[candidate.lifecycle]}</span>
+      <header className="decision-candidate__header">
+        <h3 id={titleId}>{candidate.title}</h3>
+        <span>{candidate.strategy}</span>
       </header>
-      <p>{candidate.level} · {candidate.affectedResourceIds.join("、") || "无新增资源"}</p>
-      {metrics === null ? null : (
-        <dl>
-          <div>
-            <dt>任务完成率</dt>
-            <dd>{(metrics.totalCompletionRatio * 100).toFixed(1)}%</dd>
-          </div>
-          <div>
-            <dt>计划保留率</dt>
-            <dd>{(metrics.retainedPlanRatio * 100).toFixed(1)}%</dd>
-          </div>
-          <div>
-            <dt>完成时刻</dt>
-            <dd>{metrics.totalFinishTimeSec.toFixed(1)} s</dd>
-          </div>
-        </dl>
-      )}
-      {[...candidate.rejectionCodes, ...candidate.failureCodes].length === 0
-        ? null
-        : (
-          <p className="decision-candidate__codes">
-            {[...new Set([
-              ...candidate.rejectionCodes,
-              ...candidate.failureCodes
-            ])].join(" · ")}
-          </p>
+      <section className="decision-candidate__section decision-candidate__conclusion">
+        <h4>结论</h4>
+        <strong>{candidate.verdict}</strong>
+      </section>
+      <section className="decision-candidate__section">
+        <h4>原因</h4>
+        <p>{candidate.reason}</p>
+      </section>
+      <section className="decision-candidate__section">
+        <h4>方案数据</h4>
+        {dataList(candidate.planData, "decision-candidate__data")}
+      </section>
+      <section className="decision-candidate__section">
+        <h4>对比证据</h4>
+        {candidate.comparison === null ? null : (
+          <p>{candidate.comparison}</p>
         )}
+        {evidence.length === 0 ? null : dataList(
+          evidence,
+          "decision-candidate__evidence"
+        )}
+      </section>
+      <details className="decision-candidate__audit">
+        <summary>审计详情</summary>
+        {dataList(candidate.audit)}
+      </details>
     </article>
   );
 }
@@ -106,8 +95,14 @@ export function DecisionProcessPanel({
   const stages = scene.decisionTrace.stages;
   const resolvedIndex = stageIndex ?? 0;
   const stage = stages[resolvedIndex];
-  const candidates = scene.decisionTrace.candidates.filter(candidate =>
+  const stagePresentation = buildDecisionStagePresentation(stage);
+  const candidates = buildCandidatePresentations(scene.decisionTrace).filter(candidate =>
     stage.candidateIds.includes(candidate.candidateId)
+  );
+  const affectedObjectCount = new Set(stage.affectedObjectIds).size;
+  const showResultStatus = stage.stageId === "PLAN_PUBLICATION" || (
+    stage.status === "SAFE_FALLBACK" &&
+    scene.decisionTrace.resultStatus === "PARTIAL_SAFE_FALLBACK"
   );
   return (
     <section className="decision-process">
@@ -142,7 +137,7 @@ export function DecisionProcessPanel({
           >
             <button type="button" onClick={() => onSelectStage(index)}>
               <span>{index + 1}</span>
-              {STAGE_LABELS[item.stageId]}
+              {stageLabel(item.stageId).label}
             </button>
           </li>
         ))}
@@ -157,38 +152,43 @@ export function DecisionProcessPanel({
           </>
         ) : (
           <>
-            <small>
-              第 {resolvedIndex + 1} 步 · {stage.actualDurationMs.toFixed(1)} ms
-            </small>
-            <h2>{STAGE_LABELS[stage.stageId]}</h2>
-            <p>
-              {stage.status === "SAFE_FALLBACK"
-                ? "完整目标无法满足，系统正在保留物理安全并形成可审计回退。"
-                : "系统使用当前任务快照和结构化证据完成本步骤。"}
+            <small>第 {resolvedIndex + 1} 步</small>
+            <h2>{stagePresentation.title}</h2>
+            <p className="decision-process__modules">
+              <span>关联模块</span>
+              {stagePresentation.modules.join("、") || "暂无记录"}
             </p>
-            <dl className="decision-process__facts">
-              {stage.facts.map(fact => (
-                <div key={`${fact.code}-${String(fact.value)}`}>
-                  <dt>{FACT_LABELS[fact.code] ?? fact.code}</dt>
-                  <dd>{String(fact.value)}</dd>
-                </div>
-              ))}
-            </dl>
+            <section className="decision-process__section">
+              <h3>阶段结论</h3>
+              <p>{stagePresentation.conclusion}</p>
+            </section>
+            <section className="decision-process__section">
+              <h3>步骤数据</h3>
+              {dataList(stagePresentation.data, "decision-process__facts")}
+            </section>
+            <p className="decision-process__affected">
+              <span>受影响对象</span>
+              <strong>{affectedObjectCount === 0 ? "暂无记录" : `${affectedObjectCount} 项`}</strong>
+            </p>
+            {showResultStatus ? (
+              <p className="decision-process__result-status">
+                <span>结果状态</span>
+                <strong>{formatDecisionValue(
+                  "PLAN_STATUS",
+                  scene.decisionTrace.resultStatus,
+                  null
+                )}</strong>
+              </p>
+            ) : null}
             {candidates.length === 0 ? null : (
               <section className="decision-process__candidates">
                 <h3>候选方案</h3>
-                {candidates.map(candidateSummary)}
+                {candidates.map(candidateCard)}
               </section>
             )}
             <details className="decision-process__audit">
-              <summary>展开工程审计详情</summary>
-              <dl>
-                <div><dt>阶段代码</dt><dd>{stage.stageId}</dd></div>
-                <div><dt>事件</dt><dd>{stage.affectedEventIds.join("、") || "—"}</dd></div>
-                <div><dt>对象</dt><dd>{stage.affectedObjectIds.join("、") || "—"}</dd></div>
-                <div><dt>校验</dt><dd>{stage.validationCheckIds.join("、") || "—"}</dd></div>
-                <div><dt>失败码</dt><dd>{stage.failureCodes.join("、") || "—"}</dd></div>
-              </dl>
+              <summary>阶段审计详情</summary>
+              {dataList(stagePresentation.audit)}
             </details>
           </>
         )}
