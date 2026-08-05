@@ -1,0 +1,135 @@
+# 任务二区域差分与图层配色设计
+
+日期：2026-08-06
+
+## 1. 背景与目标
+
+任务二场景中的多个任务区域当前使用相近几何，视觉上容易被理解为同一任务的重复扩展；同时任务区域、原计划航迹和当前方案航迹的颜色职责没有完全分离，`baseline` 与 `baseline_flown` 默认还是同色。
+
+本次变更同时覆盖 `wrj-t2` 数据生成/导出和 `wrj-recon-kepler-demo` 前端展示：
+
+- 场景包明确保存任务的原始区域、当前区域、区域关系和扩展差分；
+- 只有同一任务的新旧几何可比较时，才生成 `expanded` 等关系，独立重叠任务保持 `overlap`/`independent` 语义；
+- 任务区域按任务独立配色，并用纹理/描边突出扩展部分；
+- 原计划航迹拥有独立颜色；
+- 当前方案航迹在按变化类型和按无人机两种模式下分别拥有独立颜色；
+- 旧场景包仍可加载，缺少新字段时按兼容规则降级。
+
+## 2. 方案选择
+
+考虑过三种实现方式：
+
+1. 只在前端根据 bbox 推断扩展。改动小，但无法区分独立重叠任务，且推断结果不可审计。
+2. 只调整前端颜色和布局。可以快速改善可读性，但场景数据仍然无法说明区域关系，导出结果与界面语义不一致。
+3. **推荐：数据层显式几何差分，前端独立图层颜色控制。** 由场景生成器保留事实和关系，前端只渲染已声明的关系；颜色偏好在任务、轨迹语义和无人机资源三个边界独立管理。
+
+采用方案 3。几何关系属于任务二业务事实，不能由展示层猜测；颜色属于展示偏好，不应反向改变任务规划数据。
+
+## 3. 数据契约
+
+### 3.1 任务几何
+
+在 `mission_view.v1` 的任务记录中增加可选的 `geometryContext`（旧字段 `geometry` 保持不变）：
+
+```json
+{
+  "originalGeometry": {"type": "Polygon", "coordinates": []},
+  "currentGeometry": {"type": "Polygon", "coordinates": []},
+  "relation": "unchanged|expanded|reduced|replaced|new|unknown",
+  "spatialRelation": "disjoint|overlap",
+  "extensionGeometry": {"type": "Polygon", "coordinates": []},
+  "sourceTaskId": "T-A"
+}
+```
+
+规则：
+
+- `currentGeometry` 与现有 `geometry` 相同，避免旧消费者改变含义；
+- `originalGeometry` 只在存在可比较的历史任务几何时写入；
+- `extensionGeometry` 只对 `expanded` 写入，表示 `current - original`，而不是整个当前区域；
+- `sourceTaskId` 仅用于明确“由哪个任务演化而来”，独立创建的任务不填；
+- `relation` 只描述同一任务的新旧几何演化；`spatialRelation` 只描述不同任务之间是否相交。两个独立任务即使 `spatialRelation=overlap`，也不能把任一任务的 `relation` 标记为 `expanded`；
+- 缺少历史几何时关系为 `new` 或 `unknown`，不得通过 bbox 重叠自动标记 `expanded`。
+
+场景导出包另增加 `task_geometry_diff.v1.json`，按任务列出 `originalGeometryHash`、`currentGeometryHash`、`relation`、`extensionGeometry` 和计算方法版本。`mission_view.v1` 中的摘要字段供前端渲染，差分文件供审计和数据校验。
+
+### 3.2 差分算法
+
+生成器使用结构化几何运算计算差分，不使用字符串或 bbox 近似：
+
+1. 对同一 `taskId` 查找基线几何和事件后的几何；
+2. 拓扑有效化并统一坐标参考系；
+3. 计算 `current - original` 作为扩展部分、`original - current` 作为缩减部分；
+4. 用面积比和几何相等性确定 `unchanged`、`expanded`、`reduced` 或 `replaced`；
+5. 新任务标记为 `new`；不同 `taskId` 的相交只记录为空间重叠，不进入同一任务差分。
+
+差分运算失败时导出器拒绝发布该场景并报告任务 ID、几何哈希和失败原因，不能静默回退到 bbox 推断。
+
+## 4. 前端偏好与渲染
+
+### 4.1 偏好结构
+
+扩展 `DynamicLayerPreferencesV1`，保持旧字段可读：
+
+- `taskAreas.defaultColor`、`taskAreas.taskColors[taskId]`、`taskAreas.extensionColor`、`taskAreas.extensionPattern`；
+- `baselineTrajectories.color`，并将 `baseline_flown` 默认改为与原计划不同的颜色；
+- `activeTrajectories.mode` 为 `change` 或 `resource`；
+- `activeTrajectories.changeColors[changeType]`；
+- `activeTrajectories.resourceColors[resourceId]`。
+
+所有颜色值在读取时校验为合法 CSS 颜色；未知任务或无人机使用默认色，不写入任务数据。
+
+### 4.2 图层优先级
+
+- 任务区域颜色只由任务 ID 决定；扩展部分使用 `extensionColor` 和斜线纹理/虚线边界叠加，不改变任务主色；
+- 原计划航迹始终使用 `baselineTrajectories.color`，已执行段可通过单独的 `baseline_flown` 颜色区分；
+- 当前方案航迹在 `change` 模式按变化类型着色，在 `resource` 模式按 UAV 着色；模式只影响当前方案航迹，不覆盖任务区域或原计划航迹；
+- 当当前方案航迹同时带有变化类型和资源 ID 时，当前模式决定主色，变化类型仍保留在详情和审计信息中；
+- 图例色块与实际图层使用同一解析函数，避免“图例颜色”和地图颜色分叉。
+
+### 4.3 交互
+
+“图层与航迹”侧栏一次只展开一组：
+
+- 任务区域展开后显示任务列表、每任务颜色选择、扩展区域样式和透明度/描边参数；
+- 原计划航迹展开后显示原计划、已执行航段颜色和线宽；
+- 当前方案航迹展开后显示模式切换和当前场景实际出现的变化类型/UAV 颜色；
+- 恢复默认清除当前场景偏好并重新生成默认色；
+- 任务列表不再把颜色变化类型误当作任务区域颜色。
+
+## 5. 兼容与错误处理
+
+- 目录版本 2 或旧 `mission_view.v1` 没有 `geometryContext` 时，任务区域使用 `defaultColor`，不显示扩展纹理；
+- 旧偏好中的 `baseline`、`baseline_flown` 同色值继续读取，但新默认值只对没有用户保存偏好的场景生效；
+- 新字段缺失、几何无效或哈希不匹配时，场景显示“区域关系暂不可用”，仍可查看当前区域，不猜测扩展关系；
+- 未知关系值显示为“未标注关系”，原始值只进入审计详情；
+- 某个场景失败不阻断其他场景加载，数据校验命令报告具体场景和文件。
+
+## 6. 测试与验收
+
+### `wrj-t2`
+
+- 基线任务原始/当前几何哈希稳定且闭合；
+- 同一任务扩展得到非空 `extensionGeometry`，并验证面积关系；
+- 独立重叠任务保持独立任务语义并将 `spatialRelation` 记为 `overlap`，不得出现 `relation=expanded`；
+- 旧场景导出兼容，新增差分文件纳入 provenance 哈希；
+- 九个场景均能导出并通过业务断言。
+
+### `wrj-recon-kepler-demo`
+
+- 偏好默认值验证 `baseline` 与 `baseline_flown` 不同；
+- 任务区域按任务 ID 选择颜色，扩展纹理只出现在 `expanded` 任务；
+- `change`/`resource` 模式分别影响当前方案航迹；
+- 旧场景包和新场景包均能加载；
+- 组件测试覆盖颜色回调、恢复默认、模式切换、单行展开和未知关系降级；
+- 在 1920x1080 与 1366x768 检查颜色控件、纹理、图例和航迹无重叠或裁切。
+
+## 7. 实施边界与顺序
+
+1. 在 `wrj-t2` 增加几何上下文和差分导出，先用契约测试锁定独立重叠与扩展的区别。
+2. 重新导出九个场景并更新 provenance/目录校验。
+3. 在前端扩展场景 schema、加载器和 `dynamicLayerPreferences`，保证旧包兼容。
+4. 更新 deck.gl 图层构建和侧栏控件，加入任务颜色、扩展纹理、原计划独立色和当前方案双模式颜色。
+5. 运行前端单测、数据校验、类型检查、构建和双视口视觉验收。
+
+不在本次范围内重写任务规划算法、改变任务取消业务规则或把颜色配置写回任务二计算结果。
