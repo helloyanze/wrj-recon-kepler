@@ -37,8 +37,12 @@
   "currentGeometry": {"type": "Polygon", "coordinates": []},
   "relation": "unchanged|expanded|reduced|replaced|new|unknown",
   "spatialRelation": "disjoint|overlap",
+  "overlappingTaskIds": ["T-B"],
   "extensionGeometry": {"type": "Polygon", "coordinates": []},
-  "sourceTaskId": "T-A"
+  "originalAreaM2": 100,
+  "currentAreaM2": 120,
+  "extensionAreaM2": 20,
+  "extensionRatio": 0.2
 }
 ```
 
@@ -47,8 +51,7 @@
 - `currentGeometry` 与现有 `geometry` 相同，避免旧消费者改变含义；
 - `originalGeometry` 只在存在可比较的历史任务几何时写入；
 - `extensionGeometry` 只对 `expanded` 写入，表示 `current - original`，而不是整个当前区域；
-- `sourceTaskId` 仅用于明确“由哪个任务演化而来”，独立创建的任务不填；
-- `relation` 只描述同一任务的新旧几何演化；`spatialRelation` 只描述不同任务之间是否相交。两个独立任务即使 `spatialRelation=overlap`，也不能把任一任务的 `relation` 标记为 `expanded`；
+- `relation` 只描述同一任务的新旧几何演化；`spatialRelation` 和 `overlappingTaskIds` 只描述不同任务之间是否相交以及相交对象。两个独立任务即使 `spatialRelation=overlap`，也不能把任一任务的 `relation` 标记为 `expanded`；
 - 缺少历史几何时关系为 `new` 或 `unknown`，不得通过 bbox 重叠自动标记 `expanded`。
 
 场景导出包另增加 `task_geometry_diff.v1.json`，按任务列出 `originalGeometryHash`、`currentGeometryHash`、`relation`、`extensionGeometry` 和计算方法版本。`mission_view.v1` 中的摘要字段供前端渲染，差分文件供审计和数据校验。
@@ -71,7 +74,7 @@
 
 扩展 `DynamicLayerPreferencesV1`，保持旧字段可读：
 
-- `taskAreas.defaultColor`、`taskAreas.taskColors[taskId]`、`taskAreas.extensionColor`、`taskAreas.extensionPattern`；
+- `taskAreas.defaultColor`、`taskAreas.taskColors[taskId]`、`taskAreas.extensionColor`；扩展部分采用固定的半透明填充和强化描边，避免增加无必要的样式模式；
 - `baselineTrajectories.color`，并将 `baseline_flown` 默认改为与原计划不同的颜色；
 - `activeTrajectories.mode` 为 `change` 或 `resource`；
 - `activeTrajectories.changeColors[changeType]`；
