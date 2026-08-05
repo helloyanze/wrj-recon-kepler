@@ -10,6 +10,11 @@ import type {
   LiveSortieState,
   SortieStatus
 } from "../../features/mission/missionInterpolation";
+import {
+  LayerControlRow,
+  LayerLegendSwatch,
+  LayerPanelHeader
+} from "./LayerControlPrimitives";
 
 export type UavId = string;
 
@@ -89,13 +94,10 @@ function aggregateStatus(
   }, "completed");
 }
 
-function LayerLegend({
-  definition,
-  preferences
-}: {
-  definition: LayerDefinition;
-  preferences: MissionLayerPreferencesV3;
-}) {
+function layerLegendBackground(
+  definition: LayerDefinition,
+  preferences: MissionLayerPreferencesV3
+): string {
   const colors = definition.mode === "strip"
     ? Object.values(preferences.stripColors)
     : definition.colorLayer === undefined
@@ -104,14 +106,7 @@ function LayerLegend({
   const background = colors.length <= 1
     ? colors[0] ?? "#35C5FF"
     : `linear-gradient(180deg, ${colors.join(", ")})`;
-  return (
-    <span
-      aria-hidden="true"
-      className="layer-legend-swatch"
-      data-testid={`layer-legend-${definition.id}`}
-      style={{background}}
-    />
-  );
+  return background;
 }
 
 function groupStripsByUav(
@@ -160,88 +155,53 @@ function LayerEditor({
 
   return (
     <section aria-label={`${definition.label} 设置`}>
-      <fieldset disabled={disabled}>
-        <legend>基础</legend>
-        {definition.mode === "strip" ? (
-          <div style={{maxHeight: 220, overflowY: "auto"}}>
-            {groupStripsByUav(bundle?.strips ?? []).map(([uavId, strips]) => (
-              <section key={uavId} aria-label={`${uavId} 侦察条带颜色`}>
-                <strong>{uavId}</strong>
-                {strips.map(strip => (
-                  <label key={strip.stripId}>
-                    {strip.stripId} 颜色
-                    <input
-                      aria-label={`${definition.label} ${strip.stripId} 颜色`}
-                      type="color"
-                      value={preferences.stripColors[strip.stripId] ?? "#FFFFFF"}
-                      onChange={event => onStripColorChange(
-                        strip.stripId,
-                        event.currentTarget.value
-                      )}
-                    />
-                  </label>
-                ))}
-              </section>
-            ))}
-          </div>
-        ) : null}
-        {definition.mode === "uav" && definition.colorLayer !== undefined
-          ? Object.entries(
-              preferences.layerUavColors[definition.colorLayer]
-            ).map(([uavId, color]) => (
-              <label key={uavId}>
-                {uavId} 颜色
-                <input
-                  aria-label={`${definition.label} ${uavId} 颜色`}
-                  type="color"
-                  value={color}
-                  onChange={event => onLayerUavColorChange(
-                    definition.colorLayer!,
-                    uavId,
-                    event.currentTarget.value
-                  )}
-                />
-              </label>
-            ))
-          : null}
-        <label>
-          不透明度
-          <input
-            aria-label={`${definition.label} 不透明度`}
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={preference.opacity}
-            onChange={event => {
-              const value = numberValue(event.currentTarget);
-              if (value !== null) onLayerChange(definition.id, {opacity: value});
-            }}
-          />
-        </label>
-        {!isRegion && definition.id !== "scanned" ? (
-          <label>
-            线宽
-            <span className="layer-range-input">
-              <input
-                aria-label={`${definition.label} 线宽`}
-                type="range"
-                min="0.5"
-                max="20"
-                step="0.5"
-                value={preference.width ?? 2}
-                onChange={event => {
-                  const value = numberValue(event.currentTarget);
-                  if (value !== null) onLayerChange(definition.id, {width: value});
-                }}
-              />
-              <output aria-label={`${definition.label} 线宽值`}>
-                {preference.width ?? 2} px
-              </output>
-            </span>
-          </label>
-        ) : null}
-      </fieldset>
+      {definition.mode === "single" ? null : (
+        <fieldset disabled={disabled}>
+          <legend>基础</legend>
+          {definition.mode === "strip" ? (
+            <div style={{maxHeight: 220, overflowY: "auto"}}>
+              {groupStripsByUav(bundle?.strips ?? []).map(([uavId, strips]) => (
+                <section key={uavId} aria-label={`${uavId} 侦察条带颜色`}>
+                  <strong>{uavId}</strong>
+                  {strips.map(strip => (
+                    <label key={strip.stripId}>
+                      {strip.stripId} 颜色
+                      <input
+                        aria-label={`${definition.label} ${strip.stripId} 颜色`}
+                        type="color"
+                        value={preferences.stripColors[strip.stripId] ?? "#FFFFFF"}
+                        onChange={event => onStripColorChange(
+                          strip.stripId,
+                          event.currentTarget.value
+                        )}
+                      />
+                    </label>
+                  ))}
+                </section>
+              ))}
+            </div>
+          ) : null}
+          {definition.mode === "uav" && definition.colorLayer !== undefined
+            ? Object.entries(
+                preferences.layerUavColors[definition.colorLayer]
+              ).map(([uavId, color]) => (
+                <label key={uavId}>
+                  {uavId} 颜色
+                  <input
+                    aria-label={`${definition.label} ${uavId} 颜色`}
+                    type="color"
+                    value={color}
+                    onChange={event => onLayerUavColorChange(
+                      definition.colorLayer!,
+                      uavId,
+                      event.currentTarget.value
+                    )}
+                  />
+                </label>
+              ))
+            : null}
+        </fieldset>
+      )}
 
       {isRegion || isTrip ? (
         <div className="layer-advanced">
@@ -483,67 +443,51 @@ export function LayerSidebar({
       data-collapsed="false"
       style={{display: "flex", flexDirection: "column", width: 300}}
     >
-      <header>
-        <h2>图层</h2>
-        <div>
-          <button
-            type="button"
-            disabled={disabled}
-            aria-label="恢复全部图层默认设置"
-            onClick={onRestoreDefaults}
-          >
-            ↺
-          </button>
-          <button
-            type="button"
-            aria-label="收起图层"
-            onClick={() => onCollapsedChange(true)}
-          >
-            &lt;
-          </button>
-        </div>
-      </header>
+      <LayerPanelHeader
+        title="图层"
+        disabled={disabled}
+        onRestoreDefaults={onRestoreDefaults}
+        onCollapse={() => onCollapsedChange(true)}
+      />
       <ul aria-label="图层列表">
         {LAYERS.map(definition => {
           const preference = preferences?.layers[definition.id];
           const expanded = expandedLayerId === definition.id;
+          const hasWidth = definition.id !== "region" &&
+            definition.id !== "scanned";
           return (
-            <li key={definition.id}>
-              <div
-                data-testid={`layer-row-${definition.id}`}
-                onClick={() => setExpandedLayerId(definition.id)}
-              >
-                {preferences !== null ? (
-                  <LayerLegend definition={definition} preferences={preferences} />
-                ) : <span className="layer-legend-swatch" aria-hidden="true" />}
-                <button
-                  type="button"
-                  aria-label={`编辑 ${definition.label}`}
-                  aria-expanded={expanded}
-                  disabled={disabled}
-                  onClick={event => {
-                    event.stopPropagation();
-                    setExpandedLayerId(definition.id);
-                  }}
-                >
-                  {definition.label}
-                </button>
-                <button
-                  type="button"
-                  disabled={disabled}
-                  aria-label={`${preference?.visible === false ? "显示" : "隐藏"} ${definition.label}`}
-                  aria-pressed={preference?.visible ?? false}
-                  onClick={event => {
-                    event.stopPropagation();
-                    if (preference !== undefined) {
-                      onLayerChange(definition.id, {visible: !preference.visible});
-                    }
-                  }}
-                >
-                  <span aria-hidden="true">{preference?.visible === false ? "○" : "◉"}</span>
-                </button>
-              </div>
-              {expanded && preference !== undefined && preferences !== null ? (
+            <LayerControlRow
+              key={definition.id}
+              label={definition.label}
+              visible={preference?.visible ?? false}
+              expanded={expanded}
+              disabled={disabled}
+              testId={`layer-row-${definition.id}`}
+              legend={(
+                <LayerLegendSwatch
+                  background={preferences === null
+                    ? "#35C5FF"
+                    : layerLegendBackground(definition, preferences)}
+                  testId={`layer-legend-${definition.id}`}
+                />
+              )}
+              opacity={preference?.opacity}
+              width={preference !== undefined && hasWidth
+                ? preference.width ?? 2
+                : undefined}
+              onExpandedChange={() => setExpandedLayerId(definition.id)}
+              onVisibleChange={visible => {
+                if (preference !== undefined) {
+                  onLayerChange(definition.id, {visible});
+                }
+              }}
+              onOpacityChange={opacity =>
+                onLayerChange(definition.id, {opacity})}
+              onWidthChange={hasWidth
+                ? width => onLayerChange(definition.id, {width})
+                : undefined}
+            >
+              {preference !== undefined && preferences !== null ? (
                 <LayerEditor
                   definition={definition}
                   preference={preference}
@@ -556,7 +500,7 @@ export function LayerSidebar({
                   onMarkerSizeChange={onMarkerSizeChange}
                 />
               ) : null}
-            </li>
+            </LayerControlRow>
           );
         })}
       </ul>
