@@ -57,15 +57,23 @@ describe("useDynamicSceneLibrary", () => {
   it("isolates one broken scene while keeping the catalog usable", async () => {
     const valid = await packageFiles("resource-lost");
     const catalog = {
-      version: 2,
+      version: 3,
       defaultSceneId: "resource-lost",
       scenes: [
-        scenePackageFixture,
+        {
+          ...scenePackageFixture,
+          category: "foundation",
+          dataNature: "SIMULATED_PIPELINE_RESULT",
+          featured: false
+        },
         {
           ...scenePackageFixture,
           sceneId: "broken",
           displayName: "broken",
-          baseUrl: "task2/scenes/broken"
+          baseUrl: "task2/scenes/broken",
+          category: "event_governance",
+          dataNature: "SIMULATED_PIPELINE_RESULT",
+          featured: false
         }
       ]
     };
@@ -91,8 +99,14 @@ describe("useDynamicSceneLibrary", () => {
 
     await waitFor(() => expect(result.current.status).toBe("ready"));
     expect(result.current.scenePackage?.config.sceneId).toBe("resource-lost");
-    expect(result.current.entries.find(item => item.sceneId === "broken")?.disabled)
-      .toBe(true);
+    expect(result.current.entries.find(item => item.sceneId === "broken"))
+      .toMatchObject({
+        category: "event_governance",
+        disabled: true,
+        error: expect.stringContaining("500")
+      });
+    expect(result.current.entries.find(item => item.sceneId === "resource-lost"))
+      .toMatchObject({category: "foundation", disabled: false});
   });
 
   it("switches between verified packages and exposes stable controls", async () => {

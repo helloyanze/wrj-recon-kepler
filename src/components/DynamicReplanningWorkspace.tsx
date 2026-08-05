@@ -16,6 +16,10 @@ import {
   automaticDecisionStageIndex,
   isPlanPublished
 } from "../features/dynamic-replanning/decisionPresentation";
+import {
+  CATEGORY_LABELS,
+  DATA_NATURE_LABELS
+} from "../features/dynamic-replanning/decisionLabels";
 import type {
   DynamicOverlayOptions
 } from "../features/dynamic-replanning/dynamicDeckLayers";
@@ -29,8 +33,9 @@ import {
 import {
   dynamicSceneMapState
 } from "../features/dynamic-replanning/dynamicSceneMapState";
-import type {
-  LoadedDynamicScenePackage
+import {
+  dynamicSceneCategories,
+  type LoadedDynamicScenePackage
 } from "../features/dynamic-replanning/dynamicSceneSchema";
 import type {
   VerticalScale
@@ -208,6 +213,16 @@ function ReadyDynamicWorkspace({
     onSelectSegment: segmentId =>
       setDrawerContent({type: "segment", segmentId})
   }), [layerPreferences, playback, scene, verticalScale]);
+  const groupedEntries = useMemo(() => dynamicSceneCategories.map(category => ({
+    category,
+    entries: entries.filter(entry => entry.category === category)
+  })).filter(group => group.entries.length > 0), [entries]);
+  const selectedEntry = entries.find(entry => entry.sceneId === selectedSceneId)
+    ?? entries[0];
+  const unavailableEntries = entries.filter(entry => entry.disabled && entry.error);
+  const sceneErrorDescriptionId = unavailableEntries.length === 0
+    ? undefined
+    : "task2-scene-errors";
 
   const automaticStageIndex = automaticDecisionStageIndex(playback, scene);
   const stageIndex = manualStageIndex ?? automaticStageIndex;
@@ -237,24 +252,50 @@ function ReadyDynamicWorkspace({
       modeSwitch={modeSwitch}
       title="动态重规划演示"
       sourceSelector={(
-        <label className="case-selector">
-          <span className="sr-only">选择动态场景</span>
-          <select
-            aria-label="选择动态场景"
-            value={selectedSceneId}
-            onChange={event => onSelectScene(event.currentTarget.value)}
-          >
-            {entries.map(entry => (
-              <option
-                key={entry.sceneId}
-                value={entry.sceneId}
-                disabled={entry.disabled}
-              >
-                {entry.displayName}{entry.disabled ? "（不可用）" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="task2-scene-selector">
+          <label className="case-selector">
+            <span className="sr-only">选择动态场景</span>
+            <select
+              aria-label="选择动态场景"
+              aria-describedby={sceneErrorDescriptionId}
+              value={selectedSceneId}
+              onChange={event => onSelectScene(event.currentTarget.value)}
+            >
+              {groupedEntries.map(group => (
+                <optgroup
+                  key={group.category}
+                  label={CATEGORY_LABELS[group.category]}
+                >
+                  {group.entries.map(entry => (
+                    <option
+                      key={entry.sceneId}
+                      value={entry.sceneId}
+                      disabled={entry.disabled}
+                    >
+                      {entry.displayName}
+                      {entry.featured ? "（贯穿案例）" : ""}
+                      {entry.disabled ? "（不可用）" : ""}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </label>
+          <span className="task2-data-nature">
+            {DATA_NATURE_LABELS[selectedEntry.dataNature]}
+          </span>
+          {sceneErrorDescriptionId === undefined ? null : (
+            <span
+              id={sceneErrorDescriptionId}
+              className="sr-only"
+              role="status"
+            >
+              {unavailableEntries.map(entry =>
+                `${entry.displayName}：${entry.error}`
+              ).join("；")}
+            </span>
+          )}
+        </div>
       )}
       status={published ? (
         <DynamicStatusBanner status={scene.view.activePlan.planStatus} />

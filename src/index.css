@@ -590,6 +590,20 @@ button { color: inherit; }
   color: white;
 }
 .task2-topbar { gap: 10px; }
+.task2-scene-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.task2-data-nature {
+  flex: 0 0 auto;
+  border-left: 1px solid var(--border-strong);
+  padding-left: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
 .task2-status {
   display: flex;
   flex-direction: column;

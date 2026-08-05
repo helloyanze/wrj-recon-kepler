@@ -1,7 +1,7 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 
-import {cleanup, fireEvent, render, screen} from "@testing-library/react";
+import {cleanup, fireEvent, render, screen, within} from "@testing-library/react";
 import type {ComponentType, ReactNode} from "react";
 import {Provider} from "react-redux";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
@@ -103,6 +103,30 @@ const MapView: ComponentType<WrjKeplerMapProps> = props => (
     data-has-overlay={String(props.dynamicOverlay !== null)}
   />
 );
+
+type LibraryEntry = DynamicSceneLibrary["entries"][number];
+
+function libraryEntry(
+  sceneId: string,
+  displayName: string,
+  category: LibraryEntry["category"],
+  overrides: Partial<LibraryEntry> = {}
+): LibraryEntry {
+  return {
+    sceneId,
+    displayName,
+    summary: `${displayName}场景`,
+    baseUrl: `task2/scenes/${sceneId}`,
+    resultStatus: "COMPLETE",
+    failureReportUrl: null,
+    category,
+    dataNature: "SIMULATED_PIPELINE_RESULT",
+    featured: false,
+    disabled: false,
+    error: null,
+    ...overrides
+  };
+}
 
 function renderWithStore(node: ReactNode) {
   return render(
@@ -256,5 +280,90 @@ describe("dynamic workspace", () => {
     })).toHaveValue("0.35");
     expect(screen.getByRole("combobox", {name: "选择动态场景"}))
       .toHaveValue("resource-lost");
+  });
+
+  it("groups all nine scenes by metadata and marks the featured case", () => {
+    runtime.library = {
+      ...runtime.library!,
+      entries: [
+        libraryEntry("resource-lost", "无人机失联", "foundation"),
+        libraryEntry("low-fuel-return", "低油量返航", "foundation"),
+        libraryEntry("new-area-task", "新增区域任务", "task_change"),
+        libraryEntry("hard-deadline-fallback", "硬截止时间回退", "task_change"),
+        libraryEntry("task-cancelled", "任务取消", "task_change"),
+        libraryEntry("task-priority-raised", "任务优先级提升", "task_change"),
+        libraryEntry("task-dependency-changed", "任务依赖变更", "task_change"),
+        libraryEntry("event-conflict-resolution", "事件冲突治理", "event_governance"),
+        libraryEntry(
+          "comprehensive-multi-event",
+          "综合多事件",
+          "comprehensive",
+          {featured: true}
+        )
+      ]
+    };
+
+    renderWithStore(
+      <DynamicReplanningWorkspace
+        basemap={basemap}
+        debugMode={false}
+        dataBase="/data"
+        MapView={MapView}
+      />
+    );
+
+    const select = screen.getByRole("combobox", {name: "选择动态场景"});
+    const groups = Array.from(select.querySelectorAll("optgroup"));
+    expect(groups.map(group => group.label)).toEqual([
+      "基础异常",
+      "任务变更",
+      "事件治理",
+      "综合案例"
+    ]);
+    expect(within(select).getAllByRole("option")).toHaveLength(9);
+    for (const entry of runtime.library.entries) {
+      expect(within(select).getAllByRole("option", {
+        name: entry.featured
+          ? `${entry.displayName}（贯穿案例）`
+          : entry.displayName
+      })).toHaveLength(1);
+    }
+    expect(screen.getByText("演示构造输入 · 任务二实际计算"))
+      .toBeVisible();
+  });
+
+  it("keeps one broken scene isolated inside its metadata group", () => {
+    runtime.library = {
+      ...runtime.library!,
+      entries: [
+        libraryEntry("resource-lost", "无人机失联", "foundation"),
+        libraryEntry("low-fuel-return", "低油量返航", "foundation"),
+        libraryEntry("broken-event", "损坏事件包", "event_governance", {
+          disabled: true,
+          error: "decision_trace.v1.json 校验失败"
+        })
+      ]
+    };
+
+    renderWithStore(
+      <DynamicReplanningWorkspace
+        basemap={basemap}
+        debugMode={false}
+        dataBase="/data"
+        MapView={MapView}
+      />
+    );
+
+    const select = screen.getByRole("combobox", {name: "选择动态场景"});
+    expect(within(select).getByRole("option", {
+      name: "损坏事件包（不可用）"
+    })).toBeDisabled();
+    expect(Array.from(select.querySelectorAll("optgroup"))
+      .map(group => group.label)).toContain("事件治理");
+    expect(screen.getByText(/损坏事件包.*decision_trace\.v1\.json 校验失败/u))
+      .toBeInTheDocument();
+
+    fireEvent.change(select, {target: {value: "low-fuel-return"}});
+    expect(runtime.library.select).toHaveBeenCalledWith("low-fuel-return");
   });
 });
