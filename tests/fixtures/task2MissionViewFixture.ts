@@ -32,6 +32,42 @@ export const missionViewFixture = {
           [0, 0]
         ]]
       },
+      geometryContext: {
+        originalGeometry: {
+          type: "Polygon",
+          coordinates: [[
+            [0, 0],
+            [900, 0],
+            [900, 1_000],
+            [0, 0]
+          ]]
+        },
+        currentGeometry: {
+          type: "Polygon",
+          coordinates: [[
+            [0, 0],
+            [1_000, 0],
+            [1_000, 1_000],
+            [0, 0]
+          ]]
+        },
+        relation: "expanded",
+        spatialRelation: "overlap",
+        overlappingTaskIds: ["T-B"],
+        extensionGeometry: {
+          type: "Polygon",
+          coordinates: [[
+            [900, 0],
+            [1_000, 0],
+            [1_000, 1_000],
+            [900, 0]
+          ]]
+        },
+        originalAreaM2: 450_000,
+        currentAreaM2: 500_000,
+        extensionAreaM2: 50_000,
+        extensionRatio: 1 / 9
+      },
       minimumCoverageRatio: 0.95
     }
   ],
@@ -158,6 +194,61 @@ export const missionViewFixture = {
       "mission_plan.json": "abc123"
     }
   }
+} as const;
+
+export const dynamicEventsFixture = {
+  batchId: "B-DEMO-LOST",
+  missionId: "MIS-R01-BASELINE-01",
+  sourcePlanVersion: 1,
+  snapshotId: "SNAP-123456789ABC",
+  missionTimeSec: 100,
+  events: [
+    {
+      eventId: "EV-DEMO-LOST",
+      eventType: "RESOURCE_LOW_FUEL",
+      eventTimeSec: 100,
+      affectedObjectId: "UAV-01",
+      priority: 0,
+      payload: {
+        kind: "RESOURCE_LOW_FUEL",
+        remainingFuelKg: 13.8
+      },
+      status: "RECEIVED",
+      idempotencyKey: null,
+      normalizedPayloadHash: null
+    }
+  ]
+} as const;
+
+export const taskGeometryDiffFixture = {
+  schemaVersion: "task_geometry_diff.v1",
+  missionId: "MIS-R01-BASELINE-01",
+  sourcePlanVersion: 1,
+  planVersion: 2,
+  methodVersion: "shapely-difference-v1",
+  entries: [
+    {
+      taskId: "REG-001",
+      ...missionViewFixture.tasks[0].geometryContext,
+      originalGeometryHash: "a".repeat(64),
+      currentGeometryHash: "b".repeat(64)
+    },
+    {
+      taskId: "T-B",
+      originalGeometry: missionViewFixture.tasks[0].geometry,
+      currentGeometry: missionViewFixture.tasks[0].geometry,
+      relation: "unchanged",
+      spatialRelation: "overlap",
+      overlappingTaskIds: ["REG-001"],
+      extensionGeometry: null,
+      originalAreaM2: 500_000,
+      currentAreaM2: 500_000,
+      extensionAreaM2: 0,
+      extensionRatio: 0,
+      originalGeometryHash: "c".repeat(64),
+      currentGeometryHash: "c".repeat(64)
+    }
+  ]
 } as const;
 
 export const failureReportFixture = {

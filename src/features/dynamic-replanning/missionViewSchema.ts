@@ -1,5 +1,8 @@
 import {z} from "zod";
 
+import {taskGeometryContextSchema} from "./taskGeometryDiffSchema";
+import {taskGeometrySchema} from "./taskGeometrySchema";
+
 const finiteNumber = z.number().finite();
 const nonNegative = finiteNumber.nonnegative();
 const nonNegativeInteger = z.number().int().nonnegative();
@@ -28,31 +31,6 @@ export const localPointSchema = z.object({
   zM: finiteNumber
 }).strict();
 
-const geometryPointSchema = z.union([
-  z.tuple([finiteNumber, finiteNumber]),
-  z.tuple([finiteNumber, finiteNumber, finiteNumber])
-]);
-
-const polygonGeometrySchema = z.object({
-  type: z.literal("Polygon"),
-  coordinates: z.array(
-    z.array(geometryPointSchema).min(4).refine(
-      ring => JSON.stringify(ring[0]) === JSON.stringify(ring.at(-1)),
-      "polygon exterior ring must be closed"
-    )
-  ).min(1)
-}).strict();
-
-const lineStringGeometrySchema = z.object({
-  type: z.literal("LineString"),
-  coordinates: z.array(geometryPointSchema).min(1)
-}).strict();
-
-export const taskGeometrySchema = z.discriminatedUnion("type", [
-  polygonGeometrySchema,
-  lineStringGeometrySchema
-]);
-
 const missionSummarySchema = z.object({
   missionId: nonEmptyString,
   caseId: nonEmptyString
@@ -79,6 +57,10 @@ const missionViewTaskSchema = z.object({
   status: nonEmptyString,
   priority: nonNegativeInteger,
   geometry: taskGeometrySchema.nullable(),
+  geometryContext: taskGeometryContextSchema
+    .nullable()
+    .optional()
+    .transform(value => value ?? null),
   minimumCoverageRatio: ratio
 }).strict();
 

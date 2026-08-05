@@ -8,11 +8,17 @@ import {
   sceneProvenanceSchema
 } from "../../src/features/dynamic-replanning/dynamicSceneSchema";
 import {decisionTraceV1Schema} from "../../src/features/dynamic-replanning/decisionTraceSchema";
+import {dynamicEventBatchSchema} from "../../src/features/dynamic-replanning/dynamicEventSchema";
+import {missionViewV1Schema} from "../../src/features/dynamic-replanning/missionViewSchema";
+import {taskGeometryDiffV1Schema} from "../../src/features/dynamic-replanning/taskGeometryDiffSchema";
 import {
   decisionTraceFixture,
+  dynamicEventsFixture,
+  missionViewFixture,
   sceneConfigFixture,
   scenePackageFixture,
-  sceneProvenanceFixture
+  sceneProvenanceFixture,
+  taskGeometryDiffFixture
 } from "../fixtures/task2MissionViewFixture";
 
 const v2Catalog = {
@@ -77,6 +83,31 @@ describe("dynamic scene package schemas", () => {
       value: 1,
       unit: "COUNT"
     });
+  });
+
+  it("parses event-specific payloads", () => {
+    const batch = dynamicEventBatchSchema.parse(dynamicEventsFixture);
+
+    expect(batch.events[0].payload.kind).toBe("RESOURCE_LOW_FUEL");
+  });
+
+  it("parses task geometry evolution and overlap separately", () => {
+    const document = taskGeometryDiffV1Schema.parse(taskGeometryDiffFixture);
+
+    expect(document.entries[0].relation).toBe("expanded");
+    expect(document.entries[1].spatialRelation).toBe("overlap");
+    expect(document.entries[1].relation).not.toBe("expanded");
+  });
+
+  it("keeps old mission views readable without geometryContext", () => {
+    const oldTask = {...missionViewFixture.tasks[0]};
+    delete (oldTask as {geometryContext?: unknown}).geometryContext;
+    const parsed = missionViewV1Schema.parse({
+      ...missionViewFixture,
+      tasks: [oldTask]
+    });
+
+    expect(parsed.tasks[0].geometryContext).toBeNull();
   });
 
   it("normalizes v2 and v3 catalogs to presentation metadata", () => {
