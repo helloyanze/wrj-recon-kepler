@@ -998,7 +998,7 @@ button { color: inherit; }
 .decision-candidate__section h4 {
   margin: 0 0 6px;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 .decision-candidate__section p {
   margin: 0;
@@ -1048,7 +1048,7 @@ button { color: inherit; }
 
 @media (max-width: 1100px) {
   .mission-workbench__body.has-right-panel {
-    grid-template-columns: auto minmax(320px, 1fr) minmax(340px, 36vw);
+    grid-template-columns: auto minmax(0, 1fr) clamp(380px, 36vw, 420px);
   }
 }
 

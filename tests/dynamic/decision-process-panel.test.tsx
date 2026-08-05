@@ -178,6 +178,17 @@ function expectFixedOrder(card: HTMLElement) {
 }
 
 describe("decision process panel", () => {
+  it("keeps decision headings readable and the narrow map track flexible", () => {
+    const css = readFileSync(resolve("src/index.css"), "utf8");
+
+    expect(css).toMatch(
+      /\.decision-candidate__section h4\s*\{[^}]*font-size:\s*(?:14|15|16)px;/su
+    );
+    expect(css).toMatch(
+      /@media \(max-width: 1100px\)\s*\{[^}]*grid-template-columns:\s*auto minmax\(0, 1fr\) clamp\(380px, 36vw, 420px\);/su
+    );
+  });
+
   it("renders selected and rejected cards in the fixed five-part order", () => {
     renderPanel();
 
