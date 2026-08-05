@@ -82,11 +82,9 @@ function parseSchema<T>(
 }
 
 export async function sha256Hex(bytes: Uint8Array): Promise<string> {
-  const source = bytes.buffer.slice(
-    bytes.byteOffset,
-    bytes.byteOffset + bytes.byteLength
-  );
-  const digest = await crypto.subtle.digest("SHA-256", source);
+  const digestInput = new Uint8Array(bytes.byteLength);
+  digestInput.set(bytes);
+  const digest = await crypto.subtle.digest("SHA-256", digestInput);
   return [...new Uint8Array(digest)]
     .map(value => value.toString(16).padStart(2, "0"))
     .join("");

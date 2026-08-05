@@ -62,6 +62,14 @@ async function loadDynamicSceneFromDisk(
 }
 
 describe("committed Task 2 scenes", () => {
+  it("pins provenance-verified Task 2 JSON to LF checkout bytes", async () => {
+    const attributes = await readFile(resolve(".gitattributes"), "utf8");
+
+    expect(attributes.split(/\r?\n/u)).toContain(
+      "public/data/task2/scenes/**/*.json text eol=lf"
+    );
+  });
+
   it("loads all four committed Task 2 scenes offline", async () => {
     const catalog = dynamicSceneCatalogSchema.parse(await readJson(
       resolve("public/data/task2/scenes/catalog.json")

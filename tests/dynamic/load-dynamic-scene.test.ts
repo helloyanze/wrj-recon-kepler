@@ -70,6 +70,16 @@ function fakeFetch(files: Map<string, string>): DynamicFetch {
 }
 
 describe("loadDynamicScene", () => {
+  it("hashes bytes returned by Response.arrayBuffer in jsdom", async () => {
+    const responseBytes = new Uint8Array(
+      await new Response("abc").arrayBuffer()
+    );
+
+    await expect(sha256Hex(responseBytes)).resolves.toBe(
+      "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    );
+  });
+
   it("loads and validates one complete scene", async () => {
     const result = await loadDynamicScene(
       "/data",
