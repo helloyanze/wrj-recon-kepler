@@ -10,15 +10,21 @@ import {
   advanceDynamicPlayback,
   createDynamicPlayback,
   disableAutomaticCamera,
+  pauseDynamicPlayback,
   playDynamicPlayback,
   restartDynamicPlayback,
-  seekDynamicPlayback
+  seekDynamicPlayback,
+  type DynamicPlaybackState
 } from "../../src/features/dynamic-replanning/dynamicPlayback";
 import {
+  parseDynamicSceneCatalog,
   sceneConfigSchema,
   sceneProvenanceSchema
 } from "../../src/features/dynamic-replanning/dynamicSceneSchema";
-import {missionViewV1Schema} from "../../src/features/dynamic-replanning/missionViewSchema";
+import {
+  failureReportSchema,
+  missionViewV1Schema
+} from "../../src/features/dynamic-replanning/missionViewSchema";
 import {
   decisionTraceFixture,
   missionViewFixture,
@@ -37,6 +43,56 @@ const scene = buildDynamicScene({
   failureReport: null,
   provenance: sceneProvenanceSchema.parse(sceneProvenanceFixture)
 });
+
+const playbackPhases = new Set<DynamicPlaybackState["phase"]>([
+  "READY",
+  "BASELINE_RUNNING",
+  "EVENT_ALERT",
+  "IMPACT_REVEAL",
+  "REPLAN_EXPLAINER",
+  "PLAN_TRANSITION",
+  "ACTIVE_PLAN_RUNNING",
+  "RESULT_HOLD"
+]);
+
+function loadCommittedScenes() {
+  const catalog = parseDynamicSceneCatalog(JSON.parse(readFileSync(resolve(
+    "public/data/task2/scenes/catalog.json"
+  ), "utf8")) as unknown);
+  return catalog.scenes.map(entry => {
+    const root = resolve("public/data", entry.baseUrl);
+    const readJson = (name: string): unknown => JSON.parse(readFileSync(
+      resolve(root, name),
+      "utf8"
+    )) as unknown;
+    return {
+      sceneId: entry.sceneId,
+      scene: buildDynamicScene({
+        config: sceneConfigSchema.parse(readJson("scene.json")),
+        baseline: caseBundleSchema.parse(readJson("baseline.bundle.json")),
+        view: missionViewV1Schema.parse(readJson("mission_view.v1.json")),
+        decisionTrace: decisionTraceV1Schema.parse(
+          readJson("decision_trace.v1.json")
+        ),
+        failureReport: entry.failureReportUrl === null
+          ? null
+          : failureReportSchema.parse(readJson(entry.failureReportUrl)),
+        provenance: sceneProvenanceSchema.parse(readJson("provenance.json"))
+      })
+    };
+  });
+}
+
+function expectValidPlayback(
+  state: DynamicPlaybackState,
+  makespanSec: number
+) {
+  expect(playbackPhases.has(state.phase)).toBe(true);
+  expect(Number.isFinite(state.missionTimeSec)).toBe(true);
+  expect(state.missionTimeSec).toBeGreaterThanOrEqual(0);
+  expect(state.missionTimeSec).toBeLessThanOrEqual(makespanSec);
+  expect(state.presentationElapsedMs).toBeGreaterThanOrEqual(0);
+}
 
 describe("dynamic playback", () => {
   it("freezes mission time while presentation phases advance", () => {
@@ -88,5 +144,41 @@ describe("dynamic playback", () => {
     );
     expect(restarted.phase).toBe("READY");
     expect(restarted.automaticCamera).toBe(true);
+  });
+
+  it("keeps playback controls valid across all nine committed scenes", () => {
+    const committedScenes = loadCommittedScenes();
+    expect(committedScenes).toHaveLength(9);
+
+    for (const item of committedScenes) {
+      let state = createDynamicPlayback(item.scene);
+      expectValidPlayback(state, item.scene.makespanSec);
+
+      state = playDynamicPlayback(state);
+      state = advanceDynamicPlayback(state, 250, item.scene);
+      expectValidPlayback(state, item.scene.makespanSec);
+
+      state = pauseDynamicPlayback(state);
+      expect(state.playing, item.sceneId).toBe(false);
+      expectValidPlayback(state, item.scene.makespanSec);
+
+      state = seekDynamicPlayback(
+        state,
+        Math.min(item.scene.eventTimeSec + 1, item.scene.makespanSec),
+        item.scene
+      );
+      expectValidPlayback(state, item.scene.makespanSec);
+
+      state = advanceDynamicPlayback(
+        playDynamicPlayback(state),
+        100,
+        item.scene
+      );
+      expectValidPlayback(state, item.scene.makespanSec);
+
+      state = restartDynamicPlayback(state, item.scene);
+      expect(state.phase, item.sceneId).toBe("READY");
+      expectValidPlayback(state, item.scene.makespanSec);
+    }
   });
 });

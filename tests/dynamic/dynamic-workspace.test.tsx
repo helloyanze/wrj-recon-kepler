@@ -25,6 +25,7 @@ import {
   caseBundleSchema
 } from "../../src/features/cases/caseBundle";
 import {
+  parseDynamicSceneCatalog,
   sceneConfigSchema,
   sceneProvenanceSchema,
   type LoadedDynamicScenePackage
@@ -33,7 +34,10 @@ import {
   cameraTransitionDuration
 } from "../../src/features/dynamic-replanning/cameraMotion";
 import {decisionTraceV1Schema} from "../../src/features/dynamic-replanning/decisionTraceSchema";
-import {missionViewV1Schema} from "../../src/features/dynamic-replanning/missionViewSchema";
+import {
+  failureReportSchema,
+  missionViewV1Schema
+} from "../../src/features/dynamic-replanning/missionViewSchema";
 import {
   decisionTraceFixture,
   missionViewFixture,
@@ -84,6 +88,34 @@ const scenePackage: LoadedDynamicScenePackage = {
   failureReport: null,
   provenance: sceneProvenanceSchema.parse(sceneProvenanceFixture)
 };
+
+function loadCommittedScenePackages() {
+  const catalog = parseDynamicSceneCatalog(JSON.parse(readFileSync(resolve(
+    "public/data/task2/scenes/catalog.json"
+  ), "utf8")) as unknown);
+  return catalog.scenes.map(entry => {
+    const root = resolve("public/data", entry.baseUrl);
+    const readJson = (name: string): unknown => JSON.parse(readFileSync(
+      resolve(root, name),
+      "utf8"
+    )) as unknown;
+    return {
+      entry,
+      scenePackage: {
+        config: sceneConfigSchema.parse(readJson("scene.json")),
+        baseline: caseBundleSchema.parse(readJson("baseline.bundle.json")),
+        view: missionViewV1Schema.parse(readJson("mission_view.v1.json")),
+        decisionTrace: decisionTraceV1Schema.parse(
+          readJson("decision_trace.v1.json")
+        ),
+        failureReport: entry.failureReportUrl === null
+          ? null
+          : failureReportSchema.parse(readJson(entry.failureReportUrl)),
+        provenance: sceneProvenanceSchema.parse(readJson("provenance.json"))
+      } satisfies LoadedDynamicScenePackage
+    };
+  });
+}
 const basemap: ResolvedBasemap = {
   provider: "public",
   mapboxToken: "",
@@ -365,5 +397,40 @@ describe("dynamic workspace", () => {
 
     fireEvent.change(select, {target: {value: "low-fuel-return"}});
     expect(runtime.library.select).toHaveBeenCalledWith("low-fuel-return");
+  });
+
+  it("renders every committed Task 2 scene package", () => {
+    const committed = loadCommittedScenePackages();
+    expect(committed).toHaveLength(9);
+    const entries = committed.map(({entry}) => ({
+      ...entry,
+      disabled: false,
+      error: null
+    }));
+
+    for (const item of committed) {
+      runtime.library = {
+        ...runtime.library!,
+        entries,
+        selectedSceneId: item.entry.sceneId,
+        scenePackage: item.scenePackage
+      };
+      const rendered = renderWithStore(
+        <DynamicReplanningWorkspace
+          basemap={basemap}
+          debugMode={false}
+          dataBase="/data"
+          MapView={MapView}
+        />
+      );
+
+      expect(screen.getByRole("combobox", {name: "选择动态场景"}))
+        .toHaveValue(item.entry.sceneId);
+      expect(screen.getByText("演示构造输入 · 任务二实际计算"))
+        .toBeVisible();
+      expect(screen.getByRole("heading", {name: "图层与航迹"}))
+        .toBeInTheDocument();
+      rendered.unmount();
+    }
   });
 });
