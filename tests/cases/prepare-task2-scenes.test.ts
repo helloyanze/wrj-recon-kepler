@@ -24,6 +24,18 @@ import {
 
 const roots: string[] = [];
 
+const upstreamScenes = [
+  ["resource-lost", "foundation", false],
+  ["low-fuel-return", "foundation", false],
+  ["new-area-task", "foundation", false],
+  ["hard-deadline-fallback", "foundation", false],
+  ["task-cancelled", "task_change", false],
+  ["task-priority-raised", "task_change", false],
+  ["task-dependency-changed", "task_change", false],
+  ["event-conflict-resolution", "event_governance", false],
+  ["comprehensive-multi-event", "comprehensive", true]
+] as const;
+
 function temporaryRoot(): string {
   const root = mkdtempSync(join(tmpdir(), "wrj-task2-scenes-"));
   roots.push(root);
@@ -35,45 +47,63 @@ function hash(value: string): string {
 }
 
 function writeUpstream(inputRoot: string): void {
-  const sceneRoot = join(inputRoot, "resource-lost");
-  mkdirSync(sceneRoot, {recursive: true});
-  const files = new Map<string, string>([
-    ["scene.json", JSON.stringify(sceneConfigFixture)],
-    ["mission_view.v1.json", JSON.stringify(missionViewFixture)],
-    ["decision_trace.v1.json", JSON.stringify(decisionTraceFixture)],
-    ["dynamic_events.json", JSON.stringify({
-      batchId: "B-DEMO-LOST",
-      missionId: "MIS-R01-BASELINE-01",
-      sourcePlanVersion: 1,
-      snapshotId: "SNAP-PENDING",
-      missionTimeSec: 100,
-      events: []
-    })]
-  ]);
-  const hashes = Object.fromEntries(
-    [...files].map(([name, value]) => [name, hash(value)])
-  );
-  for (const [name, value] of files) {
-    writeFileSync(join(sceneRoot, name), value, "utf8");
-  }
-  writeFileSync(join(sceneRoot, "provenance.json"), JSON.stringify({
-    schemaVersion: "task2-demo-provenance.v1",
-    task2Commit: "abc1234",
-    generationCommand: "task2-replan export-demo-scenes",
-    generatedAt: "2026-07-30T00:00:00Z",
-    snapshotSource: "SIMULATED",
-    baselinePlanVersion: 1,
-    upstreamSha256: hashes,
-    packagedSha256: hashes
-  }), "utf8");
   mkdirSync(inputRoot, {recursive: true});
+  const catalogScenes = upstreamScenes.map(
+    ([sceneId, category, featured]) => {
+      const displayName = `场景 ${sceneId}`;
+      const summary = `${displayName} 摘要`;
+      const sceneRoot = join(inputRoot, sceneId);
+      mkdirSync(sceneRoot, {recursive: true});
+      const files = new Map<string, string>([
+        ["scene.json", JSON.stringify({
+          ...sceneConfigFixture,
+          sceneId,
+          displayName,
+          summary
+        })],
+        ["mission_view.v1.json", JSON.stringify(missionViewFixture)],
+        ["decision_trace.v1.json", JSON.stringify(decisionTraceFixture)],
+        ["dynamic_events.json", JSON.stringify({
+          batchId: "B-DEMO-LOST",
+          missionId: "MIS-R01-BASELINE-01",
+          sourcePlanVersion: 1,
+          snapshotId: "SNAP-PENDING",
+          missionTimeSec: 100,
+          events: []
+        })]
+      ]);
+      const hashes = Object.fromEntries(
+        [...files].map(([name, value]) => [name, hash(value)])
+      );
+      for (const [name, value] of files) {
+        writeFileSync(join(sceneRoot, name), value, "utf8");
+      }
+      writeFileSync(join(sceneRoot, "provenance.json"), JSON.stringify({
+        schemaVersion: "task2-demo-provenance.v1",
+        task2Commit: "abc1234",
+        generationCommand: "task2-replan export-demo-scenes",
+        generatedAt: "2026-07-30T00:00:00Z",
+        snapshotSource: "SIMULATED",
+        baselinePlanVersion: 1,
+        upstreamSha256: hashes,
+        packagedSha256: hashes
+      }), "utf8");
+      return {
+        ...scenePackageFixture,
+        sceneId,
+        displayName,
+        summary,
+        baseUrl: sceneId,
+        category,
+        dataNature: "SIMULATED_PIPELINE_RESULT",
+        featured
+      };
+    }
+  );
   writeFileSync(join(inputRoot, "catalog.json"), JSON.stringify({
-    version: 2,
+    version: 3,
     defaultSceneId: "resource-lost",
-    scenes: [{
-      ...scenePackageFixture,
-      baseUrl: "resource-lost"
-    }]
+    scenes: catalogScenes
   }), "utf8");
 }
 
@@ -101,10 +131,21 @@ describe("prepareTask2Scenes", () => {
       resolve(sceneRoot, "baseline.bundle.json"),
       "utf8"
     )).case.caseId).toBe("R01-BASELINE-01");
-    expect(JSON.parse(readFileSync(
+    const outputCatalog = JSON.parse(readFileSync(
       resolve(outputRoot, "catalog.json"),
       "utf8"
-    )).defaultSceneId).toBe("resource-lost");
+    ));
+    expect(outputCatalog.version).toBe(3);
+    expect(outputCatalog.defaultSceneId).toBe("resource-lost");
+    expect(outputCatalog.scenes).toHaveLength(9);
+    expect(outputCatalog.scenes.find(
+      (scene: {sceneId: string}) =>
+        scene.sceneId === "comprehensive-multi-event"
+    )).toMatchObject({
+      category: "comprehensive",
+      dataNature: "SIMULATED_PIPELINE_RESULT",
+      featured: true
+    });
     expect(JSON.parse(readFileSync(
       resolve(sceneRoot, "provenance.json"),
       "utf8"
@@ -135,5 +176,23 @@ describe("prepareTask2Scenes", () => {
     expect(readFileSync(changed, "utf8")).toBe("tampered");
     expect(readFileSync(resolve(outputRoot, "extra.json"), "utf8"))
       .toBe("extra");
+  });
+
+  it("rejects incomplete v3 presentation metadata", async () => {
+    const root = temporaryRoot();
+    const inputRoot = join(root, "input");
+    writeUpstream(inputRoot);
+    const catalogPath = join(inputRoot, "catalog.json");
+    const catalog = JSON.parse(readFileSync(catalogPath, "utf8")) as {
+      scenes: Array<Record<string, unknown>>;
+    };
+    delete catalog.scenes[0].featured;
+    writeFileSync(catalogPath, JSON.stringify(catalog), "utf8");
+
+    await expect(prepareTask2Scenes({
+      inputRoot,
+      baselineRoot: resolve("public/data/integration-cases"),
+      outputRoot: join(root, "output")
+    })).rejects.toThrow();
   });
 });

@@ -219,6 +219,12 @@ export const decisionTraceFixture = {
           workUnitIds: ["ST-0001"]
         }
       ],
+      facts: [{
+        code: "ALLOCATED_TASK_COUNT",
+        value: 1,
+        unit: "COUNT",
+        objectIds: ["REG-001"]
+      }],
       metrics: missionViewFixture.metrics,
       validationChecks: [],
       rejectionCodes: [],

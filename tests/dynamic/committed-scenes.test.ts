@@ -36,9 +36,13 @@ async function loadDynamicSceneFromDisk(
     "scene.json",
     "baseline.bundle.json",
     "mission_view.v1.json",
+    "dynamic_events.json",
     "decision_trace.v1.json",
     ...(entry.failureReportUrl === null ? [] : [entry.failureReportUrl])
   ];
+  expect(Object.keys(provenance.packagedSha256).sort()).toEqual(
+    [...names].sort()
+  );
   const values = new Map<string, unknown>();
   for (const name of names) {
     const path = resolve(root, name);
@@ -70,19 +74,59 @@ describe("committed Task 2 scenes", () => {
     );
   });
 
-  it("loads all four committed Task 2 scenes offline", async () => {
-    const catalog = parseDynamicSceneCatalog(await readJson(
+  it("loads all nine provenance-verified Task 2 scenes offline", async () => {
+    const catalogValue = await readJson(
       resolve("public/data/task2/scenes/catalog.json")
-    ));
+    );
+    const catalog = parseDynamicSceneCatalog(catalogValue);
+    expect((catalogValue as {version: number}).version).toBe(3);
     expect(catalog.scenes.map(item => item.sceneId)).toEqual([
       "resource-lost",
       "low-fuel-return",
       "new-area-task",
-      "hard-deadline-fallback"
+      "hard-deadline-fallback",
+      "task-cancelled",
+      "task-priority-raised",
+      "task-dependency-changed",
+      "event-conflict-resolution",
+      "comprehensive-multi-event"
     ]);
+    expect(catalog.scenes.map(item => item.category)).toEqual([
+      "foundation",
+      "foundation",
+      "foundation",
+      "foundation",
+      "task_change",
+      "task_change",
+      "task_change",
+      "event_governance",
+      "comprehensive"
+    ]);
+    expect(catalog.scenes.every(
+      item => item.dataNature === "SIMULATED_PIPELINE_RESULT"
+    )).toBe(true);
+    expect(catalog.scenes.at(-1)).toMatchObject({
+      sceneId: "comprehensive-multi-event",
+      category: "comprehensive",
+      dataNature: "SIMULATED_PIPELINE_RESULT",
+      featured: true
+    });
     for (const entry of catalog.scenes) {
       const loaded = await loadDynamicSceneFromDisk(entry);
       const scene = buildDynamicScene(loaded);
+      expect(loaded.config).toMatchObject({
+        sceneId: entry.sceneId,
+        displayName: entry.displayName,
+        summary: entry.summary,
+        resultStatus: entry.resultStatus
+      });
+      expect(loaded.view.activePlan.planStatus).toBe(entry.resultStatus);
+      expect(entry.failureReportUrl !== null).toBe(
+        entry.resultStatus === "PARTIAL_SAFE_FALLBACK"
+      );
+      expect(loaded.failureReport !== null).toBe(
+        entry.resultStatus === "PARTIAL_SAFE_FALLBACK"
+      );
       expect(scene.eventTimeSec).toBeGreaterThan(0);
     }
   });

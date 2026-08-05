@@ -27,7 +27,7 @@ import {
   caseCatalogSchema
 } from "../src/features/cases/catalogSchema";
 import {
-  dynamicSceneCatalogSchema,
+  rawDynamicSceneCatalogSchema,
   sceneConfigSchema,
   sceneProvenanceSchema
 } from "../src/features/dynamic-replanning/dynamicSceneSchema";
@@ -167,7 +167,7 @@ async function buildExpectedFiles(
     resolve(inputRoot, "catalog.json"),
     "catalog.json"
   );
-  const upstreamCatalog = dynamicSceneCatalogSchema.parse(
+  const upstreamCatalog = rawDynamicSceneCatalogSchema.parse(
     upstreamCatalogFile.value
   );
   const baselineCatalogFile = await readJson(
@@ -330,7 +330,7 @@ async function buildExpectedFiles(
   }
 
   expected.set("catalog.json", canonicalJson({
-    version: 2,
+    version: upstreamCatalog.version,
     defaultSceneId: upstreamCatalog.defaultSceneId,
     scenes: packagedEntries
   }));

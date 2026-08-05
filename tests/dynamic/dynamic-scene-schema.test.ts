@@ -7,7 +7,9 @@ import {
   scenePackageSchema,
   sceneProvenanceSchema
 } from "../../src/features/dynamic-replanning/dynamicSceneSchema";
+import {decisionTraceV1Schema} from "../../src/features/dynamic-replanning/decisionTraceSchema";
 import {
+  decisionTraceFixture,
   sceneConfigFixture,
   scenePackageFixture,
   sceneProvenanceFixture
@@ -65,6 +67,16 @@ describe("dynamic scene package schemas", () => {
         scenes: [catalog.scenes[0], catalog.scenes[0]]
       })).toThrow();
     }
+  });
+
+  it("accepts structured candidate facts", () => {
+    const trace = decisionTraceV1Schema.parse(decisionTraceFixture);
+
+    expect(trace.candidates[0].facts[0]).toMatchObject({
+      code: "ALLOCATED_TASK_COUNT",
+      value: 1,
+      unit: "COUNT"
+    });
   });
 
   it("normalizes v2 and v3 catalogs to presentation metadata", () => {

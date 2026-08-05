@@ -1,0 +1,1 @@
+{"batchId":"B-DEMO-TASK-CANCELLED","events":[{"affectedObjectId":"T-A","eventId":"EV-DEMO-TASK-CANCELLED","eventTimeSec":30,"eventType":"TASK_CANCELLED","idempotencyKey":null,"normalizedPayloadHash":null,"payload":{"kind":"EMPTY"},"priority":0,"status":"RECEIVED"}],"missionId":"MIS-R01-BASELINE-01","missionTimeSec":30,"snapshotId":"SNAP-PENDING","sourcePlanVersion":1}

@@ -30,6 +30,13 @@ const candidateAllocationSchema = z.object({
   workUnitIds: z.array(nonEmptyString)
 }).strict();
 
+export const decisionFactSchema = z.object({
+  code: nonEmptyString,
+  value: z.unknown(),
+  unit: nonEmptyString.nullable(),
+  objectIds: z.array(nonEmptyString)
+}).strict();
+
 const decisionCandidateSchema = z.object({
   candidateId: nonEmptyString,
   level: z.enum([
@@ -49,6 +56,7 @@ const decisionCandidateSchema = z.object({
   affectedTaskIds: z.array(nonEmptyString),
   affectedResourceIds: z.array(nonEmptyString),
   allocations: z.array(candidateAllocationSchema),
+  facts: z.array(decisionFactSchema).default([]),
   metrics: rankingMetricsSchema.nullable(),
   validationChecks: z.array(decisionValidationCheckSchema),
   rejectionCodes: z.array(nonEmptyString),
@@ -63,12 +71,7 @@ const decisionStageSchema = z.object({
   actualDurationMs: nonNegative,
   affectedEventIds: z.array(nonEmptyString),
   affectedObjectIds: z.array(nonEmptyString),
-  facts: z.array(z.object({
-    code: nonEmptyString,
-    value: z.unknown(),
-    unit: nonEmptyString.nullable(),
-    objectIds: z.array(nonEmptyString)
-  }).strict()),
+  facts: z.array(decisionFactSchema),
   candidateIds: z.array(nonEmptyString),
   validationCheckIds: z.array(nonEmptyString),
   failureCodes: z.array(nonEmptyString),
