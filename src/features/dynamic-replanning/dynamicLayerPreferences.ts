@@ -27,6 +27,7 @@ const HEX_COLOR = /^#[0-9A-F]{6}$/iu;
 
 export const DEFAULT_CHANGE_COLORS = {
   baseline: "#808C97",
+  baseline_flown: "#808C97",
   baseline_locked: "#4D5761",
   baseline_reused: "#26C7DA",
   dynamic_modified: "#FFA630",

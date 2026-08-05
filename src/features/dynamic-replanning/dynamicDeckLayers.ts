@@ -27,6 +27,7 @@ type DeckPoint = [number, number, number];
 
 export const CHANGE_COLORS = {
   baseline: [128, 140, 151, 150],
+  baseline_flown: [128, 140, 151, 255],
   baseline_locked: [77, 87, 97, 255],
   baseline_reused: [38, 199, 218, 255],
   dynamic_modified: [255, 166, 48, 255],
@@ -98,9 +99,8 @@ function colorFor(
   ) {
     return hexColor(preferences.resourceColors[resourceId]);
   }
-  const id = changeType === "baseline_flown" ? "baseline" : changeType;
   return hexColor(
-    preferences.changeColors[id] ??
+    preferences.changeColors[changeType] ??
     preferences.changeColors.baseline
   );
 }

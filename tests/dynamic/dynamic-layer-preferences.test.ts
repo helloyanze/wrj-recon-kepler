@@ -15,6 +15,7 @@ describe("Task 2 layer preferences", () => {
       ["UAV-02", "UAV-01"]
     );
     expect(defaults.colorMode).toBe("change");
+    expect(defaults.changeColors.baseline_flown).toBe("#808C97");
     expect(Object.keys(defaults.resourceColors)).toEqual(["UAV-01", "UAV-02"]);
 
     saveDynamicLayerPreferences({

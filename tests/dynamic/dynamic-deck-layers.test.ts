@@ -10,6 +10,9 @@ import {
   CHANGE_COLORS,
   createDynamicDeckLayers
 } from "../../src/features/dynamic-replanning/dynamicDeckLayers";
+import {
+  createDefaultDynamicLayerPreferences
+} from "../../src/features/dynamic-replanning/dynamicLayerPreferences";
 import type {
   DynamicPlaybackPhase,
   DynamicPlaybackState
@@ -73,6 +76,32 @@ describe("dynamic Deck layers", () => {
       .toEqual([57, 217, 138]);
     expect(CHANGE_COLORS.dynamic_cancelled)
       .toEqual([238, 82, 83, 255]);
+  });
+
+  it("uses the independently editable flown-segment color", () => {
+    const preferences = createDefaultDynamicLayerPreferences(
+      scene.config.sceneId,
+      [...scene.resourcesById.keys()]
+    );
+    preferences.changeColors.baseline = "#112233";
+    preferences.changeColors.baseline_flown = "#445566";
+    const active = createDynamicDeckLayers({
+      ...optionsFor("PLAN_TRANSITION"),
+      preferences
+    }).find(layer => layer.id === "wrj-task2-active-paths");
+    const getColor = (active as unknown as {
+      props: {
+        getColor(value: {
+          changeType: "baseline_flown";
+          resourceId: string;
+        }): number[];
+      };
+    }).props.getColor;
+
+    expect(getColor({
+      changeType: "baseline_flown",
+      resourceId: "UAV-01"
+    }).slice(0, 3)).toEqual([68, 85, 102]);
   });
 
   it("shows the event halo only during alert and impact", () => {

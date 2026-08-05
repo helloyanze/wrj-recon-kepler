@@ -47,7 +47,6 @@ import {
   type DynamicDrawerContent
 } from "./dynamic/DynamicDetailDrawer";
 import {DynamicLayerSidebar} from "./dynamic/DynamicLayerSidebar";
-import {DynamicLegend} from "./dynamic/DynamicLegend";
 import {DynamicStatusBanner} from "./dynamic/DynamicStatusBanner";
 import {DynamicTimeline} from "./dynamic/DynamicTimeline";
 import {MissionWorkbenchShell} from "./workspace/MissionWorkbenchShell";
@@ -128,6 +127,7 @@ function ReadyDynamicWorkspace({
   const dispatch = useDispatch<AppDispatch>();
   const playback = useDynamicPlayback(scene);
   const [verticalScale, setVerticalScale] = useState<VerticalScale>(1);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [drawerContent, setDrawerContent] =
     useState<DynamicDrawerContent>(null);
   const [manualStageIndex, setManualStageIndex] =
@@ -283,20 +283,32 @@ function ReadyDynamicWorkspace({
         </>
       )}
       sidebarClassName="ready"
+      sidebarCollapsed={sidebarCollapsed}
       sidebar={(
-        <DynamicLayerSidebar
-          scene={scene}
-          playback={playback}
-          preferences={layerPreferences}
-          onChange={updateLayerPreferences}
-          onRestoreDefaults={restoreLayerDefaults}
-          onSelectResource={resourceId =>
-            setDrawerContent({type: "resource", resourceId})
-          }
-          onSelectTask={taskId =>
-            setDrawerContent({type: "task", taskId})
-          }
-        />
+        sidebarCollapsed ? (
+          <aside
+            className="task2-layer-sidebar-collapsed"
+            aria-label="图层"
+            data-collapsed="true"
+          >
+            <button
+              type="button"
+              aria-label="展开图层"
+              onClick={() => setSidebarCollapsed(false)}
+            >
+              &gt;
+            </button>
+          </aside>
+        ) : (
+          <DynamicLayerSidebar
+            scene={scene}
+            playback={playback}
+            preferences={layerPreferences}
+            onChange={updateLayerPreferences}
+            onRestoreDefaults={restoreLayerDefaults}
+            onCollapse={() => setSidebarCollapsed(true)}
+          />
+        )
       )}
       map={(
         <MapView
@@ -308,14 +320,11 @@ function ReadyDynamicWorkspace({
         />
       )}
       mapOverlays={(
-        <>
-          <DynamicLegend />
-          <DynamicDetailDrawer
-            scene={scene}
-            content={drawerContent}
-            onClose={() => setDrawerContent(null)}
-          />
-        </>
+        <DynamicDetailDrawer
+          scene={scene}
+          content={drawerContent}
+          onClose={() => setDrawerContent(null)}
+        />
       )}
       timeline={(
         <DynamicTimeline

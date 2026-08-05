@@ -183,9 +183,8 @@ describe("dynamic workspace", () => {
     fireEvent.click(screen.getByRole("button", {
       name: "任务二 动态重规划"
     }));
-    expect(screen.getByRole("heading", {
-      name: "无人机失联"
-    })).toBeInTheDocument();
+    expect(screen.getByRole("heading", {name: "图层与航迹"}))
+      .toBeInTheDocument();
     expect(screen.getByRole("region", {
       name: "动态重规划时间轴"
     })).toBeInTheDocument();
@@ -208,5 +207,54 @@ describe("dynamic workspace", () => {
     expect(runtime.playback?.restart).toHaveBeenCalledOnce();
     expect(screen.getByTestId("dynamic-map"))
       .toHaveAttribute("data-has-overlay", "true");
+  });
+
+  it("collapses and restores the Task 2 layer sidebar", () => {
+    renderWithStore(
+      <DynamicReplanningWorkspace
+        basemap={basemap}
+        debugMode={false}
+        dataBase="/data"
+        MapView={MapView}
+      />
+    );
+
+    expect(screen.queryByRole("region", {name: "动态变化图例"}))
+      .not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", {name: "收起图层"}));
+    expect(screen.queryByRole("heading", {name: "图层与航迹"}))
+      .not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", {name: "展开图层"}));
+    expect(screen.getByRole("heading", {name: "图层与航迹"}))
+      .toBeInTheDocument();
+  });
+
+  it("preserves layer preferences while the sidebar is collapsed", () => {
+    renderWithStore(
+      <DynamicReplanningWorkspace
+        basemap={basemap}
+        debugMode={false}
+        dataBase="/data"
+        MapView={MapView}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", {
+      name: "编辑 当前方案航迹"
+    }));
+    fireEvent.change(screen.getByRole("slider", {
+      name: "当前方案航迹 不透明度"
+    }), {target: {value: "0.35"}});
+    fireEvent.click(screen.getByRole("button", {name: "收起图层"}));
+    fireEvent.click(screen.getByRole("button", {name: "展开图层"}));
+    fireEvent.click(screen.getByRole("button", {
+      name: "编辑 当前方案航迹"
+    }));
+
+    expect(screen.getByRole("slider", {
+      name: "当前方案航迹 不透明度"
+    })).toHaveValue("0.35");
+    expect(screen.getByRole("combobox", {name: "选择动态场景"}))
+      .toHaveValue("resource-lost");
   });
 });
