@@ -18,6 +18,17 @@ const nonNegativeInteger = z.number().int().nonnegative();
 const positiveInteger = z.number().int().positive();
 const sha256Schema = z.string().regex(/^[a-f0-9]{64}$/iu);
 
+export const dynamicSceneCategories = [
+  "foundation",
+  "task_change",
+  "event_governance",
+  "comprehensive"
+] as const;
+
+export const dynamicSceneDataNatures = [
+  "SIMULATED_PIPELINE_RESULT"
+] as const;
+
 export const sceneConfigSchema = z.object({
   schemaVersion: z.literal("task2-demo-scene.v2"),
   sceneId: nonEmptyString,
@@ -40,14 +51,21 @@ export const sceneConfigSchema = z.object({
   }).strict()
 }).strict();
 
-export const scenePackageSchema = z.object({
+const scenePackageBaseSchema = z.object({
   sceneId: nonEmptyString,
   displayName: nonEmptyString,
   summary: nonEmptyString,
   baseUrl: nonEmptyString,
   resultStatus: z.enum(["COMPLETE", "PARTIAL_SAFE_FALLBACK"]),
   failureReportUrl: nonEmptyString.nullable()
-}).strict().superRefine((entry, context) => {
+}).strict();
+
+type RawScenePackage = z.infer<typeof scenePackageBaseSchema>;
+
+function refineScenePackage(
+  entry: RawScenePackage,
+  context: z.RefinementCtx
+): void {
   if (
     entry.resultStatus === "PARTIAL_SAFE_FALLBACK" &&
     entry.failureReportUrl === null
@@ -68,13 +86,27 @@ export const scenePackageSchema = z.object({
       message: "complete scene must not reference a failure report"
     });
   }
-});
+}
 
-export const dynamicSceneCatalogSchema = z.object({
-  version: z.literal(2),
-  defaultSceneId: nonEmptyString,
-  scenes: z.array(scenePackageSchema).min(1)
-}).strict().superRefine((catalog, context) => {
+export const scenePackageSchema = scenePackageBaseSchema.superRefine(
+  refineScenePackage
+);
+
+export const scenePackageV3Schema = scenePackageBaseSchema.extend({
+  category: z.enum(dynamicSceneCategories),
+  dataNature: z.enum(dynamicSceneDataNatures),
+  featured: z.boolean()
+}).strict().superRefine(refineScenePackage);
+
+interface RawCatalogShape {
+  defaultSceneId: string;
+  scenes: Array<{sceneId: string}>;
+}
+
+function refineCatalog(
+  catalog: RawCatalogShape,
+  context: z.RefinementCtx
+): void {
   const ids = new Set<string>();
   catalog.scenes.forEach((scene, index) => {
     if (ids.has(scene.sceneId)) {
@@ -93,7 +125,45 @@ export const dynamicSceneCatalogSchema = z.object({
       message: "defaultSceneId must reference a catalog scene"
     });
   }
-});
+}
+
+export const dynamicSceneCatalogSchema = z.object({
+  version: z.literal(2),
+  defaultSceneId: nonEmptyString,
+  scenes: z.array(scenePackageSchema).min(1)
+}).strict().superRefine(refineCatalog);
+
+export const dynamicSceneCatalogV3Schema = z.object({
+  version: z.literal(3),
+  defaultSceneId: nonEmptyString,
+  scenes: z.array(scenePackageV3Schema).min(1)
+}).strict().superRefine(refineCatalog);
+
+export const rawDynamicSceneCatalogSchema = z.union([
+  dynamicSceneCatalogSchema,
+  dynamicSceneCatalogV3Schema
+]);
+
+export type DynamicSceneCatalog = z.infer<
+  typeof dynamicSceneCatalogV3Schema
+>;
+
+export function parseDynamicSceneCatalog(
+  value: unknown
+): DynamicSceneCatalog {
+  const catalog = rawDynamicSceneCatalogSchema.parse(value);
+  if (catalog.version === 3) return catalog;
+  return {
+    version: 3,
+    defaultSceneId: catalog.defaultSceneId,
+    scenes: catalog.scenes.map(scene => ({
+      ...scene,
+      category: "foundation",
+      dataNature: "SIMULATED_PIPELINE_RESULT",
+      featured: false
+    }))
+  };
+}
 
 const hashRecordSchema = z.record(sha256Schema);
 
@@ -116,14 +186,11 @@ export const upstreamScenePackageSchema = z.object({
   provenance: sceneProvenanceSchema
 }).strict();
 
-export type DynamicSceneCatalog = z.infer<
-  typeof dynamicSceneCatalogSchema
->;
 export type DynamicSceneCatalogEntry =
   DynamicSceneCatalog["scenes"][number];
 export type SceneConfig = z.infer<typeof sceneConfigSchema>;
 export type SceneProvenance = z.infer<typeof sceneProvenanceSchema>;
-export type ScenePackageDescriptor = z.infer<typeof scenePackageSchema>;
+export type ScenePackageDescriptor = DynamicSceneCatalogEntry;
 
 export interface LoadedDynamicScenePackage {
   config: SceneConfig;

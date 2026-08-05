@@ -7,7 +7,7 @@ import {caseBundleSchema} from "../../src/features/cases/caseBundle";
 import {buildDynamicScene} from "../../src/features/dynamic-replanning/buildDynamicScene";
 import {decisionTraceV1Schema} from "../../src/features/dynamic-replanning/decisionTraceSchema";
 import {
-  dynamicSceneCatalogSchema,
+  parseDynamicSceneCatalog,
   sceneConfigSchema,
   sceneProvenanceSchema,
   type DynamicSceneCatalogEntry,
@@ -71,7 +71,7 @@ describe("committed Task 2 scenes", () => {
   });
 
   it("loads all four committed Task 2 scenes offline", async () => {
-    const catalog = dynamicSceneCatalogSchema.parse(await readJson(
+    const catalog = parseDynamicSceneCatalog(await readJson(
       resolve("public/data/task2/scenes/catalog.json")
     ));
     expect(catalog.scenes.map(item => item.sceneId)).toEqual([

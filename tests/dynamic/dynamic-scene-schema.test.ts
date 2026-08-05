@@ -2,6 +2,7 @@ import {describe, expect, it} from "vitest";
 
 import {
   dynamicSceneCatalogSchema,
+  parseDynamicSceneCatalog,
   sceneConfigSchema,
   scenePackageSchema,
   sceneProvenanceSchema
@@ -11,6 +12,23 @@ import {
   scenePackageFixture,
   sceneProvenanceFixture
 } from "../fixtures/task2MissionViewFixture";
+
+const v2Catalog = {
+  version: 2,
+  defaultSceneId: "resource-lost",
+  scenes: [scenePackageFixture]
+};
+
+const v3Catalog = {
+  version: 3,
+  defaultSceneId: "resource-lost",
+  scenes: [{
+    ...scenePackageFixture,
+    category: "comprehensive",
+    dataNature: "SIMULATED_PIPELINE_RESULT",
+    featured: true
+  }]
+};
 
 describe("dynamic scene package schemas", () => {
   it("accepts scene configuration and provenance", () => {
@@ -36,19 +54,49 @@ describe("dynamic scene package schemas", () => {
   });
 
   it("requires the default scene to exist and scene ids to be unique", () => {
-    const catalog = {
-      version: 2,
-      defaultSceneId: "resource-lost",
-      scenes: [scenePackageFixture]
-    };
-    expect(dynamicSceneCatalogSchema.parse(catalog).scenes).toHaveLength(1);
-    expect(() => dynamicSceneCatalogSchema.parse({
-      ...catalog,
-      defaultSceneId: "missing"
-    })).toThrow();
-    expect(() => dynamicSceneCatalogSchema.parse({
-      ...catalog,
-      scenes: [scenePackageFixture, scenePackageFixture]
-    })).toThrow();
+    expect(dynamicSceneCatalogSchema.parse(v2Catalog).scenes).toHaveLength(1);
+    for (const catalog of [v2Catalog, v3Catalog]) {
+      expect(() => parseDynamicSceneCatalog({
+        ...catalog,
+        defaultSceneId: "missing"
+      })).toThrow();
+      expect(() => parseDynamicSceneCatalog({
+        ...catalog,
+        scenes: [catalog.scenes[0], catalog.scenes[0]]
+      })).toThrow();
+    }
+  });
+
+  it("normalizes v2 and v3 catalogs to presentation metadata", () => {
+    expect(parseDynamicSceneCatalog(v3Catalog).scenes[0]).toMatchObject({
+      category: "comprehensive",
+      dataNature: "SIMULATED_PIPELINE_RESULT",
+      featured: true
+    });
+    expect(parseDynamicSceneCatalog(v2Catalog).scenes[0]).toMatchObject({
+      category: "foundation",
+      dataNature: "SIMULATED_PIPELINE_RESULT",
+      featured: false
+    });
+  });
+
+  it("enforces failure-report consistency for both catalog versions", () => {
+    for (const catalog of [v2Catalog, v3Catalog]) {
+      expect(() => parseDynamicSceneCatalog({
+        ...catalog,
+        scenes: [{
+          ...catalog.scenes[0],
+          resultStatus: "PARTIAL_SAFE_FALLBACK",
+          failureReportUrl: null
+        }]
+      })).toThrow();
+      expect(() => parseDynamicSceneCatalog({
+        ...catalog,
+        scenes: [{
+          ...catalog.scenes[0],
+          failureReportUrl: "failure_report.json"
+        }]
+      })).toThrow();
+    }
   });
 });

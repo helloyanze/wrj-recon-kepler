@@ -6,6 +6,7 @@ import {describe, expect, it} from "vitest";
 import type {DynamicSceneCatalogEntry} from "../../src/features/dynamic-replanning/dynamicSceneSchema";
 import {
   loadDynamicScene,
+  loadDynamicSceneCatalog,
   sha256Hex,
   type DynamicFetch
 } from "../../src/features/dynamic-replanning/loadDynamicScene";
@@ -21,7 +22,10 @@ const baseline = JSON.parse(readFileSync(resolve(
 ), "utf8")) as unknown;
 
 const catalogEntry: DynamicSceneCatalogEntry = {
-  ...scenePackageFixture
+  ...scenePackageFixture,
+  category: "foundation",
+  dataNature: "SIMULATED_PIPELINE_RESULT",
+  featured: false
 };
 
 async function sceneFiles(
@@ -70,6 +74,41 @@ function fakeFetch(files: Map<string, string>): DynamicFetch {
 }
 
 describe("loadDynamicScene", () => {
+  it.each([
+    {
+      version: 2,
+      expected: {
+        category: "foundation",
+        dataNature: "SIMULATED_PIPELINE_RESULT",
+        featured: false
+      }
+    },
+    {
+      version: 3,
+      expected: {
+        category: "comprehensive",
+        dataNature: "SIMULATED_PIPELINE_RESULT",
+        featured: true
+      }
+    }
+  ])("normalizes catalog v$version metadata", async ({version, expected}) => {
+    const scene = version === 3
+      ? {...scenePackageFixture, ...expected}
+      : scenePackageFixture;
+    const files = new Map([["catalog.json", JSON.stringify({
+      version,
+      defaultSceneId: scene.sceneId,
+      scenes: [scene]
+    })]]);
+
+    const catalog = await loadDynamicSceneCatalog(
+      "/data",
+      fakeFetch(files)
+    );
+
+    expect(catalog.scenes[0]).toMatchObject(expected);
+  });
+
   it("hashes bytes returned by Response.arrayBuffer in jsdom", async () => {
     const responseBytes = new Uint8Array(
       await new Response("abc").arrayBuffer()

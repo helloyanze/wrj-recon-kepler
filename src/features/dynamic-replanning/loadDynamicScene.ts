@@ -1,10 +1,11 @@
 import {caseBundleSchema} from "../cases/caseBundle";
+import {ZodError} from "zod";
 import {decisionTraceV1Schema} from "./decisionTraceSchema";
 import {
-  dynamicSceneCatalogSchema,
   type DynamicSceneCatalog,
   type DynamicSceneCatalogEntry,
   type LoadedDynamicScenePackage,
+  parseDynamicSceneCatalog,
   sceneConfigSchema,
   sceneProvenanceSchema
 } from "./dynamicSceneSchema";
@@ -128,7 +129,18 @@ export async function loadDynamicSceneCatalog(
     fetcher,
     signal
   );
-  return parseSchema(filename, value, dynamicSceneCatalogSchema);
+  try {
+    return parseDynamicSceneCatalog(value);
+  } catch (error) {
+    if (!(error instanceof ZodError)) throw error;
+    const issue = error.issues[0];
+    const path = issue?.path.length
+      ? issue.path.join(".")
+      : "<root>";
+    throw new Error(
+      `${filename}: ${path}: ${issue?.message ?? "validation failed"}`
+    );
+  }
 }
 
 export async function loadDynamicScene(

@@ -120,6 +120,9 @@ beforeEach(() => {
       baseUrl: "task2/scenes/resource-lost",
       resultStatus: "COMPLETE",
       failureReportUrl: null,
+      category: "foundation",
+      dataNature: "SIMULATED_PIPELINE_RESULT",
+      featured: false,
       disabled: false,
       error: null
     }],
