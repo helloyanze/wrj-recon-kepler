@@ -128,12 +128,16 @@ describe("dynamic Deck layers", () => {
     const baselineLayer = layers.find(layer =>
       layer.id === "wrj-task2-baseline-paths"
     );
-    const taskGetFillColor = taskLayer?.props.getFillColor as (
+    const taskGetFillColor = (taskLayer?.props as unknown as {
+      getFillColor: (
       value: {taskId: string}
-    ) => number[];
-    const baselineGetColor = baselineLayer?.props.getColor as (
+      ) => number[];
+    }).getFillColor;
+    const baselineGetColor = (baselineLayer?.props as unknown as {
+      getColor: (
       value: {resourceId: string}
-    ) => number[];
+      ) => number[];
+    }).getColor;
     expect(taskGetFillColor({taskId: "REG-001"}).slice(0, 3))
       .toEqual([17, 34, 51]);
     expect(baselineGetColor({resourceId: "UAV-01"}).slice(0, 3))
