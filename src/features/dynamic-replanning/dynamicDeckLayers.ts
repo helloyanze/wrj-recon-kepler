@@ -5,6 +5,7 @@ import type {VerticalScale} from "../mission/missionLayerPreferences";
 import type {
   DynamicPathChangeType,
   DynamicScene,
+  DynamicTaskExtension,
   DynamicTaskPolygon,
   DynamicTimedPath,
   DynamicWorkPath
@@ -102,6 +103,30 @@ function colorFor(
   return hexColor(
     preferences.changeColors[changeType] ??
     preferences.changeColors.baseline
+  );
+}
+
+function taskColor(
+  taskId: string,
+  preferences: DynamicLayerPreferencesV1
+): DeckColor {
+  return hexColor(preferences.taskColors[taskId] ?? "#36A2AE");
+}
+
+function activeRouteColor(
+  changeType: DynamicPathChangeType,
+  resourceId: string,
+  preferences: DynamicLayerPreferencesV1
+): DeckColor {
+  if (preferences.colorMode === "resource") {
+    return hexColor(
+      preferences.resourceColors[resourceId] ??
+      preferences.changeColors.dynamic_new
+    );
+  }
+  return hexColor(
+    preferences.changeColors[changeType] ??
+    preferences.changeColors.dynamic_modified
   );
 }
 
@@ -229,9 +254,12 @@ export function createDynamicDeckLayers({
   const published = isPlanPublished(playback);
   const taskAreas = scene.taskPolygons
     .filter(task => published || task.changeType !== "dynamic_new")
-    .map(task => published
-      ? task
-      : {...task, changeType: "baseline_reused" as const});
+    .map(task => ({
+      ...task,
+      polygon: published
+        ? task.currentPolygon
+        : task.originalPolygon ?? task.currentPolygon
+    }));
   const workPaths = published ? scene.workPaths : [];
 
   return [
@@ -246,10 +274,25 @@ export function createDynamicDeckLayers({
       getPolygon: task => task.polygon.map(
         point => scalePoint(point, verticalScale)
       ),
-      getFillColor: task => colorFor(task.changeType, preferences),
-      getLineColor: task => colorFor(task.changeType, preferences),
+      getFillColor: task => taskColor(task.taskId, preferences),
+      getLineColor: task => taskColor(task.taskId, preferences),
       lineWidthMinPixels: 1,
       ...selectable(onSelectTask, task => task.taskId)
+    }),
+    new PolygonLayer<DynamicTaskExtension>({
+      id: "wrj-task2-task-extensions",
+      data: scene.taskExtensions,
+      visible: published && preferences.layers.taskAreas.visible,
+      pickable: false,
+      filled: true,
+      stroked: true,
+      opacity: preferences.layers.taskAreas.opacity,
+      getPolygon: extension => extension.polygon.map(ring => ring.map(
+        point => scalePoint(point, verticalScale)
+      )),
+      getFillColor: hexColor(preferences.taskExtensionColor, 90),
+      getLineColor: hexColor(preferences.taskExtensionColor),
+      lineWidthMinPixels: 2
     }),
     new PathLayer<DynamicTimedPath>({
       id: "wrj-task2-baseline-paths",
@@ -263,7 +306,7 @@ export function createDynamicDeckLayers({
       getPath: path => path.timedPath.map(
         point => scalePoint(point, verticalScale)
       ),
-      getColor: path => colorFor("baseline", preferences, path.resourceId),
+      getColor: () => hexColor(preferences.baselineRouteColor),
       opacity: preferences.layers.baselineRoutes.opacity *
         (playback.phase === "RESULT_HOLD" ? 0.3 : 1),
       ...selectable(onSelectSegment, path => path.segmentId)
@@ -279,10 +322,10 @@ export function createDynamicDeckLayers({
       ) + (path.changeType === "dynamic_modified" ? 1 : 0),
       getPath: path => path.renderedPath,
       getColor: path => {
-        const color = colorFor(
+        const color = activeRouteColor(
           path.changeType,
-          preferences,
-          path.resourceId
+          path.resourceId,
+          preferences
         );
         return path.changeType === "dynamic_cancelled"
           ? [color[0], color[1], color[2], Math.round(255 * (1 - progress))]

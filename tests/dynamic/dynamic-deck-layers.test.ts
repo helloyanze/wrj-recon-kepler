@@ -62,6 +62,7 @@ describe("dynamic Deck layers", () => {
     const layers = createDynamicDeckLayers(optionsFor("PLAN_TRANSITION"));
     expect(layers.map(layer => layer.id)).toEqual([
       "wrj-task2-task-polygons",
+      "wrj-task2-task-extensions",
       "wrj-task2-baseline-paths",
       "wrj-task2-active-paths",
       "wrj-task2-work-unit-paths",
@@ -106,6 +107,37 @@ describe("dynamic Deck layers", () => {
       changeType: "baseline_flown",
       resourceId: "UAV-01"
     }).slice(0, 3)).toEqual([68, 85, 102]);
+  });
+
+  it("keeps task and baseline colors independent from route mode", () => {
+    const preferences = createDefaultDynamicLayerPreferences(
+      scene.config.sceneId,
+      [...scene.resourcesById.keys()],
+      [...scene.tasksById.keys()]
+    );
+    preferences.taskColors["REG-001"] = "#112233";
+    preferences.baselineRouteColor = "#445566";
+    preferences.colorMode = "resource";
+    const layers = createDynamicDeckLayers({
+      ...optionsFor("RESULT_HOLD"),
+      preferences
+    });
+    const taskLayer = layers.find(layer =>
+      layer.id === "wrj-task2-task-polygons"
+    );
+    const baselineLayer = layers.find(layer =>
+      layer.id === "wrj-task2-baseline-paths"
+    );
+    const taskGetFillColor = taskLayer?.props.getFillColor as (
+      value: {taskId: string}
+    ) => number[];
+    const baselineGetColor = baselineLayer?.props.getColor as (
+      value: {resourceId: string}
+    ) => number[];
+    expect(taskGetFillColor({taskId: "REG-001"}).slice(0, 3))
+      .toEqual([17, 34, 51]);
+    expect(baselineGetColor({resourceId: "UAV-01"}).slice(0, 3))
+      .toEqual([68, 85, 102]);
   });
 
   it("shows the event halo only during alert and impact", () => {
