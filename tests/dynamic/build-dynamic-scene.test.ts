@@ -58,6 +58,24 @@ describe("buildDynamicScene", () => {
       [point.xM, point.yM, point.zM],
       baseline.displayTransform
     ));
+    expect(scene.rawEvents).toEqual(dynamicEventsFixture.events);
+    expect(scene.taskPolygons[0]).toMatchObject({
+      relation: "expanded",
+      spatialRelation: "overlap",
+      overlappingTaskIds: ["T-B"]
+    });
+    expect(scene.taskPolygons[0].originalPolygon).not.toBeNull();
+    expect(scene.taskPolygons[0].currentPolygon).toEqual(
+      scene.taskPolygons[0].polygon
+    );
+    expect(scene.taskExtensions).toHaveLength(1);
+    expect(scene.taskExtensions[0]).toMatchObject({taskId: "REG-001"});
+  });
+
+  it("keeps legacy packages without geometry diff renderable", () => {
+    const scene = buildDynamicScene({...loadedPackage(), geometryDiff: null});
+    expect(scene.taskExtensions).toEqual([]);
+    expect(scene.taskPolygons[0].originalPolygon).toBeNull();
   });
 
   it("distributes point time by cumulative local distance", () => {

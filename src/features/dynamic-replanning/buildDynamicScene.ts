@@ -2,6 +2,13 @@ import type {
   DecisionTraceV1
 } from "./decisionTraceSchema";
 import type {
+  DynamicEvent
+} from "./dynamicEventSchema";
+import type {
+  TaskGeometryDiffV1,
+  TaskGeometryContext
+} from "./taskGeometryDiffSchema";
+import type {
   DisplayTransform,
   LocalPoint as BaselineLocalPoint,
   MapPoint,
@@ -42,7 +49,20 @@ export interface DynamicTaskPolygon {
   taskId: string;
   status: MissionViewV1["tasks"][number]["status"];
   changeType: ChangeType;
+  relation: TaskGeometryContext["relation"];
+  spatialRelation: TaskGeometryContext["spatialRelation"];
+  overlappingTaskIds: string[];
+  originalPolygon: MapPoint[] | null;
+  currentPolygon: MapPoint[];
   polygon: MapPoint[];
+}
+
+export interface DynamicTaskExtension {
+  extensionId: string;
+  taskId: string;
+  polygon: MapPoint[][];
+  extensionAreaM2: number;
+  extensionRatio: number;
 }
 
 export interface DynamicWorkPath {
@@ -59,6 +79,8 @@ export interface DynamicScene {
   baseline: LoadedDynamicScenePackage["baseline"];
   view: MissionViewV1;
   decisionTrace: DecisionTraceV1;
+  rawEvents: DynamicEvent[];
+  geometryDiff: TaskGeometryDiffV1 | null;
   events: MissionViewV1["eventTimeline"];
   primaryEvent: MissionViewV1["eventTimeline"][number];
   eventTimeSec: number;
@@ -67,6 +89,7 @@ export interface DynamicScene {
   baselinePaths: DynamicTimedPath[];
   activePaths: DynamicTimedPath[];
   taskPolygons: DynamicTaskPolygon[];
+  taskExtensions: DynamicTaskExtension[];
   workPaths: DynamicWorkPath[];
   eventPosition: MapPoint;
   metricCards: DynamicMetricCard[];
@@ -171,6 +194,42 @@ function taskPolygon(
   return geometryPath(task.geometry, transform);
 }
 
+function mapOverlayPoint(point: unknown, transform: DisplayTransform): MapPoint {
+  if (!Array.isArray(point) || point.length < 2) {
+    throw new Error("geometry diff contains an invalid coordinate");
+  }
+  const values = point as unknown[];
+  if (typeof values[0] !== "number" || typeof values[1] !== "number") {
+    throw new Error("geometry diff contains a non-numeric coordinate");
+  }
+  const altitude = values.length >= 3 && typeof values[2] === "number"
+    ? values[2]
+    : 0;
+  return localToMapPoint([values[0], values[1], altitude], transform);
+}
+
+function mapOverlayPolygons(
+  geometry: {type: "Polygon" | "MultiPolygon"; coordinates: unknown[]},
+  transform: DisplayTransform
+): MapPoint[][][] {
+  const polygonCoordinates = geometry.type === "Polygon"
+    ? [geometry.coordinates]
+    : geometry.coordinates;
+  return polygonCoordinates.map((polygon, polygonIndex) => {
+    if (!Array.isArray(polygon)) {
+      throw new Error(`geometry diff polygon ${polygonIndex} is invalid`);
+    }
+    return polygon.map((ring, ringIndex) => {
+      if (!Array.isArray(ring)) {
+        throw new Error(
+          `geometry diff polygon ${polygonIndex} ring ${ringIndex} is invalid`
+        );
+      }
+      return ring.map(point => mapOverlayPoint(point, transform));
+    });
+  });
+}
+
 function eventPosition(
   config: SceneConfig,
   tasksById: ReadonlyMap<string, MissionViewV1["tasks"][number]>,
@@ -272,6 +331,66 @@ function assertPackageConsistency(
     view.planDiff.planVersion !== view.activePlan.planVersion
   ) {
     throw new Error("baseline or target plan version metadata is inconsistent");
+  }
+  const rawEventIds = uniqueIndex(
+    loaded.dynamicEvents.events,
+    event => event.eventId,
+    "dynamic eventId"
+  );
+  const auditFacts = decisionTrace.stages.flatMap(stage => stage.facts)
+    .filter(fact => fact.code === "EVENT_AUDIT_ENTRY");
+  const auditByEventId = uniqueIndex(
+    auditFacts,
+    fact => fact.objectIds[0] ?? "",
+    "event audit entry"
+  );
+  if (auditByEventId.has("")) {
+    throw new Error("event audit entry is missing an event ID");
+  }
+  for (const eventId of rawEventIds.keys()) {
+    if (!auditByEventId.has(eventId)) {
+      throw new Error(`event audit is missing raw event ${eventId}`);
+    }
+  }
+  for (const eventId of auditByEventId.keys()) {
+    if (!rawEventIds.has(eventId)) {
+      throw new Error(`event audit references unknown raw event ${eventId}`);
+    }
+  }
+  const ingestionFacts = decisionTrace.stages.find(stage =>
+    stage.stageId === "EVENT_INGESTION"
+  )?.facts ?? [];
+  const numericFact = (code: string): number => {
+    const value = ingestionFacts.find(fact => fact.code === code)?.value;
+    if (typeof value !== "number" || !Number.isInteger(value)) {
+      throw new Error(`event ingestion fact ${code} is missing or invalid`);
+    }
+    return value;
+  };
+  const auditStatuses = [...auditByEventId.values()].map(fact => {
+    const value = fact.value;
+    return typeof value === "object" && value !== null &&
+      "status" in value && typeof value.status === "string"
+      ? value.status
+      : "";
+  });
+  if (numericFact("RECEIVED_EVENT_COUNT") !== loaded.dynamicEvents.events.length) {
+    throw new Error("received event count does not match raw events");
+  }
+  if (numericFact("EFFECTIVE_EVENT_COUNT") !== auditStatuses.filter(
+    status => status === "MERGED"
+  ).length) {
+    throw new Error("effective event count does not match event audit");
+  }
+  if (numericFact("DUPLICATE_EVENT_COUNT") !== auditStatuses.filter(
+    status => status === "IGNORED_DUPLICATE"
+  ).length) {
+    throw new Error("duplicate event count does not match event audit");
+  }
+  if (numericFact("OVERRIDDEN_EVENT_COUNT") !== auditStatuses.filter(
+    status => status === "MERGED_INTO_OTHER_EVENT"
+  ).length) {
+    throw new Error("overridden event count does not match event audit");
   }
   if (
     decisionTrace.resultStatus !== config.resultStatus ||
@@ -480,14 +599,6 @@ export function buildDynamicScene(
       )
     }))
   );
-  const taskPolygons = view.tasks
-    .map(task => ({
-      taskId: task.taskId,
-      status: task.status,
-      changeType: changeFor(view, "TASK", task.taskId),
-      polygon: taskPolygon(task, baseline.displayTransform)
-    }))
-    .filter(task => task.polygon.length > 0);
   const workPaths = view.workUnits
     .map(work => ({
       workUnitId: work.workUnitId,
@@ -498,12 +609,58 @@ export function buildDynamicScene(
       path: geometryPath(work.geometry, baseline.displayTransform)
     }))
     .filter(work => work.path.length > 0);
+  const geometryByTaskId = new Map(
+    (loaded.geometryDiff?.entries ?? []).map(entry => [entry.taskId, entry])
+  );
+  const taskPolygons = view.tasks
+    .map(task => {
+      const context = geometryByTaskId.get(task.taskId);
+      const currentGeometry = context?.currentGeometry ?? task.geometry;
+      const currentPolygon = taskPolygon(
+        {...task, geometry: currentGeometry},
+        baseline.displayTransform
+      );
+      const originalPolygon = context?.originalGeometry === null ||
+        context === undefined
+        ? null
+        : taskPolygon(
+            {...task, geometry: context.originalGeometry},
+            baseline.displayTransform
+          );
+      return {
+        taskId: task.taskId,
+        status: task.status,
+        changeType: changeFor(view, "TASK", task.taskId),
+        relation: context?.relation ?? "unknown" as const,
+        spatialRelation: context?.spatialRelation ?? "disjoint" as const,
+        overlappingTaskIds: context?.overlappingTaskIds ?? [],
+        originalPolygon,
+        currentPolygon,
+        polygon: currentPolygon
+      };
+    })
+    .filter(task => task.currentPolygon.length > 0);
+  const taskExtensions = (loaded.geometryDiff?.entries ?? []).flatMap(entry => {
+    if (entry.extensionGeometry === null) return [];
+    return mapOverlayPolygons(
+      entry.extensionGeometry,
+      baseline.displayTransform
+    ).map((polygon, index) => ({
+      extensionId: `${entry.taskId}-extension-${index + 1}`,
+      taskId: entry.taskId,
+      polygon,
+      extensionAreaM2: entry.extensionAreaM2,
+      extensionRatio: entry.extensionRatio
+    }));
+  });
 
   return {
     config,
     baseline,
     view,
     decisionTrace,
+    rawEvents: loaded.dynamicEvents.events,
+    geometryDiff: loaded.geometryDiff,
     events: view.eventTimeline,
     primaryEvent,
     eventTimeSec: primaryEvent.eventTimeSec,
@@ -512,6 +669,7 @@ export function buildDynamicScene(
     baselinePaths,
     activePaths,
     taskPolygons,
+    taskExtensions,
     workPaths,
     eventPosition: eventPosition(
       config,

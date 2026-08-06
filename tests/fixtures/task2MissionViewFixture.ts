@@ -1,3 +1,6 @@
+import {dynamicEventBatchSchema} from "../../src/features/dynamic-replanning/dynamicEventSchema";
+import {taskGeometryDiffV1Schema} from "../../src/features/dynamic-replanning/taskGeometryDiffSchema";
+
 export const missionViewFixture = {
   schemaVersion: "mission_view.v1",
   mission: {
@@ -290,7 +293,43 @@ export const decisionTraceFixture = {
     actualDurationMs: 1,
     affectedEventIds: ["EV-DEMO-LOST"],
     affectedObjectIds: ["UAV-01"],
-    facts: [],
+    facts: index === 0 ? [
+      {
+        code: "RECEIVED_EVENT_COUNT",
+        value: 1,
+        unit: "COUNT",
+        objectIds: []
+      },
+      {
+        code: "EFFECTIVE_EVENT_COUNT",
+        value: 1,
+        unit: "COUNT",
+        objectIds: []
+      },
+      {
+        code: "DUPLICATE_EVENT_COUNT",
+        value: 0,
+        unit: "COUNT",
+        objectIds: []
+      },
+      {
+        code: "OVERRIDDEN_EVENT_COUNT",
+        value: 0,
+        unit: "COUNT",
+        objectIds: []
+      },
+      {
+        code: "EVENT_AUDIT_ENTRY",
+        value: {
+          eventType: "RESOURCE_LOW_FUEL",
+          reason: null,
+          status: "MERGED",
+          winningEventId: null
+        },
+        unit: null,
+        objectIds: ["EV-DEMO-LOST", "UAV-01"]
+      }
+    ] : [],
     candidateIds: index >= 3 ? ["CAND-1"] : [],
     validationCheckIds: [],
     failureCodes: [],
@@ -397,5 +436,3 @@ export const sceneProvenanceFixture = {
     "decision_trace.v1.json": fixtureHash
   }
 } as const;
-import {dynamicEventBatchSchema} from "../../src/features/dynamic-replanning/dynamicEventSchema";
-import {taskGeometryDiffV1Schema} from "../../src/features/dynamic-replanning/taskGeometryDiffSchema";
