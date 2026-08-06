@@ -72,7 +72,11 @@ const playback: DynamicPlaybackState = {
 
 function SidebarHarness({resourceIds}: {resourceIds: readonly string[]}) {
   const [preferences, setPreferences] = useState(() =>
-    createDefaultDynamicLayerPreferences(scene.config.sceneId, resourceIds)
+    createDefaultDynamicLayerPreferences(
+      scene.config.sceneId,
+      resourceIds,
+      [...scene.tasksById.keys()]
+    )
   );
   return (
     <DynamicLayerSidebar
@@ -188,5 +192,23 @@ describe("dynamic controls", () => {
     expect(screen.getByText("1号无人机")).toHaveAttribute("title", "UAV-01");
     expect(screen.getByText("9号无人机")).toHaveAttribute("title", "UAV-09");
     expect(screen.getByText("CUSTOM")).toHaveAttribute("title", "CUSTOM");
+  });
+
+  it("edits task, extension, baseline, and current-route color families independently", () => {
+    renderSidebar();
+    fireEvent.click(screen.getByRole("button", {name: "编辑 任务区域"}));
+    expect(screen.getByLabelText("REG-001任务（REG-001） 颜色"))
+      .toHaveValue("#36a2ae");
+    expect(screen.getByLabelText("扩展区域颜色")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", {name: "编辑 原计划航迹"}));
+    fireEvent.change(screen.getByLabelText("原计划航迹颜色"), {
+      target: {value: "#112233"}
+    });
+    expect(screen.getByLabelText("原计划航迹颜色")).toHaveValue("#112233");
+
+    fireEvent.click(screen.getByRole("button", {name: "编辑 当前方案航迹"}));
+    fireEvent.click(screen.getByRole("button", {name: "按无人机"}));
+    expect(screen.getByLabelText("1号无人机 颜色")).toBeInTheDocument();
   });
 });

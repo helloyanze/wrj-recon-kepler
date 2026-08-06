@@ -62,6 +62,13 @@ function resourceLabel(resourceId: string): string {
   return `${number}号无人机`;
 }
 
+function taskLabel(taskId: string): string {
+  const match = /^T-([A-Z])$/u.exec(taskId);
+  return match === null
+    ? `${taskId}任务（${taskId}）`
+    : `${match[1]}号任务（${taskId}）`;
+}
+
 function gradient(colors: readonly string[], fallback: string): string {
   if (colors.length === 0) return fallback;
   if (colors.length === 1) return colors[0];
@@ -109,6 +116,19 @@ export function DynamicLayerSidebar({
       [id]: color.toUpperCase()
     }
   });
+  const changeTaskColor = (id: string, color: string) => onChange({
+    ...preferences,
+    taskColors: {
+      ...preferences.taskColors,
+      [id]: color.toUpperCase()
+    }
+  });
+  const taskLegend = gradient(
+    scene.taskPolygons.map(task =>
+      preferences.taskColors[task.taskId] ?? "#36A2AE"
+    ),
+    "#36A2AE"
+  );
   const routeLegend = preferences.colorMode === "change"
     ? gradient(
         presentChangeTypes.map(id => preferences.changeColors[id]),
@@ -139,13 +159,15 @@ export function DynamicLayerSidebar({
           const legend = id === "activeRoutes"
             ? routeLegend
             : id === "baselineRoutes"
-              ? preferences.changeColors.baseline
+              ? preferences.baselineRouteColor
               : id === "resources"
                 ? gradient(
                     Object.values(preferences.resourceColors),
                     preferences.changeColors.dynamic_new
                   )
-                : preferences.changeColors.dynamic_modified;
+                : id === "taskAreas"
+                  ? taskLegend
+                  : preferences.changeColors.dynamic_modified;
           return (
             <LayerControlRow
               key={id}
@@ -162,7 +184,58 @@ export function DynamicLayerSidebar({
                 ? width => changeLayer(id, {width})
                 : undefined}
             >
-              {id !== "activeRoutes" ? null : (
+              {id === "taskAreas" ? (
+                <fieldset className="task2-task-colors">
+                  <legend className="sr-only">任务区域颜色</legend>
+                  <div className="task2-task-palette">
+                    {scene.taskPolygons.map(task => (
+                      <label key={task.taskId}>
+                        <span title={task.taskId}>{taskLabel(task.taskId)}</span>
+                        <input
+                          aria-label={`${taskLabel(task.taskId)} 颜色`}
+                          title={task.taskId}
+                          type="color"
+                          value={preferences.taskColors[task.taskId] ?? "#36A2AE"}
+                          onChange={event => changeTaskColor(
+                            task.taskId,
+                            event.currentTarget.value
+                          )}
+                        />
+                      </label>
+                    ))}
+                    {scene.taskExtensions.length === 0 ? null : (
+                      <label>
+                        <span>扩展区域</span>
+                        <input
+                          aria-label="扩展区域颜色"
+                          type="color"
+                          value={preferences.taskExtensionColor}
+                          onChange={event => onChange({
+                            ...preferences,
+                            taskExtensionColor: event.currentTarget.value.toUpperCase()
+                          })}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </fieldset>
+              ) : id === "baselineRoutes" ? (
+                <fieldset className="task2-baseline-colors">
+                  <legend className="sr-only">原计划航迹颜色</legend>
+                  <label>
+                    <span>原计划航迹</span>
+                    <input
+                      aria-label="原计划航迹颜色"
+                      type="color"
+                      value={preferences.baselineRouteColor}
+                      onChange={event => onChange({
+                        ...preferences,
+                        baselineRouteColor: event.currentTarget.value.toUpperCase()
+                      })}
+                    />
+                  </label>
+                </fieldset>
+              ) : id !== "activeRoutes" ? null : (
                 <fieldset className="task2-route-colors">
                   <legend className="sr-only">当前方案航迹颜色</legend>
                   <div

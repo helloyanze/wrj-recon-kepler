@@ -673,6 +673,32 @@ button { color: inherit; }
   max-height: 210px;
   overflow-y: auto;
 }
+.task2-task-palette,
+.task2-baseline-colors {
+  display: grid;
+  gap: 3px;
+  max-height: 210px;
+  overflow-y: auto;
+}
+.sidebar-shell .task2-task-palette label,
+.sidebar-shell .task2-baseline-colors label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  font-size: 11px;
+}
+.sidebar-shell .task2-task-palette span,
+.sidebar-shell .task2-baseline-colors span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sidebar-shell .task2-task-palette input[type="color"],
+.sidebar-shell .task2-baseline-colors input[type="color"] {
+  width: 48px;
+  height: 23px;
+}
 .sidebar-shell .task2-route-palette label {
   grid-template-columns: minmax(0, 1fr) 48px;
   min-height: 28px;
