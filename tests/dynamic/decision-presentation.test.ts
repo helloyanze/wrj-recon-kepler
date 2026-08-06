@@ -25,10 +25,12 @@ import {
   validationCodeLabel
 } from "../../src/features/dynamic-replanning/decisionLabels";
 import {decisionTraceV1Schema} from "../../src/features/dynamic-replanning/decisionTraceSchema";
+import {dynamicEventBatchSchema} from "../../src/features/dynamic-replanning/dynamicEventSchema";
 import type {
   DynamicPlaybackPhase,
   DynamicPlaybackState
 } from "../../src/features/dynamic-replanning/dynamicPlayback";
+import {buildEventIngestionPresentation} from "../../src/features/dynamic-replanning/eventIngestionPresentation";
 import {
   sceneConfigSchema,
   sceneProvenanceSchema
@@ -315,7 +317,7 @@ describe("decision presentation", () => {
       modules: ["T2-M01", "T2-M03"]
     });
     expect(presentation.data.map(row => row.value).join(" "))
-      .toMatch(/2 项.*1 项.*任务区域变化.*已并入其他事件/u);
+      .toMatch(/2 项.*1 项/u);
     expect(presentation.conclusion).toContain("取消事件");
     expect(presentation.audit.map(row => row.value).join(" "))
       .toMatch(/TASK_GEOMETRY_CHANGED.*MERGED_INTO_OTHER_EVENT.*EV-CANCEL/u);
@@ -407,5 +409,89 @@ describe("decision presentation", () => {
     expect(primaryText(presentation)).not.toContain("UNKNOWN_REASON");
     expect(presentation.audit.map(row => row.value).join(" "))
       .toContain("UNKNOWN_REASON");
+  });
+
+  it("explains each raw event and joins governance outcomes", () => {
+    const events = dynamicEventBatchSchema.parse({
+      ...dynamicEventsFixture,
+      events: [
+        {
+          ...dynamicEventsFixture.events[0],
+          eventId: "E101"
+        },
+        {
+          ...dynamicEventsFixture.events[0],
+          eventId: "E102",
+          eventType: "TASK_GEOMETRY_CHANGED",
+          affectedObjectId: "REG-001",
+          payload: {
+            kind: "GEOMETRY_CHANGED",
+            geometry: missionViewFixture.tasks[0].geometry
+          }
+        },
+        {
+          ...dynamicEventsFixture.events[0],
+          eventId: "E106",
+          eventType: "NEW_TASK",
+          affectedObjectId: "T-C",
+          payload: {
+            kind: "NEW_TASK",
+            task: {
+              taskId: "T-C",
+              taskType: "AREA_RECON",
+              status: "PENDING",
+              priority: 3,
+              geometry: missionViewFixture.tasks[0].geometry,
+              minimumCoverageRatio: 0.9,
+              earliestStartTimeSec: 300,
+              latestFinishTimeSec: 2_400,
+              predecessorTaskIds: [],
+              successorTaskIds: [],
+              metadata: {demoName: "临时新增侦察区"}
+            }
+          }
+        }
+      ]
+    });
+    const auditFacts = ([
+      ["E101", "MERGED", null, null],
+      ["E102", "IGNORED_DUPLICATE", "duplicate canonical event", null],
+      ["E106", "MERGED_INTO_OTHER_EVENT", "superseded by higher-precedence or later event", "E105"]
+    ] as const).map(([eventId, status, reason, winningEventId]) => ({
+      code: "EVENT_AUDIT_ENTRY",
+      value: {eventType: "RESOURCE_LOW_FUEL", status, reason, winningEventId},
+      unit: null,
+      objectIds: [eventId]
+    }));
+    const eventScene = {
+      ...scene,
+      rawEvents: events.events,
+      decisionTrace: decisionTraceV1Schema.parse({
+        ...scene.decisionTrace,
+        stages: scene.decisionTrace.stages.map((stage, index) => index === 0
+          ? {
+              ...stage,
+              facts: [
+                {code: "RECEIVED_EVENT_COUNT", value: 3, unit: "COUNT", objectIds: []},
+                {code: "EFFECTIVE_EVENT_COUNT", value: 1, unit: "COUNT", objectIds: []},
+                {code: "DUPLICATE_EVENT_COUNT", value: 1, unit: "COUNT", objectIds: []},
+                {code: "OVERRIDDEN_EVENT_COUNT", value: 1, unit: "COUNT", objectIds: []},
+                ...auditFacts
+              ]
+            }
+          : stage)
+      })
+    };
+    const presentation = buildEventIngestionPresentation(eventScene);
+    expect(presentation.summary).toEqual({received: 3, effective: 1, duplicate: 1, overridden: 1});
+    expect(presentation.events.find(item => item.eventId === "E101"))
+      .toMatchObject({title: "1号无人机低油量", verdict: "已接受并进入规划"});
+    expect(presentation.events.find(item => item.eventId === "E102")?.reason)
+      .toContain("内容相同");
+    expect(presentation.events.find(item => item.eventId === "E106")?.details)
+      .toEqual(expect.arrayContaining([
+        {label: "优先级", value: "3"},
+        {label: "最低覆盖率", value: "90.0%"}
+      ]));
   });
 });

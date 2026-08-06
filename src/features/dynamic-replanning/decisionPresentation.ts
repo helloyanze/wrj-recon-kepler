@@ -308,10 +308,12 @@ export function buildDecisionStagePresentation(
         ? eventTypeLabel(value.eventType) : null;
       const status = typeof value?.status === "string"
         ? eventStatusLabel(value.status) : null;
-      data.push({
-        label: "事件治理",
-        value: `${eventType?.known ? eventType.label : "未识别事件"} · ${status?.known ? status.label : "处理状态未知"}`
-      });
+      if (stage.stageId !== "EVENT_INGESTION") {
+        data.push({
+          label: "事件治理",
+          value: `${eventType?.known ? eventType.label : "未识别事件"} · ${status?.known ? status.label : "处理状态未知"}`
+        });
+      }
       conflictResolved ||= value?.eventType === "TASK_GEOMETRY_CHANGED" &&
         value.status === "MERGED_INTO_OTHER_EVENT";
       const reason = typeof value?.reason === "string"
