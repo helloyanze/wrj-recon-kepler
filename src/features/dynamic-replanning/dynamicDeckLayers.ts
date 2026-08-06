@@ -234,7 +234,8 @@ export function createDynamicDeckLayers({
   verticalScale,
   preferences = createDefaultDynamicLayerPreferences(
     scene.config.sceneId,
-    [...scene.resourcesById.keys()]
+    [...scene.resourcesById.keys()],
+    [...scene.tasksById.keys()]
   ),
   onSelectResource,
   onSelectTask,
