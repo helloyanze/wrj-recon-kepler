@@ -17,9 +17,11 @@ import {
 } from "../../scripts/prepare-task2-scenes";
 import {
   decisionTraceFixture,
+  dynamicEventsFixture,
   missionViewFixture,
   sceneConfigFixture,
-  scenePackageFixture
+  scenePackageFixture,
+  taskGeometryDiffFixture
 } from "../fixtures/task2MissionViewFixture";
 
 const roots: string[] = [];
@@ -63,14 +65,8 @@ function writeUpstream(inputRoot: string): void {
         })],
         ["mission_view.v1.json", JSON.stringify(missionViewFixture)],
         ["decision_trace.v1.json", JSON.stringify(decisionTraceFixture)],
-        ["dynamic_events.json", JSON.stringify({
-          batchId: "B-DEMO-LOST",
-          missionId: "MIS-R01-BASELINE-01",
-          sourcePlanVersion: 1,
-          snapshotId: "SNAP-PENDING",
-          missionTimeSec: 100,
-          events: []
-        })]
+        ["dynamic_events.json", JSON.stringify(dynamicEventsFixture)],
+        ["task_geometry_diff.v1.json", JSON.stringify(taskGeometryDiffFixture)]
       ]);
       const hashes = Object.fromEntries(
         [...files].map(([name, value]) => [name, hash(value)])

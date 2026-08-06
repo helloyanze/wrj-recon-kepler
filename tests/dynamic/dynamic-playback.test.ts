@@ -7,6 +7,7 @@ import {caseBundleSchema} from "../../src/features/cases/caseBundle";
 import {buildDynamicScene} from "../../src/features/dynamic-replanning/buildDynamicScene";
 import {decisionTraceV1Schema} from "../../src/features/dynamic-replanning/decisionTraceSchema";
 import {dynamicEventBatchSchema} from "../../src/features/dynamic-replanning/dynamicEventSchema";
+import {taskGeometryDiffV1Schema} from "../../src/features/dynamic-replanning/taskGeometryDiffSchema";
 import {
   advanceDynamicPlayback,
   createDynamicPlayback,
@@ -77,7 +78,7 @@ function loadCommittedScenes() {
         baseline: caseBundleSchema.parse(readJson("baseline.bundle.json")),
         view: missionViewV1Schema.parse(readJson("mission_view.v1.json")),
         dynamicEvents: dynamicEventBatchSchema.parse(readJson("dynamic_events.json")),
-        geometryDiff: null,
+        geometryDiff: taskGeometryDiffV1Schema.parse(readJson("task_geometry_diff.v1.json")),
         decisionTrace: decisionTraceV1Schema.parse(
           readJson("decision_trace.v1.json")
         ),

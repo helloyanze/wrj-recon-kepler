@@ -21,6 +21,7 @@ import {
   missionViewV1Schema
 } from "../../src/features/dynamic-replanning/missionViewSchema";
 import {dynamicEventBatchSchema} from "../../src/features/dynamic-replanning/dynamicEventSchema";
+import {taskGeometryDiffV1Schema} from "../../src/features/dynamic-replanning/taskGeometryDiffSchema";
 
 function readJson(path: string): unknown {
   return JSON.parse(readFileSync(resolve(path), "utf8"));
@@ -40,7 +41,9 @@ describe("dynamicSceneMapState", () => {
       dynamicEvents: dynamicEventBatchSchema.parse(
         readJson(`${root}/dynamic_events.json`)
       ),
-      geometryDiff: null,
+      geometryDiff: taskGeometryDiffV1Schema.parse(
+        readJson(`${root}/task_geometry_diff.v1.json`)
+      ),
       decisionTrace: decisionTraceV1Schema.parse(
         readJson(`${root}/decision_trace.v1.json`)
       ),

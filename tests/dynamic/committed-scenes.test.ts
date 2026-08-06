@@ -21,6 +21,7 @@ import {
   missionViewV1Schema
 } from "../../src/features/dynamic-replanning/missionViewSchema";
 import {dynamicEventBatchSchema} from "../../src/features/dynamic-replanning/dynamicEventSchema";
+import {taskGeometryDiffV1Schema} from "../../src/features/dynamic-replanning/taskGeometryDiffSchema";
 
 async function readJson(path: string): Promise<unknown> {
   return JSON.parse(await readFile(path, "utf8")) as unknown;
@@ -38,6 +39,7 @@ async function loadDynamicSceneFromDisk(
     "baseline.bundle.json",
     "mission_view.v1.json",
     "dynamic_events.json",
+    "task_geometry_diff.v1.json",
     "decision_trace.v1.json",
     ...(entry.failureReportUrl === null ? [] : [entry.failureReportUrl])
   ];
@@ -57,7 +59,7 @@ async function loadDynamicSceneFromDisk(
     baseline: caseBundleSchema.parse(values.get("baseline.bundle.json")),
     view: missionViewV1Schema.parse(values.get("mission_view.v1.json")),
     dynamicEvents: dynamicEventBatchSchema.parse(values.get("dynamic_events.json")),
-    geometryDiff: null,
+    geometryDiff: taskGeometryDiffV1Schema.parse(values.get("task_geometry_diff.v1.json")),
     decisionTrace: decisionTraceV1Schema.parse(
       values.get("decision_trace.v1.json")
     ),

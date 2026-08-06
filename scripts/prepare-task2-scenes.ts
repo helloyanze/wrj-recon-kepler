@@ -27,6 +27,12 @@ import {
   caseCatalogSchema
 } from "../src/features/cases/catalogSchema";
 import {
+  dynamicEventBatchSchema
+} from "../src/features/dynamic-replanning/dynamicEventSchema";
+import {
+  taskGeometryDiffV1Schema
+} from "../src/features/dynamic-replanning/taskGeometryDiffSchema";
+import {
   rawDynamicSceneCatalogSchema,
   sceneConfigSchema,
   sceneProvenanceSchema
@@ -52,6 +58,7 @@ const SCENE_FILES = [
   "scene.json",
   "mission_view.v1.json",
   "dynamic_events.json",
+  "task_geometry_diff.v1.json",
   "decision_trace.v1.json"
 ] as const;
 
@@ -246,6 +253,12 @@ async function buildExpectedFiles(
     const decisionTrace = decisionTraceV1Schema.parse(
       parsedFiles.get("decision_trace.v1.json")?.value
     );
+    const dynamicEvents = dynamicEventBatchSchema.parse(
+      parsedFiles.get("dynamic_events.json")?.value
+    );
+    const geometryDiff = taskGeometryDiffV1Schema.parse(
+      parsedFiles.get("task_geometry_diff.v1.json")?.value
+    );
     const failureReport = failureFile === null
       ? null
       : failureReportSchema.parse(failureFile.value);
@@ -264,6 +277,20 @@ async function buildExpectedFiles(
       decisionTrace.publication.planVersion !== view.activePlan.planVersion
     ) {
       throw new Error(`${entry.sceneId}: decision trace mismatch`);
+    }
+    if (
+      dynamicEvents.batchId !== decisionTrace.eventBatchId ||
+      dynamicEvents.missionId !== view.mission.missionId ||
+      dynamicEvents.sourcePlanVersion !== view.activePlan.sourcePlanVersion
+    ) {
+      throw new Error(`${entry.sceneId}: dynamic event batch mismatch`);
+    }
+    if (
+      geometryDiff.missionId !== view.mission.missionId ||
+      geometryDiff.sourcePlanVersion !== view.activePlan.sourcePlanVersion ||
+      geometryDiff.planVersion !== view.activePlan.planVersion
+    ) {
+      throw new Error(`${entry.sceneId}: geometry diff mismatch`);
     }
     if (
       (entry.resultStatus === "PARTIAL_SAFE_FALLBACK") !==

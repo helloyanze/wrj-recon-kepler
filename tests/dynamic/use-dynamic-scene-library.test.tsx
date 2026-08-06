@@ -11,6 +11,7 @@ import {
 import {useDynamicSceneLibrary} from "../../src/hooks/useDynamicSceneLibrary";
 import {
   decisionTraceFixture,
+  dynamicEventsFixture,
   missionViewFixture,
   sceneConfigFixture,
   scenePackageFixture
@@ -30,6 +31,7 @@ async function packageFiles(sceneId: string): Promise<Map<string, string>> {
     ["scene.json", JSON.stringify(config)],
     ["baseline.bundle.json", baselineText],
     ["mission_view.v1.json", JSON.stringify(missionViewFixture)],
+    ["dynamic_events.json", JSON.stringify(dynamicEventsFixture)],
     ["decision_trace.v1.json", JSON.stringify(decisionTraceFixture)]
   ]);
   const hashes: Record<string, string> = {};
