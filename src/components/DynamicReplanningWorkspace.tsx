@@ -141,7 +141,8 @@ function ReadyDynamicWorkspace({
     useState<DynamicLayerPreferencesV1>(() =>
       loadDynamicLayerPreferences(
         scene.config.sceneId,
-        [...scene.resourcesById.keys()]
+        [...scene.resourcesById.keys()],
+        [...scene.tasksById.keys()]
       )
     );
 
@@ -158,10 +159,11 @@ function ReadyDynamicWorkspace({
     setManualStageIndex(null);
     setLayerPreferences(loadDynamicLayerPreferences(
       scene.config.sceneId,
-      [...scene.resourcesById.keys()]
+      [...scene.resourcesById.keys()],
+      [...scene.tasksById.keys()]
     ));
     resetView();
-  }, [resetView, scene.config.sceneId, scene.resourcesById]);
+  }, [resetView, scene.config.sceneId, scene.resourcesById, scene.tasksById]);
 
   useEffect(() => {
     if (!playback.automaticCamera) return;
@@ -197,7 +199,8 @@ function ReadyDynamicWorkspace({
     clearDynamicLayerPreferences(scene.config.sceneId);
     setLayerPreferences(createDefaultDynamicLayerPreferences(
       scene.config.sceneId,
-      [...scene.resourcesById.keys()]
+      [...scene.resourcesById.keys()],
+      [...scene.tasksById.keys()]
     ));
   }, [scene]);
 

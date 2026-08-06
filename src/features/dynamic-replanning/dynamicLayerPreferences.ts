@@ -17,6 +17,9 @@ export interface DynamicLayerPreferencesV1 {
   sceneId: string;
   colorMode: DynamicColorMode;
   layers: Record<DynamicLayerId, MissionLayerPreference>;
+  taskColors: Record<string, string>;
+  taskExtensionColor: string;
+  baselineRouteColor: string;
   changeColors: Record<string, string>;
   resourceColors: Record<string, string>;
   markerSize: number;
@@ -27,7 +30,7 @@ const HEX_COLOR = /^#[0-9A-F]{6}$/iu;
 
 export const DEFAULT_CHANGE_COLORS = {
   baseline: "#808C97",
-  baseline_flown: "#808C97",
+  baseline_flown: "#B8C2CC",
   baseline_locked: "#4D5761",
   baseline_reused: "#26C7DA",
   dynamic_modified: "#FFA630",
@@ -35,10 +38,26 @@ export const DEFAULT_CHANGE_COLORS = {
   dynamic_cancelled: "#EE5253"
 } as const;
 
+export const DEFAULT_TASK_COLORS = [
+  "#36A2AE",
+  "#D6A13D",
+  "#B26BC5",
+  "#5C8FD6",
+  "#4EAA73",
+  "#D97857"
+] as const;
+export const DEFAULT_TASK_EXTENSION_COLOR = "#F2C94C";
+export const DEFAULT_BASELINE_ROUTE_COLOR = "#718096";
+
 export function createDefaultDynamicLayerPreferences(
   sceneId: string,
-  resourceIds: readonly string[]
+  resourceIds: readonly string[],
+  taskIds: readonly string[] = []
 ): DynamicLayerPreferencesV1 {
+  const taskColors = Object.fromEntries(taskIds.map((taskId, index) => [
+    taskId,
+    DEFAULT_TASK_COLORS[index % DEFAULT_TASK_COLORS.length]
+  ]));
   return {
     version: 1,
     sceneId,
@@ -51,6 +70,9 @@ export function createDefaultDynamicLayerPreferences(
       resources: {visible: true, opacity: 1},
       event: {visible: true, opacity: 0.9}
     },
+    taskColors,
+    taskExtensionColor: DEFAULT_TASK_EXTENSION_COLOR,
+    baselineRouteColor: DEFAULT_BASELINE_ROUTE_COLOR,
     changeColors: {...DEFAULT_CHANGE_COLORS},
     resourceColors: createDefaultUavColors(resourceIds),
     markerSize: 30
@@ -74,9 +96,14 @@ function clamp(
 
 export function loadDynamicLayerPreferences(
   sceneId: string,
-  resourceIds: readonly string[]
+  resourceIds: readonly string[],
+  taskIds: readonly string[] = []
 ): DynamicLayerPreferencesV1 {
-  const defaults = createDefaultDynamicLayerPreferences(sceneId, resourceIds);
+  const defaults = createDefaultDynamicLayerPreferences(
+    sceneId,
+    resourceIds,
+    taskIds
+  );
   try {
     const value = JSON.parse(
       globalThis.localStorage?.getItem(`${STORAGE_PREFIX}:${sceneId}`) ?? "null"
@@ -118,11 +145,28 @@ export function loadDynamicLayerPreferences(
       typeof stored[id] === "string" && HEX_COLOR.test(stored[id])
         ? stored[id].toUpperCase()
         : color
-    ]));
+      ]));
+    const storedChangeColors = value.changeColors;
+    const storedBaselineRouteColor = typeof value.baselineRouteColor ===
+      "string" && HEX_COLOR.test(value.baselineRouteColor)
+      ? value.baselineRouteColor
+      : typeof storedChangeColors.baseline === "string" &&
+          HEX_COLOR.test(storedChangeColors.baseline)
+        ? storedChangeColors.baseline
+        : defaults.baselineRouteColor;
     return {
       ...defaults,
       colorMode: value.colorMode === "resource" ? "resource" : "change",
       layers,
+      taskColors: colors(
+        isRecord(value.taskColors) ? value.taskColors : {},
+        defaults.taskColors
+      ),
+      taskExtensionColor: typeof value.taskExtensionColor === "string" &&
+        HEX_COLOR.test(value.taskExtensionColor)
+        ? value.taskExtensionColor.toUpperCase()
+        : defaults.taskExtensionColor,
+      baselineRouteColor: storedBaselineRouteColor.toUpperCase(),
       changeColors: colors(value.changeColors, defaults.changeColors),
       resourceColors: colors(
         value.resourceColors,
