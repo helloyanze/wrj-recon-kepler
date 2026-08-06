@@ -196,7 +196,7 @@ export const missionViewFixture = {
   }
 } as const;
 
-export const dynamicEventsFixture = {
+export const dynamicEventsFixture = dynamicEventBatchSchema.parse({
   batchId: "B-DEMO-LOST",
   missionId: "MIS-R01-BASELINE-01",
   sourcePlanVersion: 1,
@@ -218,9 +218,9 @@ export const dynamicEventsFixture = {
       normalizedPayloadHash: null
     }
   ]
-} as const;
+} as const);
 
-export const taskGeometryDiffFixture = {
+export const taskGeometryDiffFixture = taskGeometryDiffV1Schema.parse({
   schemaVersion: "task_geometry_diff.v1",
   missionId: "MIS-R01-BASELINE-01",
   sourcePlanVersion: 1,
@@ -249,7 +249,7 @@ export const taskGeometryDiffFixture = {
       currentGeometryHash: "c".repeat(64)
     }
   ]
-} as const;
+} as const);
 
 export const failureReportFixture = {
   attemptId: "FAIL-123456789ABC",
@@ -397,3 +397,5 @@ export const sceneProvenanceFixture = {
     "decision_trace.v1.json": fixtureHash
   }
 } as const;
+import {dynamicEventBatchSchema} from "../../src/features/dynamic-replanning/dynamicEventSchema";
+import {taskGeometryDiffV1Schema} from "../../src/features/dynamic-replanning/taskGeometryDiffSchema";

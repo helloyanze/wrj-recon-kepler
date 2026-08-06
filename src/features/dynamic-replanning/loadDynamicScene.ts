@@ -1,5 +1,6 @@
 import {caseBundleSchema} from "../cases/caseBundle";
 import {ZodError} from "zod";
+import {dynamicEventBatchSchema} from "./dynamicEventSchema";
 import {decisionTraceV1Schema} from "./decisionTraceSchema";
 import {
   type DynamicSceneCatalog,
@@ -9,6 +10,7 @@ import {
   sceneConfigSchema,
   sceneProvenanceSchema
 } from "./dynamicSceneSchema";
+import {taskGeometryDiffV1Schema} from "./taskGeometryDiffSchema";
 import {
   failureReportSchema,
   missionViewV1Schema
@@ -167,6 +169,7 @@ export async function loadDynamicScene(
     "scene.json",
     "baseline.bundle.json",
     "mission_view.v1.json",
+    "dynamic_events.json",
     "decision_trace.v1.json"
   ] as const;
   const bytes = new Map<string, Uint8Array>();
@@ -197,6 +200,28 @@ export async function loadDynamicScene(
     ),
     missionViewV1Schema
   );
+  const dynamicEvents = parseSchema(
+    "dynamic_events.json",
+    parseUtf8Json(
+      bytes.get("dynamic_events.json")!,
+      "dynamic_events.json"
+    ),
+    dynamicEventBatchSchema
+  );
+  let geometryDiff: LoadedDynamicScenePackage["geometryDiff"] = null;
+  const geometryDiffHash = provenance.packagedSha256[
+    "task_geometry_diff.v1.json"
+  ];
+  if (geometryDiffHash !== undefined) {
+    const name = "task_geometry_diff.v1.json";
+    const value = await fetchBytes(joinUrl(baseUrl, name), fetcher, signal);
+    await verifyHash(name, value, geometryDiffHash);
+    geometryDiff = parseSchema(
+      name,
+      parseUtf8Json(value, name),
+      taskGeometryDiffV1Schema
+    );
+  }
   const decisionTrace = parseSchema(
     "decision_trace.v1.json",
     parseUtf8Json(
@@ -250,6 +275,23 @@ export async function loadDynamicScene(
     throw new Error(`${entry.sceneId}: decision trace does not match package files`);
   }
   if (
+    dynamicEvents.batchId !== decisionTrace.eventBatchId ||
+    dynamicEvents.missionId !== decisionTrace.missionId ||
+    dynamicEvents.sourcePlanVersion !== decisionTrace.sourcePlanVersion
+  ) {
+    throw new Error(`${entry.sceneId}: dynamic event batch identity is inconsistent`);
+  }
+  if (
+    geometryDiff !== null &&
+    (
+      geometryDiff.missionId !== view.mission.missionId ||
+      geometryDiff.sourcePlanVersion !== view.activePlan.sourcePlanVersion ||
+      geometryDiff.planVersion !== view.activePlan.planVersion
+    )
+  ) {
+    throw new Error(`${entry.sceneId}: geometry diff identity is inconsistent`);
+  }
+  if (
     failureReport !== null &&
     (
       decisionTrace.publication.failureReportPath !==
@@ -264,6 +306,8 @@ export async function loadDynamicScene(
     config,
     baseline,
     view,
+    dynamicEvents,
+    geometryDiff,
     decisionTrace,
     failureReport,
     provenance

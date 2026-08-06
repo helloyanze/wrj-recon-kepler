@@ -22,9 +22,11 @@ import {
 import {
   decisionTraceFixture,
   failureReportFixture,
+  dynamicEventsFixture,
   missionViewFixture,
   sceneConfigFixture,
-  sceneProvenanceFixture
+  sceneProvenanceFixture,
+  taskGeometryDiffFixture
 } from "../fixtures/task2MissionViewFixture";
 
 const baseline = caseBundleSchema.parse(JSON.parse(readFileSync(resolve(
@@ -38,6 +40,8 @@ function loadedPackage(
     config: sceneConfigSchema.parse(sceneConfigFixture),
     baseline,
     view: missionViewV1Schema.parse(view),
+    dynamicEvents: dynamicEventsFixture,
+    geometryDiff: taskGeometryDiffFixture,
     decisionTrace: decisionTraceV1Schema.parse(decisionTraceFixture),
     failureReport: null,
     provenance: sceneProvenanceSchema.parse(sceneProvenanceFixture)

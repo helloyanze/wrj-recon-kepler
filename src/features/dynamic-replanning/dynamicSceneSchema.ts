@@ -11,6 +11,14 @@ import {
   type MissionViewV1,
   missionViewV1Schema
 } from "./missionViewSchema";
+import {
+  type DynamicEventBatch,
+  dynamicEventBatchSchema
+} from "./dynamicEventSchema";
+import {
+  type TaskGeometryDiffV1,
+  taskGeometryDiffV1Schema
+} from "./taskGeometryDiffSchema";
 
 const nonEmptyString = z.string().min(1);
 const nonNegative = z.number().finite().nonnegative();
@@ -181,6 +189,8 @@ export const sceneProvenanceSchema = z.object({
 export const upstreamScenePackageSchema = z.object({
   config: sceneConfigSchema,
   view: missionViewV1Schema,
+  dynamicEvents: dynamicEventBatchSchema,
+  geometryDiff: taskGeometryDiffV1Schema.nullable(),
   decisionTrace: decisionTraceV1Schema,
   failureReport: failureReportSchema.nullable(),
   provenance: sceneProvenanceSchema
@@ -196,6 +206,8 @@ export interface LoadedDynamicScenePackage {
   config: SceneConfig;
   baseline: CaseBundleV2;
   view: MissionViewV1;
+  dynamicEvents: DynamicEventBatch;
+  geometryDiff: TaskGeometryDiffV1 | null;
   decisionTrace: DecisionTraceV1;
   failureReport: FailureReport | null;
   provenance: SceneProvenance;

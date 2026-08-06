@@ -12,9 +12,11 @@ import {
 } from "../../src/features/dynamic-replanning/loadDynamicScene";
 import {
   decisionTraceFixture,
+  dynamicEventsFixture,
   missionViewFixture,
   sceneConfigFixture,
-  scenePackageFixture
+  scenePackageFixture,
+  taskGeometryDiffFixture
 } from "../fixtures/task2MissionViewFixture";
 
 const baseline = JSON.parse(readFileSync(resolve(
@@ -29,14 +31,22 @@ const catalogEntry: DynamicSceneCatalogEntry = {
 };
 
 async function sceneFiles(
-  view: unknown = missionViewFixture
+  view: unknown = missionViewFixture,
+  includeGeometryDiff = true
 ): Promise<Map<string, string>> {
   const files = new Map<string, string>([
     ["scene.json", JSON.stringify(sceneConfigFixture)],
     ["baseline.bundle.json", JSON.stringify(baseline)],
     ["mission_view.v1.json", JSON.stringify(view)],
+    ["dynamic_events.json", JSON.stringify(dynamicEventsFixture)],
     ["decision_trace.v1.json", JSON.stringify(decisionTraceFixture)]
   ]);
+  if (includeGeometryDiff) {
+    files.set(
+      "task_geometry_diff.v1.json",
+      JSON.stringify(taskGeometryDiffFixture)
+    );
+  }
   const packagedSha256: Record<string, string> = {};
   for (const [name, value] of files) {
     packagedSha256[name] = await sha256Hex(new TextEncoder().encode(value));
@@ -51,6 +61,7 @@ async function sceneFiles(
     upstreamSha256: {
       "scene.json": packagedSha256["scene.json"],
       "mission_view.v1.json": packagedSha256["mission_view.v1.json"],
+      "dynamic_events.json": packagedSha256["dynamic_events.json"],
       "decision_trace.v1.json":
         packagedSha256["decision_trace.v1.json"]
     },
@@ -127,6 +138,8 @@ describe("loadDynamicScene", () => {
     );
     expect(result.config.sceneId).toBe("resource-lost");
     expect(result.view.activePlan.planStatus).toBe("COMPLETE");
+    expect(result.dynamicEvents.events).toHaveLength(1);
+    expect(result.geometryDiff?.entries[0].taskId).toBe("REG-001");
     expect(result.failureReport).toBeNull();
     expect(result.baseline.case.caseId).toBe("R01-BASELINE-01");
   });
@@ -142,6 +155,38 @@ describe("loadDynamicScene", () => {
       catalogEntry,
       fakeFetch(files)
     )).rejects.toThrow("mission_view.v1.json hash mismatch");
+  });
+
+  it("rejects an event batch that differs from the decision trace", async () => {
+    const files = await sceneFiles();
+    const changed = JSON.stringify({
+      ...dynamicEventsFixture,
+      batchId: "OTHER-BATCH"
+    });
+    files.set("dynamic_events.json", changed);
+    const provenance = JSON.parse(files.get("provenance.json") ?? "{}") as {
+      packagedSha256: Record<string, string>;
+    };
+    provenance.packagedSha256["dynamic_events.json"] = await sha256Hex(
+      new TextEncoder().encode(changed)
+    );
+    files.set("provenance.json", JSON.stringify(provenance));
+
+    await expect(loadDynamicScene(
+      "/data",
+      catalogEntry,
+      fakeFetch(files)
+    )).rejects.toThrow("event batch identity");
+  });
+
+  it("allows old packages without a geometry diff file", async () => {
+    const files = await sceneFiles(missionViewFixture, false);
+
+    await expect(loadDynamicScene(
+      "/data",
+      catalogEntry,
+      fakeFetch(files)
+    )).resolves.toMatchObject({geometryDiff: null});
   });
 
   it("reports the failing file for malformed JSON", async () => {

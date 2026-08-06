@@ -18,9 +18,11 @@ import {
 } from "../../src/features/dynamic-replanning/missionViewSchema";
 import {
   decisionTraceFixture,
+  dynamicEventsFixture,
   missionViewFixture,
   sceneConfigFixture,
-  sceneProvenanceFixture
+  sceneProvenanceFixture,
+  taskGeometryDiffFixture
 } from "../fixtures/task2MissionViewFixture";
 
 afterEach(cleanup);
@@ -111,6 +113,8 @@ function sceneWith(
         planStatus: resultStatus
       }
     }),
+    dynamicEvents: dynamicEventsFixture,
+    geometryDiff: taskGeometryDiffFixture,
     decisionTrace: trace,
     failureReport: resultStatus === "PARTIAL_SAFE_FALLBACK"
       ? failureReportSchema.parse({

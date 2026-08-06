@@ -25,9 +25,11 @@ import {missionViewV1Schema} from "../../src/features/dynamic-replanning/mission
 import type {DynamicPlaybackState} from "../../src/features/dynamic-replanning/dynamicPlayback";
 import {
   decisionTraceFixture,
+  dynamicEventsFixture,
   missionViewFixture,
   sceneConfigFixture,
-  sceneProvenanceFixture
+  sceneProvenanceFixture,
+  taskGeometryDiffFixture
 } from "../fixtures/task2MissionViewFixture";
 
 afterEach(cleanup);
@@ -53,6 +55,8 @@ const scene = buildDynamicScene({
   config: sceneConfigSchema.parse(sceneConfigFixture),
   baseline,
   view: missionViewV1Schema.parse(missionViewFixture),
+  dynamicEvents: dynamicEventsFixture,
+  geometryDiff: taskGeometryDiffFixture,
   decisionTrace: decisionTraceV1Schema.parse(decisionTraceFixture),
   failureReport: null,
   provenance: sceneProvenanceSchema.parse(sceneProvenanceFixture)

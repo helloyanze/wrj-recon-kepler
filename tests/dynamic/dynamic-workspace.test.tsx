@@ -24,6 +24,7 @@ import type {
 import {
   caseBundleSchema
 } from "../../src/features/cases/caseBundle";
+import {dynamicEventBatchSchema} from "../../src/features/dynamic-replanning/dynamicEventSchema";
 import {
   parseDynamicSceneCatalog,
   sceneConfigSchema,
@@ -40,9 +41,11 @@ import {
 } from "../../src/features/dynamic-replanning/missionViewSchema";
 import {
   decisionTraceFixture,
+  dynamicEventsFixture,
   missionViewFixture,
   sceneConfigFixture,
-  sceneProvenanceFixture
+  sceneProvenanceFixture,
+  taskGeometryDiffFixture
 } from "../fixtures/task2MissionViewFixture";
 
 const runtime = vi.hoisted(() => ({
@@ -84,6 +87,8 @@ const scenePackage: LoadedDynamicScenePackage = {
   config: sceneConfigSchema.parse(sceneConfigFixture),
   baseline,
   view: missionViewV1Schema.parse(missionViewFixture),
+  dynamicEvents: dynamicEventsFixture,
+  geometryDiff: taskGeometryDiffFixture,
   decisionTrace: decisionTraceV1Schema.parse(decisionTraceFixture),
   failureReport: null,
   provenance: sceneProvenanceSchema.parse(sceneProvenanceFixture)
@@ -105,6 +110,8 @@ function loadCommittedScenePackages() {
         config: sceneConfigSchema.parse(readJson("scene.json")),
         baseline: caseBundleSchema.parse(readJson("baseline.bundle.json")),
         view: missionViewV1Schema.parse(readJson("mission_view.v1.json")),
+        dynamicEvents: dynamicEventBatchSchema.parse(readJson("dynamic_events.json")),
+        geometryDiff: null,
         decisionTrace: decisionTraceV1Schema.parse(
           readJson("decision_trace.v1.json")
         ),

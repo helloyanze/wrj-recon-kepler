@@ -20,6 +20,7 @@ import {
   failureReportSchema,
   missionViewV1Schema
 } from "../../src/features/dynamic-replanning/missionViewSchema";
+import {dynamicEventBatchSchema} from "../../src/features/dynamic-replanning/dynamicEventSchema";
 
 async function readJson(path: string): Promise<unknown> {
   return JSON.parse(await readFile(path, "utf8")) as unknown;
@@ -55,6 +56,8 @@ async function loadDynamicSceneFromDisk(
     config: sceneConfigSchema.parse(values.get("scene.json")),
     baseline: caseBundleSchema.parse(values.get("baseline.bundle.json")),
     view: missionViewV1Schema.parse(values.get("mission_view.v1.json")),
+    dynamicEvents: dynamicEventBatchSchema.parse(values.get("dynamic_events.json")),
+    geometryDiff: null,
     decisionTrace: decisionTraceV1Schema.parse(
       values.get("decision_trace.v1.json")
     ),

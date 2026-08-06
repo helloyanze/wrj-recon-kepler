@@ -20,6 +20,7 @@ import {
 import {
   missionViewV1Schema
 } from "../../src/features/dynamic-replanning/missionViewSchema";
+import {dynamicEventBatchSchema} from "../../src/features/dynamic-replanning/dynamicEventSchema";
 
 function readJson(path: string): unknown {
   return JSON.parse(readFileSync(resolve(path), "utf8"));
@@ -36,6 +37,10 @@ describe("dynamicSceneMapState", () => {
       view: missionViewV1Schema.parse(
         readJson(`${root}/mission_view.v1.json`)
       ),
+      dynamicEvents: dynamicEventBatchSchema.parse(
+        readJson(`${root}/dynamic_events.json`)
+      ),
+      geometryDiff: null,
       decisionTrace: decisionTraceV1Schema.parse(
         readJson(`${root}/decision_trace.v1.json`)
       ),
