@@ -8,6 +8,7 @@ import {DecisionProcessPanel} from "../../src/components/dynamic/DecisionProcess
 import {caseBundleSchema} from "../../src/features/cases/caseBundle";
 import {buildDynamicScene} from "../../src/features/dynamic-replanning/buildDynamicScene";
 import {decisionTraceV1Schema} from "../../src/features/dynamic-replanning/decisionTraceSchema";
+import {dynamicEventBatchSchema} from "../../src/features/dynamic-replanning/dynamicEventSchema";
 import {
   sceneConfigSchema,
   sceneProvenanceSchema
@@ -154,11 +155,11 @@ function renderPanel(scene = sceneWith([
       {code: "REMAINING_FUEL_KG", value: 50, unit: "KG", objectIds: ["UAV-01"]}
     ]
   })
-], "CAND-SELECTED")) {
+], "CAND-SELECTED"), stageIndex = 4) {
   render(
     <DecisionProcessPanel
       scene={scene}
-      stageIndex={4}
+      stageIndex={stageIndex}
       manual={false}
       playing={false}
       onSelectStage={vi.fn()}
@@ -168,6 +169,24 @@ function renderPanel(scene = sceneWith([
       onResumeAutomatic={vi.fn()}
     />
   );
+}
+
+function comprehensiveScene() {
+  const root = resolve("public/data/task2/scenes/comprehensive-multi-event");
+  const readJson = (name: string): unknown => JSON.parse(readFileSync(
+    resolve(root, name),
+    "utf8"
+  )) as unknown;
+  return buildDynamicScene({
+    config: sceneConfigSchema.parse(readJson("scene.json")),
+    baseline: caseBundleSchema.parse(readJson("baseline.bundle.json")),
+    view: missionViewV1Schema.parse(readJson("mission_view.v1.json")),
+    dynamicEvents: dynamicEventBatchSchema.parse(readJson("dynamic_events.json")),
+    geometryDiff: null,
+    decisionTrace: decisionTraceV1Schema.parse(readJson("decision_trace.v1.json")),
+    failureReport: null,
+    provenance: sceneProvenanceSchema.parse(readJson("provenance.json"))
+  });
 }
 
 function expectFixedOrder(card: HTMLElement) {
@@ -256,5 +275,22 @@ describe("decision process panel", () => {
     expect(within(reason as HTMLElement).getByText(/完整目标无法满足/u))
       .toBeVisible();
     expect(within(planData as HTMLElement).getByText("暂无记录")).toBeVisible();
+  });
+
+  it("renders the detailed seven-event ingestion view", () => {
+    renderPanel(comprehensiveScene(), 0);
+    const panel = screen.getByRole("region", {name: "动态事件详情"});
+    expect(within(panel).getByText("接收 7 条")).toBeVisible();
+    expect(within(panel).getByText("进入规划 5 条")).toBeVisible();
+    expect(within(panel).getByRole("heading", {name: "1号无人机低油量"}))
+      .toBeVisible();
+    expect(within(panel).getByText("剩余油量")).toBeVisible();
+    expect(within(panel).getByText("13.8 kg")).toBeVisible();
+    const duplicate = within(panel).getByText("重复事件，未重复应用")
+      .closest("details");
+    expect(duplicate).not.toHaveAttribute("open");
+    const accepted = within(panel).getAllByText("已接受并进入规划")[0]
+      .closest("details");
+    expect(accepted).toHaveAttribute("open");
   });
 });

@@ -1,4 +1,5 @@
 import type {DynamicScene} from "../../features/dynamic-replanning/buildDynamicScene";
+import {buildEventIngestionPresentation} from "../../features/dynamic-replanning/eventIngestionPresentation";
 import {formatDecisionValue, stageLabel} from "../../features/dynamic-replanning/decisionLabels";
 import {
   buildCandidatePresentations,
@@ -96,6 +97,9 @@ export function DecisionProcessPanel({
   const resolvedIndex = stageIndex ?? 0;
   const stage = stages[resolvedIndex];
   const stagePresentation = buildDecisionStagePresentation(stage);
+  const ingestion = stage.stageId === "EVENT_INGESTION"
+    ? buildEventIngestionPresentation(scene)
+    : null;
   const candidates = buildCandidatePresentations(scene.decisionTrace).filter(candidate =>
     stage.candidateIds.includes(candidate.candidateId)
   );
@@ -162,6 +166,43 @@ export function DecisionProcessPanel({
               <h3>阶段结论</h3>
               <p>{stagePresentation.conclusion}</p>
             </section>
+            {ingestion === null ? null : (
+              <section className="decision-process__ingestion" aria-label="动态事件详情">
+                <div className="decision-process__ingestion-summary">
+                  <span>接收 {ingestion.summary.received} 条</span>
+                  <span>进入规划 {ingestion.summary.effective} 条</span>
+                  <span>重复去重 {ingestion.summary.duplicate} 条</span>
+                  <span>被覆盖 {ingestion.summary.overridden} 条</span>
+                </div>
+                <p className="decision-process__ingestion-conclusion">
+                  {ingestion.conclusion}
+                </p>
+                <div className="decision-process__event-list">
+                  {ingestion.events.map(event => (
+                    <details
+                      key={event.eventId}
+                      className={`decision-event decision-event--${event.tone}`}
+                      open={event.defaultOpen}
+                    >
+                      <summary>
+                        <h3>{event.title}</h3>
+                        <span>{event.verdict}</span>
+                      </summary>
+                      <p className="decision-event__meta">
+                        <span>事件时间</span>{event.eventTime}
+                        <span>对象</span>{event.objectLabel}
+                      </p>
+                      <p className="decision-event__reason">{event.reason}</p>
+                      {dataList(event.details, "decision-event__details")}
+                      <details className="decision-event__audit">
+                        <summary>审计详情</summary>
+                        {dataList(event.audit)}
+                      </details>
+                    </details>
+                  ))}
+                </div>
+              </section>
+            )}
             <section className="decision-process__section">
               <h3>步骤数据</h3>
               {dataList(stagePresentation.data, "decision-process__facts")}

@@ -988,6 +988,101 @@ button { color: inherit; }
   font-size: 13px;
   line-height: 1.6;
 }
+.decision-process__ingestion {
+  margin-top: 16px;
+}
+.decision-process__ingestion-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  font-size: 12px;
+}
+.decision-process__ingestion-summary span {
+  border: 1px solid var(--border);
+  padding: 7px 6px;
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: nowrap;
+}
+.decision-process__ingestion-conclusion {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.decision-process__event-list {
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.decision-event {
+  border-bottom: 1px solid var(--border);
+  padding: 9px 0;
+}
+.decision-event > summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  list-style-position: outside;
+}
+.decision-event > summary h3 {
+  display: inline;
+  margin: 0;
+  font-size: 14px;
+}
+.decision-event > summary span {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.decision-event--accepted > summary span { color: var(--success); }
+.decision-event--ignored > summary span { color: var(--warning); }
+.decision-event--overridden > summary span { color: var(--danger); }
+.decision-event__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.decision-event__meta span { color: var(--text-secondary); }
+.decision-event__reason {
+  margin: 7px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.decision-event__details {
+  margin: 7px 0 0;
+}
+.decision-event__details div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid rgba(151, 169, 187, 0.16);
+  padding: 5px 0;
+  font-size: 12px;
+}
+.decision-event__details dt { color: var(--text-muted); }
+.decision-event__details dd {
+  margin: 0;
+  color: var(--text-secondary);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.decision-event__audit {
+  margin-top: 9px;
+}
+.decision-event__audit summary {
+  color: #66b8ff;
+  font-size: 11px;
+  cursor: pointer;
+}
+.decision-process__ingestion + .decision-process__section {
+  margin-top: 16px;
+}
 .decision-process__facts,
 .decision-process__audit dl,
 .decision-candidate dl { margin: 0; }
