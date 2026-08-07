@@ -98,17 +98,20 @@ function buildLocalPath(segment: MissionSegment): LocalPoint[] {
   coordinates.forEach((coordinate, index) => {
     validateFinite(coordinate[0], `geometry vertex ${index} X`);
     validateFinite(coordinate[1], `geometry vertex ${index} Y`);
+    if (coordinate[2] !== undefined) {
+      validateFinite(coordinate[2], `geometry vertex ${index} Z`);
+    }
   });
   validateFinite(segment.startPoint.zM, "start altitude");
   validateFinite(segment.endPoint.zM, "end altitude");
 
   if (coordinates.length === 1) {
-    const [xM, yM] = coordinates[0];
-    const start: LocalPoint = [xM, yM, segment.startPoint.zM];
+    const [xM, yM, zM] = coordinates[0];
+    const start: LocalPoint = [xM, yM, zM ?? segment.startPoint.zM];
     if (segment.durationSec === 0) {
       return [start];
     }
-    return [start, [xM, yM, segment.endPoint.zM]];
+    return [start, [xM, yM, zM ?? segment.endPoint.zM]];
   }
 
   const cumulativeHorizontalDistances = cumulativeDistances(
@@ -120,7 +123,10 @@ function buildLocalPath(segment: MissionSegment): LocalPoint[] {
   const finalIndex = coordinates.length - 1;
   const altitudeDifference = segment.endPoint.zM - segment.startPoint.zM;
 
-  return coordinates.map(([xM, yM], index) => {
+  return coordinates.map(([xM, yM, coordinateZM], index) => {
+    if (coordinateZM !== undefined) {
+      return [xM, yM, coordinateZM];
+    }
     let zM: number;
     if (index === 0) {
       zM = segment.startPoint.zM;

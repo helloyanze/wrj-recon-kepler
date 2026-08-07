@@ -113,6 +113,59 @@ function addSecondSortie(
 }
 
 describe("convertMissionPlan", () => {
+  it("imports the task 1 v2 shape with transition and 3D geometry", () => {
+    const missionPlan = JSON.parse(JSON.stringify(missionPlanFixture)) as any;
+    missionPlan.finalScore = 1;
+    const snapshot = missionPlan.assignmentPlan.stripPlanSnapshot;
+    snapshot.compatibleFlightCandidates =
+      snapshot.compatibleFlightCandidates.map((candidate: string) => ({
+        candidateId: candidate
+      }));
+    snapshot.strips = snapshot.strips.map((strip: any) => ({
+      ...strip,
+      coveragePolygon: {
+        type: "Polygon",
+        coordinates: [[
+          ...strip.coveragePolygon.map((point: {xM: number; yM: number}) => [
+            point.xM,
+            point.yM
+          ])
+        ]]
+      }
+    }));
+    const firstTrajectory = missionPlan.trajectories[0];
+    firstTrajectory.segments[0].geometry.coordinates = [
+      [5000, 5000, 0],
+      [5000, 5000, 1400],
+      [5000, 5000, 2800]
+    ];
+    firstTrajectory.segments.at(-1).segmentType = "TRANSITION";
+
+    const bundle = convertMissionPlan({
+      missionPlan,
+      sourceName: "task1-v2-fixture/mission_plan.json",
+      sourceRun: "20260807T120033",
+      importedAt: "2026-08-07T12:00:33.000Z",
+      sha256: "0".repeat(64)
+    });
+
+    expect(bundle.metrics).toMatchObject({
+      stripCount: snapshot.stripCount
+    });
+    expect(bundle.sorties.flatMap(sortie => sortie.segments)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({segmentType: "TRANSITION"})
+      ])
+    );
+    expect(
+      bundle.sorties
+        .flatMap(sortie => sortie.segments)
+        .find(segment => segment.segmentType === "CLIMB")?.localPath
+    ).toEqual(expect.arrayContaining([
+      expect.arrayContaining([5000, 5000, 1400])
+    ]));
+  });
+
   it("converts the unmodified canonical mission plan fixture directly", () => {
     const bundle = convert(missionPlanFixture);
 

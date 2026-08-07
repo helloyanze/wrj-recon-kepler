@@ -62,7 +62,7 @@ describe("dynamic resource interpolation", () => {
   it("interpolates an active Task 2 path and heading", () => {
     const [state] = selectDynamicResourceStates(scene, playbackAt(110));
     expect(state.position).not.toBeNull();
-    expect(state.position?.[2]).toBe(2_500);
-    expect(state.headingDeg).toBeCloseTo(90);
+    expect(state.position?.[2]).toBe(2_900);
+    expect(state.headingDeg).toBeCloseTo(140.097, 3);
   });
 });

@@ -860,8 +860,8 @@ function collectDisplayPoints(
         segment.endPoint.yM,
         segment.endPoint.zM
       ]);
-      segment.geometry.coordinates.forEach(([xM, yM]) => {
-        points.push([xM, yM, 0]);
+      segment.geometry.coordinates.forEach(([xM, yM, zM]) => {
+        points.push([xM, yM, zM ?? 0]);
       });
     }
   }

@@ -26,10 +26,12 @@ const bundle: CaseBundleV2 = caseBundleSchema.parse(
 );
 
 describe("committed algorithm case catalog", () => {
-  it("ships all 11 valid cases with R10 selected by default", () => {
+  it("ships all 14 latest valid cases with R10 selected by default", () => {
     expect(catalog.defaultCaseId).toBe(R10_CASE_ID);
-    expect(catalog.cases).toHaveLength(11);
-    expect(new Set(catalog.cases.map(({caseId}) => caseId)).size).toBe(11);
+    expect(catalog.cases).toHaveLength(14);
+    expect(new Set(catalog.cases.map(({caseId}) => caseId)).size).toBe(14);
+    expect(catalog.cases.find(({caseId}) => caseId === R10_CASE_ID)?.runId)
+      .toBe("20260807T120033");
   });
 
   it("keeps the R10 catalog metrics synchronized with its parsed bundle", () => {
@@ -57,12 +59,12 @@ describe("committed R10 mission bundle", () => {
 
   it("preserves the authoritative R10 mission metrics", () => {
     expect(bundle.metrics).toMatchObject({
-      uavCount: 2,
-      sortieCount: 5,
-      batchCount: 3,
+      uavCount: 3,
+      sortieCount: 6,
+      batchCount: 2,
       stripCount: 20
     });
-    expect(bundle.metrics.missionMakespanSec).toBeCloseTo(3_598.185, 3);
+    expect(bundle.metrics.missionMakespanSec).toBeCloseTo(2_375.629, 3);
   });
 
   it("preserves exact algorithm launch order and telemetry maxima", () => {
@@ -81,12 +83,11 @@ describe("committed R10 mission bundle", () => {
       ...segments.map(({speedMps}) => speedMps)
     );
 
-    expect(launchTimes).toHaveLength(3);
+    expect(launchTimes).toHaveLength(2);
     expect(launchTimes[0]).toBe(0);
-    expect(launchTimes[1]).toBeCloseTo(1_206.801, 3);
-    expect(launchTimes[2]).toBeCloseTo(2_415.788, 3);
-    expect(maximumHeightM).toBeCloseTo(2_900, 6);
-    expect(maximumSpeedMps).toBeCloseTo(223.702, 3);
+    expect(launchTimes[1]).toBeCloseTo(1_202.493, 3);
+    expect(maximumHeightM).toBeCloseTo(2_800, 6);
+    expect(maximumSpeedMps).toBeCloseTo(223.642, 3);
   });
 
   it("assigns each of the 20 strips to exactly one sortie owner", () => {
@@ -129,17 +130,12 @@ describe("committed R10 mission bundle", () => {
         .length;
 
     expect(flyingAt(-1)).toBe(0);
-    expect(flyingAt(0)).toBe(2);
-    expect(flyingAt(1_206.8)).toBe(0);
+    expect(flyingAt(0)).toBe(3);
+    expect(flyingAt(1_202.4)).toBe(0);
     const secondBatchLaunch = bundle.sorties
       .find(({batchIndex}) => batchIndex === 1)?.plannedLaunchTimeSec;
-    const thirdBatchLaunch = bundle.sorties
-      .find(({batchIndex}) => batchIndex === 2)?.plannedLaunchTimeSec;
-
     expect(secondBatchLaunch).toBeDefined();
-    expect(thirdBatchLaunch).toBeDefined();
-    expect(flyingAt(secondBatchLaunch as number)).toBe(2);
-    expect(flyingAt(thirdBatchLaunch as number)).toBe(1);
+    expect(flyingAt(secondBatchLaunch as number)).toBe(3);
 
     const finalSortieEnd = Math.max(
       ...bundle.sorties.map(sortie => sortie.segments.at(-1)?.endTimeSec ?? 0)
@@ -148,7 +144,7 @@ describe("committed R10 mission bundle", () => {
     expect(
       selectSortieStates(bundle.sorties, finalSortieEnd)
         .filter(({status}) => status === "landed")
-    ).toHaveLength(1);
+    ).toHaveLength(2);
     expect(
       selectSortieStates(
         bundle.sorties,

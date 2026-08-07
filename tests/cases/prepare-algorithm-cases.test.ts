@@ -911,7 +911,7 @@ describe("parseCliArgs", () => {
 });
 
 describe("generated integration catalog", () => {
-  it("keeps the real feasible R06 run with original overlap timing and a warning", async () => {
+  it("keeps the latest feasible R06 run and its bundle synchronized", async () => {
     const generatedRoot = join(
       process.cwd(),
       "public",
@@ -925,41 +925,32 @@ describe("generated integration catalog", () => {
       entry => entry.caseId === "R06-CIRCLE-01"
     );
 
-    expect(catalog.cases).toHaveLength(11);
+    expect(catalog.cases).toHaveLength(14);
     expect(r06).toMatchObject({
-      runId: "20260721T184200",
+      runId: "20260807T115725",
       bundleUrl: "/data/integration-cases/R06-CIRCLE-01/bundle.json"
     });
 
     const bundle = await readJson(
       join(generatedRoot, "R06-CIRCLE-01", "bundle.json")
     ) as {
-      sorties: Array<{
-        assignmentId: string;
-        plannedLaunchTimeSec: number;
-        segments: Array<{endTimeSec: number}>;
-      }>;
+      metrics: {
+        uavCount: number;
+        sortieCount: number;
+        batchCount: number;
+        stripCount: number;
+      };
       validation: {warnings: string[]};
     };
-    const previous = bundle.sorties.find(
-      sortie => sortie.assignmentId === "ASG-0003-002"
-    );
-    const next = bundle.sorties.find(
-      sortie => sortie.assignmentId === "ASG-0003-003"
-    );
 
-    expect(previous?.segments.at(-1)?.endTimeSec).toBeCloseTo(
-      1986.964730811549,
-      9
-    );
-    expect(next?.plannedLaunchTimeSec).toBeCloseTo(
-      1986.414871459004,
-      9
-    );
-    expect(bundle.validation.warnings).toContainEqual(
-      expect.stringMatching(
-        /UAV_SCHEDULE_OVERLAP:.*ASG-0003-002.*ASG-0003-003.*original.*preserved/i
-      )
+    expect(bundle.metrics).toMatchObject({
+      uavCount: 3,
+      sortieCount: 6,
+      batchCount: 2,
+      stripCount: 31
+    });
+    expect(bundle.validation.warnings).not.toContainEqual(
+      expect.stringMatching(/UAV_SCHEDULE_OVERLAP/u)
     );
   });
 });

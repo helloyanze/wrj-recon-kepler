@@ -6,6 +6,7 @@ const segmentTypeSchema = z.enum([
   "TAKEOFF",
   "CLIMB",
   "ENTRY",
+  "TRANSITION",
   "COVERAGE_LINE",
   "TURN",
   "RETURN",
@@ -31,7 +32,12 @@ const localPointSchema = z
 const lineStringGeometrySchema = z
   .object({
     type: z.literal("LineString"),
-    coordinates: z.array(z.tuple([finiteNumber, finiteNumber])).min(1)
+    coordinates: z.array(
+      z.union([
+        z.tuple([finiteNumber, finiteNumber]),
+        z.tuple([finiteNumber, finiteNumber, finiteNumber])
+      ])
+    ).min(1)
   })
   .passthrough();
 
@@ -166,8 +172,74 @@ export const missionPlanSchema = z
 
 export type MissionPlan = z.infer<typeof missionPlanSchema>;
 
+export function normalizeMissionPlanInput(value: unknown): unknown {
+  if (!isRecord(value)) {
+    return value;
+  }
+
+  const normalized: Record<string, unknown> = {...value};
+  if (typeof normalized.finalScore === "number") {
+    normalized.finalScore = {total: normalized.finalScore};
+  }
+
+  const assignmentPlan = normalized.assignmentPlan;
+  if (!isRecord(assignmentPlan)) {
+    return normalized;
+  }
+  const normalizedAssignmentPlan: Record<string, unknown> = {...assignmentPlan};
+  normalized.assignmentPlan = normalizedAssignmentPlan;
+
+  const snapshot = assignmentPlan.stripPlanSnapshot;
+  if (!isRecord(snapshot)) {
+    return normalized;
+  }
+  const normalizedSnapshot: Record<string, unknown> = {...snapshot};
+  normalizedAssignmentPlan.stripPlanSnapshot = normalizedSnapshot;
+
+  if (Array.isArray(snapshot.compatibleFlightCandidates)) {
+    normalizedSnapshot.compatibleFlightCandidates =
+      snapshot.compatibleFlightCandidates.map(candidate => {
+        if (isRecord(candidate) && typeof candidate.candidateId === "string") {
+          return candidate.candidateId;
+        }
+        return candidate;
+      });
+  }
+
+  if (Array.isArray(snapshot.strips)) {
+    normalizedSnapshot.strips = snapshot.strips.map(strip => {
+      if (!isRecord(strip) || !isRecord(strip.coveragePolygon)) {
+        return strip;
+      }
+      const polygon = strip.coveragePolygon;
+      if (
+        polygon.type !== "Polygon" ||
+        !Array.isArray(polygon.coordinates) ||
+        !Array.isArray(polygon.coordinates[0])
+      ) {
+        return strip;
+      }
+      return {
+        ...strip,
+        coveragePolygon: polygon.coordinates[0].map(coordinate => {
+          if (
+            !Array.isArray(coordinate) ||
+            typeof coordinate[0] !== "number" ||
+            typeof coordinate[1] !== "number"
+          ) {
+            return coordinate;
+          }
+          return {xM: coordinate[0], yM: coordinate[1]};
+        })
+      };
+    });
+  }
+
+  return normalized;
+}
+
 export function parseMissionPlan(value: unknown, source: string): MissionPlan {
-  const result = missionPlanSchema.safeParse(value);
+  const result = missionPlanSchema.safeParse(normalizeMissionPlanInput(value));
   if (!result.success) {
     const details = result.error.issues
       .map((issue) => `${issue.path.length > 0 ? issue.path.join(".") : "<root>"}: ${issue.message}`)
@@ -175,4 +247,8 @@ export function parseMissionPlan(value: unknown, source: string): MissionPlan {
     throw new Error(`${source} 算法计划校验失败: ${details}`);
   }
   return result.data;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

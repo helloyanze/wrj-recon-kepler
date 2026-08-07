@@ -15,6 +15,7 @@ export type SegmentType =
   | "TAKEOFF"
   | "CLIMB"
   | "ENTRY"
+  | "TRANSITION"
   | "COVERAGE_LINE"
   | "TURN"
   | "RETURN"
@@ -144,6 +145,7 @@ const segmentTypeSchema = z.enum([
   "TAKEOFF",
   "CLIMB",
   "ENTRY",
+  "TRANSITION",
   "COVERAGE_LINE",
   "TURN",
   "RETURN",
