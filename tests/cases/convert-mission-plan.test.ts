@@ -114,19 +114,23 @@ function addSecondSortie(
 
 describe("convertMissionPlan", () => {
   it("imports the task 1 v2 shape with transition and 3D geometry", () => {
-    const missionPlan = JSON.parse(JSON.stringify(missionPlanFixture)) as any;
-    missionPlan.finalScore = 1;
-    const snapshot = missionPlan.assignmentPlan.stripPlanSnapshot;
+    const missionPlan = JSON.parse(JSON.stringify(missionPlanFixture)) as TestPlan;
+    (missionPlan as unknown as {finalScore: unknown}).finalScore = 1;
+    const snapshot = missionPlan.assignmentPlan.stripPlanSnapshot as unknown as {
+      compatibleFlightCandidates: unknown[];
+      strips: Array<Record<string, unknown>>;
+      stripCount: number;
+    };
     snapshot.compatibleFlightCandidates =
-      snapshot.compatibleFlightCandidates.map((candidate: string) => ({
-        candidateId: candidate
+      snapshot.compatibleFlightCandidates.map(candidate => ({
+        candidateId: String(candidate)
       }));
-    snapshot.strips = snapshot.strips.map((strip: any) => ({
+    snapshot.strips = snapshot.strips.map(strip => ({
       ...strip,
       coveragePolygon: {
         type: "Polygon",
         coordinates: [[
-          ...strip.coveragePolygon.map((point: {xM: number; yM: number}) => [
+          ...(strip.coveragePolygon as Array<{xM: number; yM: number}>).map(point => [
             point.xM,
             point.yM
           ])
@@ -134,12 +138,19 @@ describe("convertMissionPlan", () => {
       }
     }));
     const firstTrajectory = missionPlan.trajectories[0];
+    if (!firstTrajectory) {
+      throw new Error("fixture must include a trajectory");
+    }
     firstTrajectory.segments[0].geometry.coordinates = [
       [5000, 5000, 0],
       [5000, 5000, 1400],
       [5000, 5000, 2800]
     ];
-    firstTrajectory.segments.at(-1).segmentType = "TRANSITION";
+    const lastSegment = firstTrajectory.segments.at(-1);
+    if (!lastSegment) {
+      throw new Error("fixture trajectory must include a segment");
+    }
+    lastSegment.segmentType = "TRANSITION";
 
     const bundle = convertMissionPlan({
       missionPlan,

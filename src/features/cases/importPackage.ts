@@ -1,6 +1,6 @@
 import type {CaseBundleV2} from "./caseBundle";
 import {
-  ALGORITHM_IMPORT_UAV_SCHEDULE_OVERLAP_POLICY,
+  ZIP_IMPORT_UAV_SCHEDULE_OVERLAP_POLICY,
   convertMissionPlan
 } from "./convertMissionPlan";
 
@@ -462,7 +462,7 @@ export function convertExtractedAlgorithmPackage(
     importedAt: options.importedAt,
     sha256: options.sha256,
     uavScheduleOverlapPolicy:
-      ALGORITHM_IMPORT_UAV_SCHEDULE_OVERLAP_POLICY
+      ZIP_IMPORT_UAV_SCHEDULE_OVERLAP_POLICY
   });
   throwIfAborted(options.signal);
 

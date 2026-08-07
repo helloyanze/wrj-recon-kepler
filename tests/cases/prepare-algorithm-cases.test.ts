@@ -925,7 +925,7 @@ describe("generated integration catalog", () => {
       entry => entry.caseId === "R06-CIRCLE-01"
     );
 
-    expect(catalog.cases).toHaveLength(14);
+    expect(catalog.cases).toHaveLength(15);
     expect(r06).toMatchObject({
       runId: "20260807T115725",
       bundleUrl: "/data/integration-cases/R06-CIRCLE-01/bundle.json"
@@ -951,6 +951,23 @@ describe("generated integration catalog", () => {
     });
     expect(bundle.validation.warnings).not.toContainEqual(
       expect.stringMatching(/UAV_SCHEDULE_OVERLAP/u)
+    );
+
+    const r08 = catalog.cases.find(
+      entry => entry.caseId === "R08-TRANSIT-OBSTACLE-01"
+    );
+    expect(r08).toMatchObject({
+      runId: "20260807T115847",
+      bundleUrl: "/data/integration-cases/R08-TRANSIT-OBSTACLE-01/bundle.json"
+    });
+    const r08Bundle = await readJson(
+      join(generatedRoot, "R08-TRANSIT-OBSTACLE-01", "bundle.json")
+    ) as {validation: {valid: boolean; warnings: string[]}};
+    expect(r08Bundle.validation.valid).toBe(true);
+    expect(r08Bundle.validation.warnings).toContainEqual(
+      expect.stringMatching(
+        /UAV_SCHEDULE_OVERLAP:.*ASG-0109-002.*ASG-0109-004.*original.*preserved/i
+      )
     );
   });
 });

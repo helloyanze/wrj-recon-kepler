@@ -454,7 +454,7 @@ describe("algorithm case catalog loaders", () => {
       await readFile(resolve(dataRoot, "catalog.json"), "utf8")
     ) as {cases: Array<{caseId: string}>};
 
-    expect(committedCatalog.cases).toHaveLength(14);
+    expect(committedCatalog.cases).toHaveLength(15);
     for (const entry of committedCatalog.cases) {
       const raw = await readFile(
         resolve(dataRoot, encodeURIComponent(entry.caseId), "bundle.json"),

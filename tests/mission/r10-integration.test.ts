@@ -26,10 +26,10 @@ const bundle: CaseBundleV2 = caseBundleSchema.parse(
 );
 
 describe("committed algorithm case catalog", () => {
-  it("ships all 14 latest valid cases with R10 selected by default", () => {
+  it("ships all 15 latest valid cases with R10 selected by default", () => {
     expect(catalog.defaultCaseId).toBe(R10_CASE_ID);
-    expect(catalog.cases).toHaveLength(14);
-    expect(new Set(catalog.cases.map(({caseId}) => caseId)).size).toBe(14);
+    expect(catalog.cases).toHaveLength(15);
+    expect(new Set(catalog.cases.map(({caseId}) => caseId)).size).toBe(15);
     expect(catalog.cases.find(({caseId}) => caseId === R10_CASE_ID)?.runId)
       .toBe("20260807T120033");
   });

@@ -35,6 +35,14 @@ export interface UavScheduleOverlapPolicy {
 
 export const ALGORITHM_IMPORT_UAV_SCHEDULE_OVERLAP_POLICY = {
   mode: "WARN_WITHIN_TOLERANCE",
+  // Task 1's authoritative feasible plans may retain substantial overlap when
+  // a UAV is reused across batches; preserve the source timing and surface it
+  // as a warning instead of dropping the whole case during import.
+  maxOverlapSec: 60
+} as const satisfies UavScheduleOverlapPolicy;
+
+export const ZIP_IMPORT_UAV_SCHEDULE_OVERLAP_POLICY = {
+  mode: "WARN_WITHIN_TOLERANCE",
   maxOverlapSec: 1
 } as const satisfies UavScheduleOverlapPolicy;
 
