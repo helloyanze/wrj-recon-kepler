@@ -2,9 +2,16 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {TripsLayer} from "@deck.gl/geo-layers";
-import {IconLayer, PathLayer, PolygonLayer} from "@deck.gl/layers";
+import {IconLayer, PathLayer, PolygonLayer, TextLayer} from "@deck.gl/layers";
 import {describe, expect, it, vi} from "vitest";
-import type {CaseBundleV2} from "../../src/features/cases/caseBundle";
+import type {
+  CaseBundleV2,
+  LocalPoint,
+  MapPoint,
+  SegmentType,
+  TimedMapPoint,
+  TimedSegment
+} from "../../src/features/cases/caseBundle";
 import {
   createDefaultMissionLayerPreferences
 } from "../../src/features/mission/missionLayerPreferences";
@@ -128,14 +135,17 @@ function layerProps<T>(layer: {props: unknown}): T {
 
 function makeLayers(
   missionTimeSec = 5,
-  onSelectSortie?: (assignmentId: string) => void
+  onSelectSortie?: (assignmentId: string) => void,
+  colorMode: "uav" | "overview" = "uav",
+  sourceBundle: CaseBundleV2 = bundle
 ) {
   const preferences = createDefaultMissionLayerPreferences(
     "R10",
     "PLAN-10",
     ["UAV-04"],
-    bundle.strips
+    sourceBundle.strips
   );
+  preferences.colorMode = colorMode;
   preferences.stripColors["ST-01"] = "#123456";
   preferences.layerUavColors.scanned["UAV-04"] = "#56789A";
   preferences.layerUavColors.routes["UAV-04"] = "#234567";
@@ -159,13 +169,112 @@ function makeLayers(
   };
 
   return createMissionDeckLayers({
-    bundle,
+    bundle: sourceBundle,
     missionTimeSec,
     verticalScale: 4,
     preferences,
     onSelectSortie
   });
 }
+
+type SegmentSeed = {
+  segmentId: string;
+  segmentType: SegmentType;
+  stripId: string | null;
+  mapPath: readonly MapPoint[];
+  startTimeSec: number;
+  endTimeSec: number;
+};
+
+function timedSegment({
+  segmentId,
+  segmentType,
+  stripId,
+  mapPath,
+  startTimeSec,
+  endTimeSec
+}: SegmentSeed): TimedSegment {
+  const span = Math.max(1, mapPath.length - 1);
+  return {
+    segmentId,
+    segmentType,
+    stripId,
+    startTimeSec,
+    endTimeSec,
+    heightM: 100,
+    speedMps: 20,
+    distanceM: (endTimeSec - startTimeSec) * 20,
+    fuelConsumptionKg: 1,
+    localPath: mapPath.map(([longitude, latitude, altitudeM]): LocalPoint => [
+      longitude,
+      latitude,
+      altitudeM
+    ]),
+    mapPath: [...mapPath],
+    timedPath: mapPath.map((point, index): TimedMapPoint => [
+      point[0],
+      point[1],
+      point[2],
+      startTimeSec + (index * (endTimeSec - startTimeSec)) / span
+    ])
+  };
+}
+
+// 含场外起飞段、转弯、覆盖线各一条 + 单点降落段（验证 flatten 过滤退化段）。
+const overviewBundle: CaseBundleV2 = {
+  ...bundle,
+  assignments: [
+    {...bundle.assignments[0], stripStartIndex: 0, stripEndIndex: 1}
+  ],
+  sorties: [
+    {
+      ...bundle.sorties[0],
+      segments: [
+        timedSegment({
+          segmentId: "SEG-TK",
+          segmentType: "TAKEOFF",
+          stripId: null,
+          mapPath: [
+            [110, 18, 0],
+            [110, 18, 60]
+          ],
+          startTimeSec: 0,
+          endTimeSec: 4
+        }),
+        timedSegment({
+          segmentId: "SEG-TN",
+          segmentType: "TURN",
+          stripId: null,
+          mapPath: [
+            [110, 18, 60],
+            [110.5, 18, 100]
+          ],
+          startTimeSec: 4,
+          endTimeSec: 8
+        }),
+        timedSegment({
+          segmentId: "SEG-01",
+          segmentType: "COVERAGE_LINE",
+          stripId: "ST-01",
+          mapPath: [
+            [110.5, 18, 100],
+            [111.5, 18, 100]
+          ],
+          startTimeSec: 8,
+          endTimeSec: 18
+        }),
+        timedSegment({
+          segmentId: "SEG-LD",
+          segmentType: "LANDING",
+          stripId: null,
+          mapPath: [[111.5, 18, 10]],
+          startTimeSec: 18,
+          endTimeSec: 20
+        })
+      ]
+    }
+  ]
+};
 
 describe("mission triangle mask", () => {
   it("is a safe monochrome SVG whose nose points upward", () => {
@@ -393,5 +502,139 @@ describe("createMissionDeckLayers", () => {
       // Deck normalizes an omitted callback to its null default.
       expect(layer.props.onClick).toBeNull();
     }
+  });
+});
+
+describe("createMissionDeckLayers overview mode", () => {
+  it("appends a non-pickable markers TextLayer after the six uav layers", () => {
+    const layers = makeLayers(5, undefined, "overview");
+
+    expect(layers.map(({id}) => id)).toEqual([
+      "wrj-algorithm-region",
+      "wrj-algorithm-scanned",
+      "wrj-algorithm-strips",
+      "wrj-algorithm-routes",
+      "wrj-algorithm-trips",
+      "wrj-algorithm-uav-triangles",
+      "wrj-algorithm-overview-markers"
+    ]);
+    expect(layers[6]).toBeInstanceOf(TextLayer);
+    expect(layers[6].props).toMatchObject({
+      visible: false, // routes.visible 由 makeLayers 关闭，markers 跟随它
+      pickable: false,
+      opacity: 1,
+      sizeUnits: "pixels",
+      characterSet: "auto"
+    });
+  });
+
+  it("draws strips neutral gray while scan, trip and triangle colors stay per-UAV", () => {
+    const layers = makeLayers(5, undefined, "overview");
+    const strips = layerProps<{
+      data: Array<{stripId: string}>;
+      getColor: (datum: {stripId: string}) => number[];
+      updateTriggers: {getColor: string};
+    }>(layers[2]);
+    const scanned = layerProps<{
+      data: Array<{uavId: string}>;
+      getFillColor: (datum: {uavId: string}) => number[];
+    }>(layers[1]);
+    const trips = layerProps<{
+      data: Array<{uavId: string}>;
+      getColor: (datum: {uavId: string}) => number[];
+    }>(layers[4]);
+
+    expect(strips.getColor(strips.data[0])).toEqual([170, 170, 170, 255]);
+    expect(scanned.getFillColor(scanned.data[0])).toEqual([86, 120, 154, 255]);
+    expect(trips.getColor(trips.data[0])).toEqual([52, 86, 120, 255]);
+  });
+
+  it("per-segment emphasis keeps the uav color and drops degenerate single-point segments", () => {
+    const onSelectSortie = vi.fn();
+    const layers = makeLayers(5, onSelectSortie, "overview", overviewBundle);
+    const routes = layerProps<{
+      data: Array<{
+        assignmentId: string;
+        uavId: string;
+        segmentType: SegmentType;
+        timedPath: TimedMapPoint[];
+      }>;
+      getPath: (datum: {timedPath: TimedMapPoint[]}) => number[][];
+      getColor: (datum: {
+        uavId: string;
+        segmentType: SegmentType;
+      }) => number[];
+      onClick?: (info: {object: {assignmentId: string}}) => void;
+    }>(layers[3]);
+
+    expect(routes.data.map(({segmentType}) => segmentType)).toEqual([
+      "TURN",
+      "COVERAGE_LINE"
+    ]);
+    for (const datum of routes.data) {
+      expect(datum.assignmentId).toBe("ASG-01");
+      expect(datum.uavId).toBe("UAV-04");
+    }
+    // tab10[0] = #1f77b4 => [31,119,180]；转弯 α0.55*255=140、覆盖线 α0.85*255=217
+    expect(routes.getColor(routes.data[0])).toEqual([31, 119, 180, 140]);
+    expect(routes.getColor(routes.data[1])).toEqual([31, 119, 180, 217]);
+    expect(routes.getPath(routes.data[0])).toEqual([
+      [110, 18, 240],
+      [110.5, 18, 400]
+    ]);
+    // 转弯为点线、覆盖线实线
+    const dash = layerProps<{
+      getDashArray: (datum: {segmentType: SegmentType}) => [number, number];
+    }>(layers[3]);
+    expect(dash.getDashArray({segmentType: "TURN"})).toEqual([1, 4]);
+    expect(dash.getDashArray({segmentType: "COVERAGE_LINE"})).toEqual([0, 0]);
+    routes.onClick?.({object: routes.data[1]});
+    expect(onSelectSortie).toHaveBeenCalledTimes(1);
+    expect(onSelectSortie).toHaveBeenCalledWith("ASG-01");
+  });
+
+  it("anchors entry/exit glyphs and a strip-range label per coverage sortie", () => {
+    const layers = makeLayers(5, undefined, "overview", overviewBundle);
+    const markers = layerProps<{
+      data: Array<{
+        key: string;
+        text: string;
+        position: [number, number, number];
+        color: number[];
+        size: number;
+        pixelOffset: [number, number];
+      }>;
+      getText: (datum: {text: string}) => string;
+      getColor: (datum: {color: number[]}) => number[];
+      getPosition: (datum: {
+        position: [number, number, number];
+      }) => number[];
+      getSize: (datum: {size: number}) => number;
+      getPixelOffset: (datum: {
+        pixelOffset: [number, number];
+      }) => [number, number];
+    }>(layers[6]);
+
+    const byKey = new Map(markers.data.map(datum => [datum.key, datum]));
+    expect(markers.data.map(({text}) => text).sort()).toEqual([
+      "CR-ASG-01  [0..1]  0.1 km",
+      "□",
+      "○"
+    ]);
+    const entry = byKey.get("ASG-01:entry")!;
+    const exit = byKey.get("ASG-01:exit")!;
+    expect(markers.getText(entry)).toBe("○");
+    expect(markers.getText(exit)).toBe("□");
+    // TextLayer 锚定在经纬度平面上（billboard 文本，不带高度）
+    expect(markers.getPosition(entry)).toEqual([110.5, 18]);
+    expect(markers.getPosition(exit)).toEqual([111.5, 18]);
+    // tab10[0] = #1f77b4
+    for (const datum of markers.data) {
+      expect(markers.getColor(datum)).toEqual([31, 119, 180, 255]);
+    }
+    expect(markers.getPixelOffset(entry)).toEqual([0, 0]);
+    expect(markers.getPixelOffset(byKey.get("ASG-01:label")!))
+      .toEqual([10, 10]);
+    expect(markers.getSize(byKey.get("ASG-01:label")!)).toBe(12);
   });
 });

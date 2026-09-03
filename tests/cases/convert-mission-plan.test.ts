@@ -999,25 +999,85 @@ describe("convertMissionPlan", () => {
 
   it.each([
     {
-      label: "assignment range does not match its strip ID",
+      label: "start index does not match the visited strip minimum",
       mutate: (plan: TestPlan) => {
         plan.assignmentPlan.assignments[0].stripStartIndex = 1;
         plan.assignmentPlan.assignments[0].stripEndIndex = 1;
       },
-      expected: /assignment.*ASG-0001-001.*range.*1.*strip.*ST-0001.*index.*0/i
+      expected: /assignment.*ASG-0001-001.*range.*1, 1.*visited strips.*0, 0/i
     },
     {
-      label: "strip snapshot index does not match the assignment range",
+      label: "end index does not match the visited strip maximum",
       mutate: (plan: TestPlan) => {
         plan.assignmentPlan.stripPlanSnapshot.strips[0].index = 7;
       },
-      expected: /assignment.*ASG-0001-001.*range.*0.*strip.*ST-0001.*index.*7/i
+      expected: /assignment.*ASG-0001-001.*range.*0, 0.*visited strips.*7, 7/i
     }
   ])("cross-checks strip IDs and index ranges when $label", ({mutate, expected}) => {
     const plan = makePlan();
     mutate(plan);
 
     expect(() => convert(plan)).toThrow(expected);
+  });
+
+  it("accepts an interleaved strip assignment whose range spans the visited indices", () => {
+    const plan = makePlan();
+    // Build 5 strips with explicit global indices 0..4, then assign ST-0001/03/05
+    // (indices 0,2,4) to the first sortie and ST-0002/04 (indices 1,3) to a second.
+    const snapshot = plan.assignmentPlan.stripPlanSnapshot;
+    snapshot.strips = [
+      {stripId: "ST-0001", index: 0},
+      {stripId: "ST-0002", index: 1},
+      {stripId: "ST-0003", index: 2},
+      {stripId: "ST-0004", index: 3},
+      {stripId: "ST-0005", index: 4}
+    ].map(({stripId, index}) => {
+      const base = structuredClone(snapshot.strips[0]);
+      base.stripId = stripId;
+      base.index = index;
+      base.start.yM += 300 * index;
+      base.end.yM += 300 * index;
+      base.coveragePolygon.forEach(point => {
+        point.yM += 300 * index;
+      });
+      return base;
+    });
+    snapshot.stripCount = 5;
+
+    plan.assignmentPlan.assignments[0].stripIds = [
+      "ST-0001",
+      "ST-0003",
+      "ST-0005"
+    ];
+    plan.assignmentPlan.assignments[0].stripStartIndex = 0;
+    plan.assignmentPlan.assignments[0].stripEndIndex = 4;
+
+    const second = addSecondSortie(plan, {
+      assignmentId: "ASG-0001-002",
+      stripId: "ST-0002"
+    });
+    second.assignment.stripIds = ["ST-0002", "ST-0004"];
+    second.assignment.stripStartIndex = 1;
+    second.assignment.stripEndIndex = 3;
+
+    const bundle = convert(plan);
+    expect(bundle.assignments.find(item => item.assignmentId === "ASG-0001-001"))
+      .toMatchObject({stripStartIndex: 0, stripEndIndex: 4});
+    // strips still emitted in ascending global index order
+    expect(bundle.strips.map(strip => strip.index)).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it("rejects an interleaved assignment whose strip index falls outside the declared range", () => {
+    const plan = makePlan();
+    // Declare [0..0] but own ST-0001 (idx 0) and ST-0002 (idx 1): the larger
+    // visited index exceeds the declared span, so the range itself is rejected.
+    addStrip(plan, "ST-0002");
+    plan.assignmentPlan.assignments[0].stripIds = ["ST-0001", "ST-0002"];
+    plan.assignmentPlan.assignments[0].stripStartIndex = 0;
+    plan.assignmentPlan.assignments[0].stripEndIndex = 0;
+
+    expect(() => convert(plan))
+      .toThrow(/does not match its visited strips/);
   });
 
   it("emits strips in ascending snapshot index order", () => {

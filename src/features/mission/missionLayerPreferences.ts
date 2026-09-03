@@ -1,5 +1,6 @@
 export type MissionLayerId = "region" | "strips" | "scanned" | "routes" | "trips";
 export type LayerUavColorId = "routes" | "trips" | "markers" | "scanned";
+export type MissionColorMode = "uav" | "overview";
 export type VerticalScale = 1 | 2 | 4;
 
 export interface MissionLayerPreference {
@@ -20,6 +21,7 @@ export interface MissionLayerPreferencesV3 {
   version: 3;
   caseId: string;
   planId: string;
+  colorMode: MissionColorMode;
   stripColors: Record<string, string>;
   layerUavColors: Record<LayerUavColorId, Record<string, string>>;
   markerSize: number;
@@ -159,6 +161,7 @@ export function createDefaultMissionLayerPreferences(
     version: 3,
     caseId,
     planId,
+    colorMode: "uav",
     stripColors: createStripColors(strips, uavColors),
     layerUavColors: cloneLayerUavColors(uavColors),
     markerSize: 30,
@@ -178,6 +181,10 @@ function clampNumber(
 
 function booleanOrDefault(value: unknown, fallback: boolean): boolean {
   return typeof value === "boolean" ? value : fallback;
+}
+
+function sanitizeColorMode(value: unknown): MissionColorMode {
+  return value === "overview" ? "overview" : "uav";
 }
 
 function sanitizeLayer(
@@ -260,6 +267,7 @@ function sanitizeV3(
 
   return {
     ...defaults,
+    colorMode: sanitizeColorMode(value.colorMode),
     stripColors: sanitizeColorMap(value.stripColors, defaults.stripColors),
     layerUavColors: Object.fromEntries(
       UAV_COLOR_LAYER_IDS.map(layerId => [
