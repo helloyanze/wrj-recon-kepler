@@ -423,32 +423,15 @@ function validateStripOwnership(
       );
     }
 
-    const expectedEnd =
-      assignment.stripStartIndex + assignment.stripIds.length - 1;
-    if (assignment.stripEndIndex !== expectedEnd) {
-      throw new Error(
-        `Assignment ${assignment.assignmentId} strip range ` +
-        `[${assignment.stripStartIndex}, ${assignment.stripEndIndex}] does not ` +
-        `match ${assignment.stripIds.length} stripIds (expected end ${expectedEnd})`
-      );
-    }
-
-    assignment.stripIds.forEach((stripId, offset) => {
+    const visitedIndices: number[] = [];
+    assignment.stripIds.forEach(stripId => {
       const strip = stripsById.get(stripId);
       if (strip === undefined) {
         throw new Error(
           `Assignment ${assignment.assignmentId} references unknown strip ${stripId}`
         );
       }
-      const expectedIndex = assignment.stripStartIndex + offset;
-      if (strip.index !== expectedIndex) {
-        throw new Error(
-          `Assignment ${assignment.assignmentId} range ` +
-          `[${assignment.stripStartIndex}, ${assignment.stripEndIndex}] expects ` +
-          `strip ${stripId} at index ${expectedIndex}, but snapshot index is ` +
-          `${strip.index}`
-        );
-      }
+      visitedIndices.push(strip.index);
 
       const existingOwner = owners.get(stripId);
       if (existingOwner !== undefined) {
@@ -459,6 +442,35 @@ function validateStripOwnership(
       }
       owners.set(stripId, assignment);
     });
+
+    const minVisitedIndex = Math.min(...visitedIndices);
+    const maxVisitedIndex = Math.max(...visitedIndices);
+    if (assignment.stripStartIndex !== minVisitedIndex) {
+      throw new Error(
+        `Assignment ${assignment.assignmentId} strip range ` +
+        `[${assignment.stripStartIndex}, ${assignment.stripEndIndex}] does not ` +
+        `match its visited strips [${minVisitedIndex}, ${maxVisitedIndex}]`
+      );
+    }
+    if (assignment.stripEndIndex !== maxVisitedIndex) {
+      throw new Error(
+        `Assignment ${assignment.assignmentId} strip range ` +
+        `[${assignment.stripStartIndex}, ${assignment.stripEndIndex}] does not ` +
+        `match its visited strips [${minVisitedIndex}, ${maxVisitedIndex}]`
+      );
+    }
+    for (const visitedIndex of visitedIndices) {
+      if (
+        visitedIndex < assignment.stripStartIndex ||
+        visitedIndex > assignment.stripEndIndex
+      ) {
+        throw new Error(
+          `Assignment ${assignment.assignmentId} strip index ${visitedIndex} ` +
+          `falls outside declared range ` +
+          `[${assignment.stripStartIndex}, ${assignment.stripEndIndex}]`
+        );
+      }
+    }
   }
 
   for (const strip of strips) {

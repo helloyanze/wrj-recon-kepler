@@ -49,6 +49,7 @@ describe("mission layer preferences v3", () => {
       version: 3,
       caseId: "R10",
       planId: "PLAN-10",
+      colorMode: "uav",
       stripColors: {
         "ST-01": "#35C5FF",
         "ST-02": "#FFB44D"
@@ -98,6 +99,23 @@ describe("mission layer preferences v3", () => {
       }
     });
     expect(window.localStorage.getItem(V3_STORAGE_KEY)).not.toBeNull();
+  });
+
+  it("round-trips an overview color mode and falls back to uav for legacy or invalid payloads", () => {
+    saveMissionLayerPreferences({...defaults(), colorMode: "overview"});
+
+    expect(load().colorMode).toBe("overview");
+
+    // 旧 v3 载荷缺 colorMode 字段 → 回退默认 uav
+    window.localStorage.setItem(V3_STORAGE_KEY, JSON.stringify(defaults()));
+    expect(load().colorMode).toBe("uav");
+
+    // 非法值 → 回退 uav
+    window.localStorage.setItem(V3_STORAGE_KEY, JSON.stringify({
+      ...defaults(),
+      colorMode: "trajectory"
+    }));
+    expect(load().colorMode).toBe("uav");
   });
 
   it("migrates a valid v2 shared UAV color into all v3 color scopes", () => {

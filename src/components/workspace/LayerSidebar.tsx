@@ -2,10 +2,12 @@ import {useMemo, useState} from "react";
 import type {CaseBundleV2, NormalizedSortie} from "../../features/cases/caseBundle";
 import type {
   LayerUavColorId,
+  MissionColorMode,
   MissionLayerId,
   MissionLayerPreference,
   MissionLayerPreferencesV3
 } from "../../features/mission/missionLayerPreferences";
+import {STRIP_NEUTRAL_HEX} from "../../features/mission/missionOverviewStyle";
 import type {
   LiveSortieState,
   SortieStatus
@@ -38,10 +40,19 @@ export interface LayerSidebarProps {
     color: string
   ) => void;
   onMarkerSizeChange: (size: number) => void;
+  onColorModeChange: (mode: MissionColorMode) => void;
   onRestoreDefaults: () => void;
   onSelectUav: (uavId: string) => void;
   onSelectSortie: (assignmentId: string) => void;
 }
+
+const COLOR_MODE_OPTIONS: ReadonlyArray<{
+  mode: MissionColorMode;
+  label: string;
+}> = [
+  {mode: "uav", label: "按无人机"},
+  {mode: "overview", label: "后端总览"}
+];
 
 interface LayerDefinition {
   id: MissionLayerId;
@@ -98,6 +109,12 @@ function layerLegendBackground(
   definition: LayerDefinition,
   preferences: MissionLayerPreferencesV3
 ): string {
+  if (
+    (preferences.colorMode ?? "uav") === "overview" &&
+    definition.mode === "strip"
+  ) {
+    return STRIP_NEUTRAL_HEX;
+  }
   const colors = definition.mode === "strip"
     ? Object.values(preferences.stripColors)
     : definition.colorLayer === undefined
@@ -152,6 +169,7 @@ function LayerEditor({
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const isRegion = definition.id === "region";
   const isTrip = definition.id === "trips";
+  const isOverview = (preferences.colorMode ?? "uav") === "overview";
 
   return (
     <section aria-label={`${definition.label} 设置`}>
@@ -159,46 +177,64 @@ function LayerEditor({
         <fieldset disabled={disabled}>
           <legend>基础</legend>
           {definition.mode === "strip" ? (
-            <div style={{maxHeight: 220, overflowY: "auto"}}>
-              {groupStripsByUav(bundle?.strips ?? []).map(([uavId, strips]) => (
-                <section key={uavId} aria-label={`${uavId} 侦察条带颜色`}>
-                  <strong>{uavId}</strong>
-                  {strips.map(strip => (
-                    <label key={strip.stripId}>
-                      {strip.stripId} 颜色
+            isOverview ? (
+              <p
+                aria-label="总览模式条带说明"
+                style={{color: "var(--text-secondary, #9aa0aa)", margin: 0}}
+              >
+                总览模式下条带为中性灰背景，随覆盖航线衬托。
+              </p>
+            ) : (
+              <div style={{maxHeight: 220, overflowY: "auto"}}>
+                {groupStripsByUav(bundle?.strips ?? []).map(([uavId, strips]) => (
+                  <section key={uavId} aria-label={`${uavId} 侦察条带颜色`}>
+                    <strong>{uavId}</strong>
+                    {strips.map(strip => (
+                      <label key={strip.stripId}>
+                        {strip.stripId} 颜色
+                        <input
+                          aria-label={`${definition.label} ${strip.stripId} 颜色`}
+                          type="color"
+                          value={preferences.stripColors[strip.stripId] ?? "#FFFFFF"}
+                          onChange={event => onStripColorChange(
+                            strip.stripId,
+                            event.currentTarget.value
+                          )}
+                        />
+                      </label>
+                    ))}
+                  </section>
+                ))}
+              </div>
+            )
+          ) : null}
+          {definition.mode === "uav" && definition.colorLayer !== undefined
+            ? (isOverview && definition.id === "routes"
+                ? (
+                    <p
+                      aria-label="总览模式航迹说明"
+                      style={{color: "var(--text-secondary, #9aa0aa)", margin: 0}}
+                    >
+                      总览模式航迹颜色固定为后端色板（tab10）。
+                    </p>
+                  )
+                : Object.entries(
+                    preferences.layerUavColors[definition.colorLayer]
+                  ).map(([uavId, color]) => (
+                    <label key={uavId}>
+                      {uavId} 颜色
                       <input
-                        aria-label={`${definition.label} ${strip.stripId} 颜色`}
+                        aria-label={`${definition.label} ${uavId} 颜色`}
                         type="color"
-                        value={preferences.stripColors[strip.stripId] ?? "#FFFFFF"}
-                        onChange={event => onStripColorChange(
-                          strip.stripId,
+                        value={color}
+                        onChange={event => onLayerUavColorChange(
+                          definition.colorLayer!,
+                          uavId,
                           event.currentTarget.value
                         )}
                       />
                     </label>
-                  ))}
-                </section>
-              ))}
-            </div>
-          ) : null}
-          {definition.mode === "uav" && definition.colorLayer !== undefined
-            ? Object.entries(
-                preferences.layerUavColors[definition.colorLayer]
-              ).map(([uavId, color]) => (
-                <label key={uavId}>
-                  {uavId} 颜色
-                  <input
-                    aria-label={`${definition.label} ${uavId} 颜色`}
-                    type="color"
-                    value={color}
-                    onChange={event => onLayerUavColorChange(
-                      definition.colorLayer!,
-                      uavId,
-                      event.currentTarget.value
-                    )}
-                  />
-                </label>
-              ))
+                  )))
             : null}
         </fieldset>
       )}
@@ -415,6 +451,7 @@ export function LayerSidebar({
   onStripColorChange,
   onLayerUavColorChange,
   onMarkerSizeChange,
+  onColorModeChange,
   onRestoreDefaults,
   onSelectUav,
   onSelectSortie
@@ -436,6 +473,8 @@ export function LayerSidebar({
     );
   }
 
+  const colorMode = preferences?.colorMode ?? "uav";
+
   return (
     <aside
       aria-label="图层"
@@ -449,6 +488,39 @@ export function LayerSidebar({
         onRestoreDefaults={onRestoreDefaults}
         onCollapse={() => onCollapsedChange(true)}
       />
+      <div
+        className="layer-color-mode"
+        role="group"
+        aria-label="配色模式"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 2,
+          padding: "6px 10px"
+        }}
+      >
+        {COLOR_MODE_OPTIONS.map(({mode, label}) => (
+          <button
+            key={mode}
+            type="button"
+            aria-pressed={colorMode === mode}
+            aria-label={`配色模式 ${label}`}
+            disabled={disabled}
+            onClick={() => onColorModeChange(mode)}
+            style={{
+              border: "1px solid var(--border, #3a3f4b)",
+              borderRadius: 4,
+              padding: "4px 0",
+              fontWeight: colorMode === mode ? 700 : 400,
+              color: colorMode === mode
+                ? "var(--accent, #35c5ff)"
+                : "inherit"
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
       <ul aria-label="图层列表">
         {LAYERS.map(definition => {
           const preference = preferences?.layers[definition.id];

@@ -346,6 +346,9 @@ export function StaticPlanningWorkspace({
             onMarkerSizeChange={markerSize => {
               updatePreferences(current => ({...current, markerSize}));
             }}
+            onColorModeChange={mode => {
+              updatePreferences(current => ({...current, colorMode: mode}));
+            }}
             onRestoreDefaults={restoreDefaults}
             onSelectUav={uavId => {
               setSelectedSortieId(null);

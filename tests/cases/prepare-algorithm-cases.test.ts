@@ -925,7 +925,7 @@ describe("generated integration catalog", () => {
       entry => entry.caseId === "R06-CIRCLE-01"
     );
 
-    expect(catalog.cases).toHaveLength(15);
+    expect(catalog.cases).toHaveLength(16);
     expect(r06).toMatchObject({
       runId: "20260903T155129",
       bundleUrl: "/data/integration-cases/R06-CIRCLE-01/bundle.json"

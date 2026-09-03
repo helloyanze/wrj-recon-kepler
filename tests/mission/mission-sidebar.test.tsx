@@ -92,6 +92,7 @@ function makeProps(): LayerSidebarProps {
     onStripColorChange: vi.fn(),
     onLayerUavColorChange: vi.fn(),
     onMarkerSizeChange: vi.fn(),
+    onColorModeChange: vi.fn(),
     onRestoreDefaults: vi.fn(),
     onSelectUav: vi.fn(),
     onSelectSortie: vi.fn()
@@ -201,6 +202,48 @@ describe("dynamic mission LayerSidebar", () => {
       "UAV-07",
       "#445566"
     );
+  });
+
+  it("switches color mode and hides per-strip colors under backend-overview", () => {
+    const props = makeProps();
+    const {rerender} = render(<LayerSidebar {...props} />);
+    const overviewButton = screen.getByRole("button", {
+      name: "配色模式 后端总览"
+    });
+    const uavButton = screen.getByRole("button", {
+      name: "配色模式 按无人机"
+    });
+
+    expect(uavButton).toHaveAttribute("aria-pressed", "true");
+    expect(overviewButton).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent.click(overviewButton);
+    expect(props.onColorModeChange).toHaveBeenCalledWith("overview");
+
+    const overviewPreferences = {
+      ...props.preferences!,
+      colorMode: "overview" as const
+    };
+    rerender(<LayerSidebar {...props} preferences={overviewPreferences} />);
+    expect(overviewButton).toHaveAttribute("aria-pressed", "true");
+
+    // 条带图例变中性灰
+    expect(screen.getByTestId("layer-legend-strips")
+      .getAttribute("style"))
+      .toContain("rgb(170, 170, 170)");
+
+    // routes 是默认展开层：总览下取色器被 tab10 说明取代
+    expect(screen.getByText(/总览模式航迹颜色固定为后端色板/)).toBeInTheDocument();
+    expect(screen.queryByLabelText("静态规划航迹 UAV-07 颜色")).not.toBeInTheDocument();
+
+    // 侦察条带：逐条带取色器被中性灰说明取代
+    fireEvent.click(screen.getByRole("button", {name: "编辑 侦察条带"}));
+    expect(screen.getByText(/总览模式下条带为中性灰背景/)).toBeInTheDocument();
+    expect(screen.queryByLabelText("侦察条带 ST-01 颜色")).not.toBeInTheDocument();
+
+    // 扫描取色器仍在（独立 overlay，仍按无人机）
+    fireEvent.click(screen.getByRole("button", {name: "编辑 已扫描区域"}));
+    expect(screen.getByLabelText("已扫描区域 UAV-08 颜色")).toBeInTheDocument();
   });
 
   it("opens dynamic UAV and sortie details and disables editing while loading", () => {
