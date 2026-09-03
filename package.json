@@ -18,6 +18,7 @@
     "data:prepare": "npm run data:fetch-real && npm run data:generate-simulated && npm run data:validate",
     "data:prepare-algorithm": "vite-node --script scripts/prepare-algorithm-cases.ts",
     "data:check-algorithm": "vite-node --script scripts/prepare-algorithm-cases.ts --check",
+    "data:snapshot-backend": "vite-node --script scripts/snapshot-backend-run.ts",
     "data:prepare-task2": "vite-node --script scripts/prepare-task2-scenes.ts",
     "data:check-task2": "vite-node --script scripts/prepare-task2-scenes.ts --check"
   },
