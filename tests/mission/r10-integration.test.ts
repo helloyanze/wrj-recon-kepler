@@ -31,7 +31,7 @@ describe("committed algorithm case catalog", () => {
     expect(catalog.cases).toHaveLength(16);
     expect(new Set(catalog.cases.map(({caseId}) => caseId)).size).toBe(16);
     expect(catalog.cases.find(({caseId}) => caseId === R10_CASE_ID)?.runId)
-      .toBe("20260903T155330");
+      .toBe("20260903T212950");
   });
 
   it("keeps the R10 catalog metrics synchronized with its parsed bundle", () => {

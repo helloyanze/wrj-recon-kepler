@@ -26,8 +26,12 @@ import {
   taskGeometryDiffFixture
 } from "../fixtures/task2MissionViewFixture";
 
+// 该回归用基线被固定在旧 legacy ASG-0019 快照（R01-BASELINE-01 的
+// PLAN-001 / 20260903T155426 产物），与可被后端刷新覆盖的 catalog bundle
+// 解耦：catalog 里 R01-BASELINE-01 已切换为 v2（PLAN-V2-001）后，此场景的
+// 基线航迹插值（t=110 → 2900 m / 140.097°）仍保持稳定。
 const baseline = caseBundleSchema.parse(JSON.parse(readFileSync(resolve(
-  "public/data/integration-cases/R01-BASELINE-01/bundle.json"
+  "tests/fixtures/baselines/r01-baseline-asg0019.bundle.json"
 ), "utf8")));
 const scene = buildDynamicScene({
   config: sceneConfigSchema.parse(sceneConfigFixture),

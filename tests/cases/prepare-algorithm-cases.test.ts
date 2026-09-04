@@ -927,7 +927,7 @@ describe("generated integration catalog", () => {
 
     expect(catalog.cases).toHaveLength(16);
     expect(r06).toMatchObject({
-      runId: "20260903T155129",
+      runId: "20260903T212736",
       bundleUrl: "/data/integration-cases/R06-CIRCLE-01/bundle.json"
     });
 
@@ -957,7 +957,7 @@ describe("generated integration catalog", () => {
       entry => entry.caseId === "R08-TRANSIT-OBSTACLE-01"
     );
     expect(r08).toMatchObject({
-      runId: "20260903T155220",
+      runId: "20260903T212832",
       bundleUrl: "/data/integration-cases/R08-TRANSIT-OBSTACLE-01/bundle.json"
     });
     const r08Bundle = await readJson(
