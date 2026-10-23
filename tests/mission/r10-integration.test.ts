@@ -26,12 +26,12 @@ const bundle: CaseBundleV2 = caseBundleSchema.parse(
 );
 
 describe("committed algorithm case catalog", () => {
-  it("ships all 16 latest valid cases with R10 selected by default", () => {
+  it("ships all 24 committed valid cases with R10 selected by default", () => {
     expect(catalog.defaultCaseId).toBe(R10_CASE_ID);
-    expect(catalog.cases).toHaveLength(16);
-    expect(new Set(catalog.cases.map(({caseId}) => caseId)).size).toBe(16);
+    expect(catalog.cases).toHaveLength(24);
+    expect(new Set(catalog.cases.map(({caseId}) => caseId)).size).toBe(24);
     expect(catalog.cases.find(({caseId}) => caseId === R10_CASE_ID)?.runId)
-      .toBe("20260903T212950");
+      .toBe("20261023T154009");
   });
 
   it("keeps the R10 catalog metrics synchronized with its parsed bundle", () => {
@@ -64,7 +64,7 @@ describe("committed R10 mission bundle", () => {
       batchCount: 2,
       stripCount: 20
     });
-    expect(bundle.metrics.missionMakespanSec).toBeCloseTo(2_375.629, 3);
+    expect(bundle.metrics.missionMakespanSec).toBeCloseTo(2_349.344869, 3);
   });
 
   it("preserves exact algorithm launch order and telemetry maxima", () => {
@@ -85,7 +85,7 @@ describe("committed R10 mission bundle", () => {
 
     expect(launchTimes).toHaveLength(2);
     expect(launchTimes[0]).toBe(0);
-    expect(launchTimes[1]).toBeCloseTo(1_202.493, 3);
+    expect(launchTimes[1]).toBeCloseTo(1_175.011311, 3);
     expect(maximumHeightM).toBeCloseTo(2_800, 6);
     expect(maximumSpeedMps).toBeCloseTo(223.642, 3);
   });
@@ -131,10 +131,10 @@ describe("committed R10 mission bundle", () => {
 
     expect(flyingAt(-1)).toBe(0);
     expect(flyingAt(0)).toBe(3);
-    expect(flyingAt(1_202.4)).toBe(0);
     const secondBatchLaunch = bundle.sorties
       .find(({batchIndex}) => batchIndex === 1)?.plannedLaunchTimeSec;
     expect(secondBatchLaunch).toBeDefined();
+    expect(flyingAt((secondBatchLaunch as number) - 0.1)).toBe(0);
     expect(flyingAt(secondBatchLaunch as number)).toBe(3);
 
     const finalSortieEnd = Math.max(

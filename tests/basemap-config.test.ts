@@ -218,6 +218,60 @@ describe("resolveBasemap", () => {
     });
   });
 
+  it("keeps both workbench styles offline when a local light style is configured", async () => {
+    const fetcher = vi.fn(async (url: string) => new Response(JSON.stringify(
+      vectorStyle(url.includes("light") ? "Light" : "Dark")
+    )));
+
+    const result = await resolveBasemap({
+      mode: "local",
+      localStyleUrl: "/offline-basemap/style-dark.json",
+      localLightStyleUrl: "/offline-basemap/style-light.json",
+      localAttribution: "© OpenStreetMap contributors · Protomaps"
+    }, undefined, fetcher);
+
+    expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
+      "/offline-basemap/style-dark.json",
+      "/offline-basemap/style-light.json"
+    ]);
+    expect(result).toMatchObject({provider: "local", secondaryLabel: "亮色地图"});
+    expect(result.mapStyles?.map(({id}) => id)).toEqual(["satellite", "light"]);
+    expect(result.mapStyles?.[1].style.sources.carto.type).toBe("vector");
+    expect(result.attributionByStyle).toEqual({
+      satellite: "© OpenStreetMap contributors · Protomaps",
+      light: "© OpenStreetMap contributors · Protomaps"
+    });
+  });
+
+  it("resolves root-relative local tile templates against the page origin", async () => {
+    vi.stubGlobal("location", {origin: "http://localhost:4173"});
+    try {
+      const fetcher = vi.fn(async () => new Response(JSON.stringify({
+        version: 8,
+        glyphs: "/offline-basemap/glyphs/{fontstack}/{range}.pbf",
+        sources: {
+          local: {type: "vector", tiles: ["/offline-basemap/tiles/{z}/{x}/{y}.mvt"]}
+        },
+        layers: [{id: "earth", type: "fill", source: "local", "source-layer": "earth"}]
+      })));
+
+      const result = await resolveBasemap({
+        mode: "local",
+        localStyleUrl: "/offline-basemap/style-dark.json"
+      }, undefined, fetcher);
+
+      expect(result.mapStyles?.[0].style.sources.local.tiles).toEqual([
+        "http://localhost:4173/offline-basemap/tiles/{z}/{x}/{y}.mvt"
+      ]);
+      expect(result.mapStyles?.[0].style.glyphs).toBe(
+        "http://localhost:4173/offline-basemap/glyphs/{fontstack}/{range}.pbf"
+      );
+      expect(result.mapStyles?.[0].style).not.toHaveProperty("sprite");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("provides accurate attribution for both Mapbox style choices", async () => {
     const result = await resolveBasemap({mode: "mapbox", mapboxToken: "token"});
 

@@ -454,7 +454,7 @@ describe("algorithm case catalog loaders", () => {
       await readFile(resolve(dataRoot, "catalog.json"), "utf8")
     ) as {cases: Array<{caseId: string}>};
 
-    expect(committedCatalog.cases).toHaveLength(16);
+    expect(committedCatalog.cases).toHaveLength(24);
     for (const entry of committedCatalog.cases) {
       const raw = await readFile(
         resolve(dataRoot, encodeURIComponent(entry.caseId), "bundle.json"),
@@ -465,7 +465,7 @@ describe("algorithm case catalog loaders", () => {
         entry.caseId
       ).toBe(true);
     }
-  });
+  }, 30_000);
 
   it("preserves AbortError and passes the caller signal to fetch", async () => {
     const controller = new AbortController();

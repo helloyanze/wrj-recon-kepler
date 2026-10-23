@@ -30,6 +30,7 @@ export interface BasemapEnvironment {
   mapboxToken?: string;
   localStyleUrl?: string;
   localTileUrl?: string;
+  localLightStyleUrl?: string;
   localAttribution?: string;
 }
 
@@ -92,12 +93,20 @@ export async function resolveBasemap(
   const mode = resolveMode(environment.mode);
   const localStyleUrl = nonEmpty(environment.localStyleUrl);
   const localTileUrl = nonEmpty(environment.localTileUrl);
+  const localLightStyleUrl = nonEmpty(environment.localLightStyleUrl);
   const mapboxToken = nonEmpty(environment.mapboxToken);
   const provider = selectProvider(mode, localStyleUrl, localTileUrl, mapboxToken);
 
   if (provider === "public") return publicBasemap(signal, fetcher);
   if (provider === "mapbox") return mapboxBasemap(mapboxToken!);
-  return localBasemap(localStyleUrl, localTileUrl, environment.localAttribution, signal, fetcher);
+  return localBasemap(
+    localStyleUrl,
+    localTileUrl,
+    localLightStyleUrl,
+    environment.localAttribution,
+    signal,
+    fetcher
+  );
 }
 
 function resolveMode(mode: BasemapEnvironment["mode"]): BasemapMode {
@@ -166,27 +175,39 @@ function mapboxBasemap(mapboxToken: string): MapboxResolvedBasemap {
 async function localBasemap(
   localStyleUrl: string | undefined,
   localTileUrl: string | undefined,
+  localLightStyleUrl: string | undefined,
   localAttribution: string | undefined,
   signal: AbortSignal | undefined,
   fetcher: Fetcher
 ): Promise<RasterResolvedBasemap> {
   const attribution = nonEmpty(localAttribution) ?? "本地地图数据 · © OpenStreetMap contributors";
-  const style = localStyleUrl
-    ? localizeMapStyle(await loadStyle(localStyleUrl, signal, fetcher))
-    : createRasterStyle(validateXyzUrl(localTileUrl!), attribution);
+  const [mainStyle, lightStyle] = await Promise.all([
+    localStyleUrl
+      ? loadStyle(localStyleUrl, signal, fetcher)
+      : createRasterStyle(validateXyzUrl(localTileUrl!), attribution),
+    localLightStyleUrl ? loadStyle(localLightStyleUrl, signal, fetcher) : null
+  ]);
 
   return {
     provider: "local",
     mapboxToken: "",
     mapStyles: [
-      {id: "satellite", style},
-      {id: "light", style: createRasterStyle(OSM_TILES, OSM_ATTRIBUTION)}
+      {id: "satellite", style: localizeMapStyle(withAbsoluteStyleUrls(mainStyle))},
+      {
+        id: "light",
+        style: lightStyle
+          ? localizeMapStyle(withAbsoluteStyleUrls(lightStyle))
+          : createRasterStyle(OSM_TILES, OSM_ATTRIBUTION)
+      }
     ],
     mapStylesReplaceDefault: true,
     primaryLabel: "本地地图",
-    secondaryLabel: "公共备用",
+    secondaryLabel: lightStyle ? "亮色地图" : "公共备用",
     statusLabel: "本地底图",
-    attributionByStyle: {satellite: attribution, light: OSM_ATTRIBUTION}
+    attributionByStyle: {
+      satellite: attribution,
+      light: lightStyle ? attribution : OSM_ATTRIBUTION
+    }
   };
 }
 
@@ -219,6 +240,39 @@ function validateXyzUrl(url: string): string[] {
   const missing = ["{z}", "{x}", "{y}"].filter((placeholder) => !url.includes(placeholder));
   if (missing.length) throw configurationError(`本地地图 XYZ URL 缺少占位符 ${missing.join("、")}`);
   return [url];
+}
+
+// MapLibre 在 Worker 中加载瓦片和字形，无法解析以 / 开头的相对 URL，需在浏览器侧补全 origin。
+function withAbsoluteStyleUrls(style: MapStyleV8): MapStyleV8 {
+  const origin = globalThis.location?.origin;
+  if (!origin) return style;
+  const absolute = (url: string): string =>
+    url.startsWith("/") && !url.startsWith("//") ? `${origin}${url}` : url;
+
+  let changed = false;
+  const sources = Object.fromEntries(
+    Object.entries(style.sources).map(([name, source]) => {
+      if (!Array.isArray(source.tiles)) return [name, source];
+      const tiles = source.tiles.map((tile) => {
+        if (typeof tile !== "string") return tile;
+        const next = absolute(tile);
+        if (next !== tile) changed = true;
+        return next;
+      });
+      return [name, {...source, tiles}];
+    })
+  );
+
+  const glyphs = typeof style.glyphs === "string" ? absolute(style.glyphs) : style.glyphs;
+  if (glyphs !== style.glyphs) changed = true;
+  const sprite = typeof style.sprite === "string" ? absolute(style.sprite) : style.sprite;
+  if (sprite !== style.sprite) changed = true;
+  if (!changed) return style;
+
+  const next: MapStyleV8 = {...style, sources};
+  if (typeof glyphs === "string") next.glyphs = glyphs;
+  if (typeof sprite === "string") next.sprite = sprite;
+  return next;
 }
 
 function validateMapStyle(value: unknown, url: string): MapStyleV8 {

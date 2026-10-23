@@ -925,9 +925,9 @@ describe("generated integration catalog", () => {
       entry => entry.caseId === "R06-CIRCLE-01"
     );
 
-    expect(catalog.cases).toHaveLength(16);
+    expect(catalog.cases).toHaveLength(24);
     expect(r06).toMatchObject({
-      runId: "20260903T212736",
+      runId: "20261023T153737",
       bundleUrl: "/data/integration-cases/R06-CIRCLE-01/bundle.json"
     });
 
@@ -945,7 +945,7 @@ describe("generated integration catalog", () => {
 
     expect(bundle.metrics).toMatchObject({
       uavCount: 3,
-      sortieCount: 6,
+      sortieCount: 5,
       batchCount: 2,
       stripCount: 31
     });

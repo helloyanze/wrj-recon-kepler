@@ -19,6 +19,7 @@ const DEFAULT_BASEMAP_ENVIRONMENT: BasemapEnvironment = {
   mapboxToken: import.meta.env.VITE_MAPBOX_TOKEN?.trim(),
   localStyleUrl: import.meta.env.VITE_WRJ_LOCAL_STYLE_URL?.trim(),
   localTileUrl: import.meta.env.VITE_WRJ_LOCAL_TILE_URL?.trim(),
+  localLightStyleUrl: import.meta.env.VITE_WRJ_LOCAL_LIGHT_STYLE_URL?.trim(),
   localAttribution: import.meta.env.VITE_WRJ_LOCAL_ATTRIBUTION?.trim()
 };
 
@@ -36,10 +37,10 @@ export default function App({
   basemapEnvironment = DEFAULT_BASEMAP_ENVIRONMENT,
   basemapLoader = resolveBasemap
 }: AppProps) {
-  const {mode, mapboxToken, localStyleUrl, localTileUrl, localAttribution} = basemapEnvironment;
+  const {mode, mapboxToken, localStyleUrl, localTileUrl, localLightStyleUrl, localAttribution} = basemapEnvironment;
   const stableBasemapEnvironment = useMemo(
-    () => ({mode, mapboxToken, localStyleUrl, localTileUrl, localAttribution}),
-    [mode, mapboxToken, localStyleUrl, localTileUrl, localAttribution]
+    () => ({mode, mapboxToken, localStyleUrl, localTileUrl, localLightStyleUrl, localAttribution}),
+    [mode, mapboxToken, localStyleUrl, localTileUrl, localLightStyleUrl, localAttribution]
   );
   const [resolvedBasemap, setResolvedBasemap] = useState<ResolvedBasemap | null>(null);
   const [error, setError] = useState<string | null>(null);

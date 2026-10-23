@@ -1,0 +1,68 @@
+{
+  "source": "Protomaps Basemap (OpenStreetMap)",
+  "sourceUrl": "https://build.protomaps.com/20240624.pmtiles",
+  "retrievedAt": "2026-10-22T08:39:07.275Z",
+  "tiers": [
+    {
+      "minZoom": 4,
+      "maxZoom": 8,
+      "bbox": {
+        "south": 14,
+        "west": 105,
+        "north": 23,
+        "east": 116
+      }
+    },
+    {
+      "minZoom": 9,
+      "maxZoom": 11,
+      "bbox": {
+        "south": 18.15,
+        "west": 109.5,
+        "north": 19.1,
+        "east": 110.95
+      }
+    },
+    {
+      "minZoom": 12,
+      "maxZoom": 14,
+      "bbox": {
+        "south": 18.38,
+        "west": 109.92,
+        "north": 18.87,
+        "east": 110.55
+      }
+    }
+  ],
+  "zoomRange": {
+    "min": 4,
+    "max": 14
+  },
+  "tileCount": 1157,
+  "tileBytes": 6733179,
+  "tileUrl": "/offline-basemap/tiles/{z}/{x}/{y}.mvt",
+  "styles": [
+    "style-dark.json",
+    "style-light.json"
+  ],
+  "license": "ODbL 1.0（地图数据）",
+  "attribution": "© OpenStreetMap contributors · Protomaps",
+  "note": "深色/亮色样式含国家、省/州、城镇、乡村、海湾和河流标注；CJK 由 MapLibre 使用系统字体本地渲染，Latin/越南语/标点字形使用本地 Noto Sans 切片。",
+  "updatedAt": "2026-10-23T02:16:22.156Z",
+  "glyphs": {
+    "fontStack": "Noto Sans Regular",
+    "ranges": [
+      "0-255",
+      "256-511",
+      "512-767",
+      "768-1023",
+      "7680-7935",
+      "8192-8447",
+      "12288-12543",
+      "65280-65535"
+    ],
+    "sourceUrl": "https://demotiles.maplibre.org/font/Noto%20Sans%20Regular",
+    "bytes": 774511,
+    "license": "SIL Open Font License 1.1（Noto Sans）"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "regionId": "REG-001",
+  "geometryWkt": "POLYGON ((4000 3000, 15500 3000, 15500 8500, 4000 8500, 4000 3000))",
+  "regionType": "CONVEX_POLYGON",
+  "coordinateReference": "LOCAL_CARTESIAN_M",
+  "areaM2": 63250000.0,
+  "perimeterM": 34000.0,
+  "centroid": {
+    "xM": 9750.0,
+    "yM": 5750.0
+  },
+  "mainAxisAngleDeg": 0.0,
+  "longAxisM": 11500.0,
+  "shortAxisM": 5500.0,
+  "valid": true,
+  "warnings": [],
+  "terrainClass": "COMPLEX",
+  "terrainMetrics": {
+    "terrainClass": "COMPLEX",
+    "reliefM": 985.1,
+    "stdDevM": 179.309,
+    "maxSlopePct": 261.044,
+    "maxCellStepM": 985.1,
+    "minElevationM": 100.0,
+    "maxElevationM": 1085.1,
+    "requiredAltitudeM": 1411.1,
+    "aglMinM": null,
+    "aglMaxM": null,
+    "sampleCount": 1152,
+    "localComplex": true,
+    "rawReliefM": 985.1,
+    "rawStdDevM": 179.309,
+    "classificationSource": "RAW",
+    "isolatedSpikeCount": 0,
+    "warnings": []
+  }
+}
