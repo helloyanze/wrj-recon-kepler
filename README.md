@@ -6,7 +6,7 @@ React 18 + TypeScript + Vite + Kepler.gl 3.2.6 单页面工作台。项目自动
 
 ## 环境要求
 
-- Node.js 20.x（开发验证版本：20.19.3）
+- Node.js 22.x（Vercel 构建版本；本地 24.x 实测也可运行，但 npm 会给出 `EBADENGINE` 警告）
 - npm 10.x
 
 Mapbox Access Token 为可选项。默认 `auto` 模式会依次选择：本地 Style JSON/XYZ 配置、Mapbox Token、无需 Key 的公共地图。
@@ -52,7 +52,7 @@ npm run dev
 
 ### 拷贝到其他电脑
 
-- 目标机需要 **Node.js 20.x**（22/24 实测也可运行，但 npm 会给出 `EBADENGINE` 警告）和 npm 10+。
+- 目标机需要 **Node.js 22.x**（24.x 实测也可运行，但 npm 会给出 `EBADENGINE` 警告）和 npm 10+。
 - 直接整目录拷贝时，必须包含 `public/data`、`public/offline-basemap`、`src`、`scripts`、`package.json`、`package-lock.json`、`vite.config.ts`、`index.html`。`data/integration-validation` 只用于重新生成算例，运行时可以不带（约 51 MB）。
 - 如果拷贝时带上了 `node_modules`，且目标机同为 Windows x64、Node 版本接近，可直接运行；更稳妥的做法是删除 `node_modules`，在目标机执行 `npm ci --legacy-peer-deps` 后运行 `npm run dev`。
 - 完全离线、连 npm 安装都不做的演示机：直接拷贝构建好的 `dist/`，在 `dist` 根目录用任意静态 HTTP 服务托管（`npm run preview`、`npx serve` 或 `python -m http.server`），**不要用 `file://` 直接打开**。`dist` 已包含 24 个算例和离线底图，运行时不需要外网。

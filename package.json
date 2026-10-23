@@ -25,7 +25,7 @@
     "data:styles-offline-basemap": "node scripts/build-offline-basemap.mjs --styles-only"
   },
   "engines": {
-    "node": ">=20 <21"
+    "node": "22.x"
   },
   "dependencies": {
     "@deck.gl/core": "8.9.36",
