@@ -48,10 +48,12 @@ const UAV_COLOR_LAYER_IDS: readonly LayerUavColorId[] = [
 
 const DEFAULT_LAYERS: Readonly<Record<MissionLayerId, MissionLayerPreference>> = {
   region: {visible: true, opacity: 0.18, filled: true, stroked: true},
-  strips: {visible: true, opacity: 0.75, width: 2},
+  // 侦察条带是参考底图；默认关闭，避免与连续航迹混在一起看起来像断线。
+  strips: {visible: false, opacity: 0.75, width: 2},
   scanned: {visible: true, opacity: 0.35},
-  routes: {visible: true, opacity: 0.55, width: 2},
-  trips: {visible: true, opacity: 0.95, width: 4, trailLengthSec: 240}
+  routes: {visible: true, opacity: 0.85, width: 2.5},
+  // 设计文档要求 1500 s，保证长时间任务中已飞尾迹不会频繁消失。
+  trips: {visible: true, opacity: 0.95, width: 4, trailLengthSec: 1500}
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {

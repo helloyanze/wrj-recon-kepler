@@ -63,10 +63,10 @@ describe("mission layer preferences v3", () => {
       markerSize: 30,
       layers: {
         region: {visible: true, opacity: 0.18, filled: true, stroked: true},
-        strips: {visible: true, opacity: 0.75, width: 2},
+        strips: {visible: false, opacity: 0.75, width: 2},
         scanned: {visible: true, opacity: 0.35},
-        routes: {visible: true, opacity: 0.55, width: 2},
-        trips: {visible: true, opacity: 0.95, width: 4, trailLengthSec: 240}
+        routes: {visible: true, opacity: 0.85, width: 2.5},
+        trips: {visible: true, opacity: 0.95, width: 4, trailLengthSec: 1500}
       }
     });
     expect(Object.keys(preferences.layerUavColors.routes)).toEqual(["UAV-04", "UAV-05"]);

@@ -58,41 +58,42 @@ describe("overview segment classification", () => {
 
 describe("flattenSortieSegments", () => {
   const flat = flattenSortieSegments(bundle);
-  const expected = bundle.sorties.flatMap(sortie =>
-    sortie.segments.filter(segment =>
-      segment.timedPath.length >= 2 &&
-      isOverviewSegment(segment.segmentType)
-    )
-  );
 
-  it("keeps only >=2-point coverage/turn segments in original order with ownership", () => {
-    expect(flat).toHaveLength(expected.length);
-    let offset = 0;
-    for (const sortie of bundle.sorties) {
-      const kept = sortie.segments.filter(segment =>
-        segment.timedPath.length >= 2 &&
-        isOverviewSegment(segment.segmentType)
+  it("returns one joined path per UAV across all sorties", () => {
+    const uavIds = [...new Set(bundle.sorties.map(sortie => sortie.uavId))];
+    expect(flat).toHaveLength(uavIds.length);
+    uavIds.forEach((uavId, index) => {
+      const sorties = bundle.sorties.filter(sortie => sortie.uavId === uavId);
+      expect(flat[index]).toMatchObject({
+        uavId,
+        segmentType: "COVERAGE_LINE"
+      });
+      expect(flat[index].assignmentId).toBe(
+        [...sorties].sort((left, right) => (
+          left.plannedLaunchTimeSec - right.plannedLaunchTimeSec ||
+          left.batchIndex - right.batchIndex ||
+          left.assignmentId.localeCompare(right.assignmentId)
+        ))[0].assignmentId
       );
-      for (let index = 0; index < kept.length; index += 1) {
-        expect(flat[offset + index]).toMatchObject({
-          assignmentId: sortie.assignmentId,
-          uavId: sortie.uavId,
-          segmentType: kept[index].segmentType
-        });
-        expect(flat[offset + index].timedPath).toBe(kept[index].timedPath);
-      }
-      offset += kept.length;
+    });
+  });
+
+  it("keeps transit and vertical-connector points instead of only coverage/turn", () => {
+    for (const sortie of bundle.sorties) {
+      const coverageOnly = sortie.segments
+        .filter(segment =>
+          segment.timedPath.length >= 2 &&
+          isOverviewSegment(segment.segmentType)
+        )
+        .reduce((sum, segment) => sum + segment.timedPath.length, 0);
+      const joined = flat.find(item => item.uavId === sortie.uavId);
+      expect(joined).toBeDefined();
+      expect(joined!.timedPath.length).toBeGreaterThanOrEqual(sortie.trip.length);
+      expect(joined!.timedPath.length).toBeGreaterThanOrEqual(coverageOnly);
     }
   });
 
-  it("drops out-of-area segments and degenerate single-point segments", () => {
-    for (const datum of flat) {
-      expect(datum.timedPath.length).toBeGreaterThanOrEqual(2);
-      expect(isOverviewSegment(datum.segmentType)).toBe(true);
-    }
-  });
-
-  it("caches the flatten result across calls", () => {
+  it("caches the joined result across calls", () => {
     expect(flattenSortieSegments(bundle)).toBe(flat);
   });
 });

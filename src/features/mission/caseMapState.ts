@@ -8,6 +8,9 @@ import {
 const METRES_PER_LATITUDE_DEGREE = 111_320;
 const REFERENCE_EXTENT_M = 1_000;
 const REFERENCE_ZOOM = 14;
+// Leave margin around the full trip so strip-end turn arcs are not clipped by
+// the viewport; otherwise a continuous snake can look broken when zoomed in.
+const CASE_FIT_PADDING_ZOOM = 0.35;
 
 export interface CaseMapState {
   latitude: number;
@@ -56,7 +59,7 @@ export function mapStateForPoints(
   const zoom = horizontalExtentM === 0
     ? ZERO_EXTENT_CASE_MAP_ZOOM
     : clamp(
-      REFERENCE_ZOOM - Math.log2(horizontalExtentM / REFERENCE_EXTENT_M),
+      REFERENCE_ZOOM - Math.log2(horizontalExtentM / REFERENCE_EXTENT_M) - CASE_FIT_PADDING_ZOOM,
       MIN_CASE_MAP_ZOOM,
       MAX_CASE_MAP_ZOOM
     );

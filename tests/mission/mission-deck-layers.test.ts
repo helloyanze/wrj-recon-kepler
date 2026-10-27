@@ -271,6 +271,13 @@ const overviewBundle: CaseBundleV2 = {
           startTimeSec: 18,
           endTimeSec: 20
         })
+      ],
+      trip: [
+        [110, 18, 0, 0],
+        [110, 18, 60, 4],
+        [110.5, 18, 100, 8],
+        [111.5, 18, 100, 18],
+        [111.5, 18, 10, 20]
       ]
     }
   ]
@@ -549,7 +556,7 @@ describe("createMissionDeckLayers overview mode", () => {
     expect(trips.getColor(trips.data[0])).toEqual([52, 86, 120, 255]);
   });
 
-  it("per-segment emphasis keeps the uav color and drops degenerate single-point segments", () => {
+  it("overview joins the full trip into one continuous route per sortie", () => {
     const onSelectSortie = vi.fn();
     const layers = makeLayers(5, onSelectSortie, "overview", overviewBundle);
     const routes = layerProps<{
@@ -567,28 +574,28 @@ describe("createMissionDeckLayers overview mode", () => {
       onClick?: (info: {object: {assignmentId: string}}) => void;
     }>(layers[3]);
 
-    expect(routes.data.map(({segmentType}) => segmentType)).toEqual([
-      "TURN",
-      "COVERAGE_LINE"
-    ]);
-    for (const datum of routes.data) {
-      expect(datum.assignmentId).toBe("ASG-01");
-      expect(datum.uavId).toBe("UAV-04");
-    }
-    // tab10[0] = #1f77b4 => [31,119,180]；转弯 α0.55*255=140、覆盖线 α0.85*255=217
-    expect(routes.getColor(routes.data[0])).toEqual([31, 119, 180, 140]);
-    expect(routes.getColor(routes.data[1])).toEqual([31, 119, 180, 217]);
+    expect(routes.data).toHaveLength(1);
+    expect(routes.data[0]).toMatchObject({
+      assignmentId: "ASG-01",
+      uavId: "UAV-04",
+      segmentType: "COVERAGE_LINE"
+    });
+    expect(routes.data[0].timedPath).toEqual(overviewBundle.sorties[0].trip);
+    // tab10[0] = #1f77b4 => [31,119,180]；完整航迹使用覆盖线 α0.85*255=217
+    expect(routes.getColor(routes.data[0])).toEqual([31, 119, 180, 217]);
     expect(routes.getPath(routes.data[0])).toEqual([
+      [110, 18, 0],
       [110, 18, 240],
-      [110.5, 18, 400]
+      [110.5, 18, 400],
+      [111.5, 18, 400],
+      [111.5, 18, 40]
     ]);
-    // 转弯为点线、覆盖线实线
     const dash = layerProps<{
       getDashArray: (datum: {segmentType: SegmentType}) => [number, number];
     }>(layers[3]);
     expect(dash.getDashArray({segmentType: "TURN"})).toEqual([1, 4]);
     expect(dash.getDashArray({segmentType: "COVERAGE_LINE"})).toEqual([0, 0]);
-    routes.onClick?.({object: routes.data[1]});
+    routes.onClick?.({object: routes.data[0]});
     expect(onSelectSortie).toHaveBeenCalledTimes(1);
     expect(onSelectSortie).toHaveBeenCalledWith("ASG-01");
   });

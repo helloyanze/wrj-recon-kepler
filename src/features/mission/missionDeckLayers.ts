@@ -71,8 +71,9 @@ const REGION_LINE_COLOR: DeckColor = [104, 220, 255, 255];
 const FALLBACK_UAV_COLOR = "#FFFFFF";
 const LANDED_DURATION_SEC = 3;
 
-// 后端总览线型：条带灰色细虚线、覆盖线实线、转弯点线（deck 虚线单位 = 像素，
-// 与 widthUnits:"pixels" 一致）。PathStyleExtension 单例跨层复用。
+// 总览航迹线型：条带灰色细虚线，每条 sortie 的完整拼接航迹为实线
+// （deck 虚线单位 = 像素，与 widthUnits:"pixels" 一致）。
+// PathStyleExtension 单例跨层复用。
 const STRIP_DASH: [number, number] = [3, 4];
 const COVERAGE_DASH: [number, number] = [0, 0]; // 0 => 实线
 const TURN_DASH: [number, number] = [1, 4]; // 点线（linestyle ":"）
@@ -229,10 +230,15 @@ export function createMissionDeckLayers({
     }),
     new PathLayer<RouteDatum>({
       id: "wrj-algorithm-routes",
-      data: isOverview ? flattenSortieSegments(bundle) : bundle.sorties,
+      // 两种配色模式都按 UAV 拼接全部 sortie，避免同一架无人机的航迹被批次拆成多截。
+      data: flattenSortieSegments(bundle),
       visible: routePreference.visible,
       opacity: routePreference.opacity,
       pickable: true,
+      // 垂直爬升/下降在俯视投影下是接近 180° 的尖角，默认 miter 会被 miterLimit
+      // 截断成断口；圆角接头保证高度阶梯处仍然是一条连续航迹。
+      capRounded: true,
+      jointRounded: true,
       widthUnits: "pixels",
       getWidth: routePreference.width ?? 2,
       getPath: datum => routePath(datum).map(point =>
@@ -269,6 +275,8 @@ export function createMissionDeckLayers({
       visible: tripPreference.visible,
       opacity: tripPreference.opacity,
       pickable: true,
+      capRounded: true,
+      jointRounded: true,
       widthUnits: "pixels",
       getWidth: tripPreference.width ?? 4,
       currentTime: missionTimeSec,

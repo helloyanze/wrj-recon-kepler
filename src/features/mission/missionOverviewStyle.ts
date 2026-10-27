@@ -6,12 +6,13 @@ import type {
 } from "../cases/caseBundle";
 
 /**
- * 全局总览配色（后端 global_overview_SP-*.png 语义）。
+ * 总览航迹配色。
  *
- * 与后端 visualize_global_overview 逐行对齐：
- * - 所有条带只画中性灰色细虚线背景（不按无人机分色）；
- * - 覆盖航迹只画 COVERAGE_LINE + TURN 两类段（后端其他段不落绘图分支），
- *   按后端 tab10 色板给每条覆盖航线一个颜色；覆盖线实线、转弯点线；
+ * 与早期“后端总览”不同：总览不再按段拆开只画 COVERAGE_LINE + TURN。
+ * 每条 sortie 使用完整 `trip`（含进入/返航/爬升/下降/转弯）拼成一条连续
+ * 航迹，避免阶梯高度处因垂直连接段被过滤而显示成断线。
+ * - 所有条带仍只画中性灰色细虚线背景（不按无人机分色）；
+ * - 每条 sortie 一条连续实线，按 tab10 色板着色；
  * - 每架在入口/出口补 ○/□ 标记 + 入口旁 `CR-xxx [起..止] 距离km` 标签。
  */
 
@@ -70,31 +71,57 @@ const flattenCache = new WeakMap<
 >();
 
 /**
- * 展平每条 sortie 的覆盖段（只保留 COVERAGE_LINE + TURN，供「后端总览」）。
+ * 把同一架无人机的所有 sortie 航迹按时间顺序拼成一条连续路径。
  *
- * 后端 visualize_global_overview 只画覆盖线与转弯两类段，场外进出基地段一律
- * 不画（无绘图分支）。这里据此过滤。createMissionDeckLayers 每帧重建图层，
- * 用 WeakMap 缓存保证跨帧 data 引用稳定，避免 deck.gl 每帧重新 tessellation。
- * 单点段（timedPath.length < 2）是 PathLayer 退化实例且与前后段共享顶点，丢弃零损失。
+ * 每个 sortie 内部已经由 `trip` 包含 TAKEOFF/CLIMB/ENTRY/COVERAGE_LINE/TURN/
+ * DESCENT/TRANSITION/RETURN/LANDING 全部段；多个批次之间也按
+ * plannedLaunchTimeSec/batchIndex 顺序连接，使同一颜色的航迹不再分成多截。
+ * `segmentType` 固定为 COVERAGE_LINE，表示使用覆盖线颜色/实线样式。
+ * createMissionDeckLayers 每帧重建图层，用 WeakMap 缓存保证跨帧 data 引用
+ * 稳定，避免 deck.gl 每帧重新 tessellation。
  */
 export function flattenSortieSegments(
   bundle: CaseBundleV2
 ): readonly OverviewSegmentDatum[] {
   let data = flattenCache.get(bundle);
   if (data === undefined) {
-    data = bundle.sorties.flatMap(sortie =>
-      sortie.segments
-        .filter(segment =>
-          segment.timedPath.length >= 2 &&
-          isOverviewSegment(segment.segmentType)
-        )
-        .map(segment => ({
-          assignmentId: sortie.assignmentId,
-          uavId: sortie.uavId,
-          segmentType: segment.segmentType,
-          timedPath: segment.timedPath
-        }))
-    );
+    const byUav = new Map<string, typeof bundle.sorties>();
+    for (const sortie of bundle.sorties) {
+      const group = byUav.get(sortie.uavId) ?? [];
+      group.push(sortie);
+      byUav.set(sortie.uavId, group);
+    }
+    data = [...byUav.entries()]
+      .map(([uavId, sorties]) => {
+        const ordered = [...sorties].sort((left, right) => (
+          left.plannedLaunchTimeSec - right.plannedLaunchTimeSec ||
+          left.batchIndex - right.batchIndex ||
+          left.assignmentId.localeCompare(right.assignmentId)
+        ));
+        const timedPath: TimedMapPoint[] = [];
+        for (const sortie of ordered) {
+          for (const point of sortie.trip) {
+            const previous = timedPath.at(-1);
+            if (
+              previous !== undefined &&
+              previous[0] === point[0] &&
+              previous[1] === point[1] &&
+              previous[2] === point[2] &&
+              previous[3] === point[3]
+            ) {
+              continue;
+            }
+            timedPath.push(point);
+          }
+        }
+        return {
+          assignmentId: ordered[0].assignmentId,
+          uavId,
+          segmentType: "COVERAGE_LINE" as const,
+          timedPath
+        };
+      })
+      .filter(item => item.timedPath.length >= 2);
     flattenCache.set(bundle, data);
   }
   return data;

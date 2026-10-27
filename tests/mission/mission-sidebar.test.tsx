@@ -204,11 +204,11 @@ describe("dynamic mission LayerSidebar", () => {
     );
   });
 
-  it("switches color mode and hides per-strip colors under backend-overview", () => {
+  it("switches color mode and hides per-strip colors under overview routes", () => {
     const props = makeProps();
     const {rerender} = render(<LayerSidebar {...props} />);
     const overviewButton = screen.getByRole("button", {
-      name: "配色模式 后端总览"
+      name: "配色模式 总览航迹"
     });
     const uavButton = screen.getByRole("button", {
       name: "配色模式 按无人机"

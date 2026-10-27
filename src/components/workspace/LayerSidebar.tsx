@@ -51,7 +51,7 @@ const COLOR_MODE_OPTIONS: ReadonlyArray<{
   label: string;
 }> = [
   {mode: "uav", label: "按无人机"},
-  {mode: "overview", label: "后端总览"}
+  {mode: "overview", label: "总览航迹"}
 ];
 
 interface LayerDefinition {
