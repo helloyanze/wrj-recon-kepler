@@ -52,6 +52,112 @@ type StripDatum = CaseBundleV2["strips"][number];
 
 type RouteDatum = NormalizedSortie | OverviewSegmentDatum;
 
+export interface VerticalConnectorDatum {
+  assignmentId: string;
+  uavId: string;
+  path: [MapPoint, MapPoint];
+}
+
+/**
+ * Collect every zero-horizontal-length climb/descent in each sortie trip.
+ *
+ * PathLayer 在尖角处会按 miterLimit 截断接头，垂直升降段在 3D 视角下容易
+ * 只剩一个缺口；把它们单独画成带圆头的短路径，保证阶梯高度处视觉上连续。
+ */
+export function collectVerticalConnectors(
+  bundle: CaseBundleV2
+): VerticalConnectorDatum[] {
+  const connectors: VerticalConnectorDatum[] = [];
+  for (const sortie of bundle.sorties) {
+    const trip = sortie.trip;
+    for (let index = 1; index < trip.length; index += 1) {
+      const previous = trip[index - 1];
+      const current = trip[index];
+      if (
+        previous[0] === current[0] &&
+        previous[1] === current[1] &&
+        previous[2] !== current[2]
+      ) {
+        connectors.push({
+          assignmentId: sortie.assignmentId,
+          uavId: sortie.uavId,
+          path: [
+            [previous[0], previous[1], previous[2]],
+            [current[0], current[1], current[2]]
+          ]
+        });
+      }
+    }
+  }
+  return connectors;
+}
+
+// ≈60 m at the case latitude: enough to keep the climb/descent segment
+// non-degenerate in screen space without visibly changing the scan geometry.
+const VERTICAL_CONNECTOR_LEAD_DEG = 0.0006;
+
+type PathPoint = readonly [number, number, number, ...unknown[]];
+
+/**
+ * Spread every zero-horizontal-length climb/descent over a small horizontal
+ * lead so deck.gl renders it as a continuous ramp instead of a collapsed gap.
+ * Display-only: timestamps and point count are preserved.
+ */
+export function connectVerticalTransitions<T extends PathPoint>(
+  points: readonly T[]
+): T[] {
+  if (points.length < 2) return [...points];
+  const result: T[] = [points[0]];
+  for (let index = 1; index < points.length; index += 1) {
+    const previous = points[index - 1];
+    const current = points[index];
+    const horizontal = Math.hypot(
+      current[0] - previous[0],
+      current[1] - previous[1]
+    );
+    if (horizontal > 1e-12 || current[2] === previous[2]) {
+      result.push(current);
+      continue;
+    }
+
+    let directionLon = 0;
+    let directionLat = 0;
+    for (let lookback = index - 2; lookback >= 0; lookback -= 1) {
+      const deltaLon = previous[0] - points[lookback][0];
+      const deltaLat = previous[1] - points[lookback][1];
+      const length = Math.hypot(deltaLon, deltaLat);
+      if (length > 1e-9) {
+        directionLon = deltaLon / length;
+        directionLat = deltaLat / length;
+        break;
+      }
+    }
+    if (directionLon === 0 && directionLat === 0) {
+      for (let forward = index + 1; forward < points.length; forward += 1) {
+        const deltaLon = points[forward][0] - current[0];
+        const deltaLat = points[forward][1] - current[1];
+        const length = Math.hypot(deltaLon, deltaLat);
+        if (length > 1e-9) {
+          directionLon = deltaLon / length;
+          directionLat = deltaLat / length;
+          break;
+        }
+      }
+    }
+    if (directionLon === 0 && directionLat === 0) {
+      directionLon = 1;
+    }
+
+    const shifted = [
+      current[0] + directionLon * VERTICAL_CONNECTOR_LEAD_DEG,
+      current[1] + directionLat * VERTICAL_CONNECTOR_LEAD_DEG,
+      ...current.slice(2)
+    ] as unknown as T;
+    result.push(shifted);
+  }
+  return result;
+}
+
 interface OverviewMarkerDatum {
   key: string;
   text: string;
@@ -111,6 +217,7 @@ export function createMissionDeckLayers({
   const routeColorKey = colorMapKey(preferences.layerUavColors.routes);
   const tripColorKey = colorMapKey(preferences.layerUavColors.trips);
   const markerColorKey = colorMapKey(preferences.layerUavColors.markers);
+  const verticalConnectors = collectVerticalConnectors(bundle);
   const routePath = (datum: RouteDatum) => "timedPath" in datum
     ? datum.timedPath
     : datum.trip;
@@ -241,7 +348,7 @@ export function createMissionDeckLayers({
       jointRounded: true,
       widthUnits: "pixels",
       getWidth: routePreference.width ?? 2,
-      getPath: datum => routePath(datum).map(point =>
+      getPath: datum => connectVerticalTransitions(routePath(datum)).map(point =>
         scalePoint(point, verticalScale)
       ),
       getColor: datum => {
@@ -269,6 +376,28 @@ export function createMissionDeckLayers({
         : {}),
       ...selectable<RouteDatum>()
     }),
+    new PathLayer<VerticalConnectorDatum>({
+      id: "wrj-algorithm-vertical-connectors",
+      data: verticalConnectors,
+      visible: routePreference.visible,
+      opacity: routePreference.opacity,
+      pickable: true,
+      capRounded: true,
+      jointRounded: true,
+      widthUnits: "pixels",
+      getWidth: (routePreference.width ?? 2) + 1,
+      getPath: ({path}) => path.map(point =>
+        scalePoint(point, verticalScale)
+      ),
+      getColor: ({assignmentId, uavId}) => {
+        if (!isOverview) {
+          return colorFrom(preferences.layerUavColors.routes, uavId);
+        }
+        return hexToRgba(overviewRouteColor(bundle, assignmentId));
+      },
+      updateTriggers: {getColor: isOverview ? "overview-tab10" : routeColorKey},
+      ...selectable<VerticalConnectorDatum>()
+    }),
     new TripsLayer<NormalizedSortie>({
       id: "wrj-algorithm-trips",
       data: bundle.sorties,
@@ -281,7 +410,7 @@ export function createMissionDeckLayers({
       getWidth: tripPreference.width ?? 4,
       currentTime: missionTimeSec,
       trailLength: tripPreference.trailLengthSec ?? 240,
-      getPath: ({trip}) => trip.map(point =>
+      getPath: ({trip}) => connectVerticalTransitions(trip).map(point =>
         scalePoint(point, verticalScale)
       ),
       getTimestamps: ({trip}) => trip.map(point => point[3]),

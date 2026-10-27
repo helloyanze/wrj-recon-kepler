@@ -16,6 +16,8 @@ import {
   createDefaultMissionLayerPreferences
 } from "../../src/features/mission/missionLayerPreferences";
 import {
+  collectVerticalConnectors,
+  connectVerticalTransitions,
   createMissionDeckLayers
 } from "../../src/features/mission/missionDeckLayers";
 
@@ -298,8 +300,61 @@ describe("mission triangle mask", () => {
   });
 });
 
+describe("collectVerticalConnectors", () => {
+  it("collects zero-horizontal-length climb and descent pairs", () => {
+    const verticalBundle = {
+      sorties: [{
+        assignmentId: "ASG-01",
+        uavId: "UAV-01",
+        trip: [
+          [110, 18, 1100, 0],
+          [110.1, 18, 1100, 1],
+          [110.1, 18, 2100, 2],
+          [110.1, 18, 1100, 3]
+        ]
+      }]
+    } as unknown as CaseBundleV2;
+
+    const connectors = collectVerticalConnectors(verticalBundle);
+
+    expect(connectors).toHaveLength(2);
+    expect(connectors[0]).toMatchObject({
+      assignmentId: "ASG-01",
+      uavId: "UAV-01"
+    });
+    expect(connectors[0].path).toEqual([
+      [110.1, 18, 1100],
+      [110.1, 18, 2100]
+    ]);
+    expect(connectors[1].path).toEqual([
+      [110.1, 18, 2100],
+      [110.1, 18, 1100]
+    ]);
+  });
+});
+
+describe("connectVerticalTransitions", () => {
+  it("spreads a zero-XY climb over a horizontal lead and keeps timestamps", () => {
+    const points: Array<[number, number, number, number]> = [
+      [110, 18, 1100, 0],
+      [110.1, 18, 1100, 1],
+      [110.1, 18, 2100, 2],
+      [110.2, 18, 2100, 3]
+    ];
+
+    const display = connectVerticalTransitions(points);
+
+    expect(display).toHaveLength(4);
+    expect(display[2][2]).toBe(2100);
+    expect(display[2][3]).toBe(2);
+    expect(display[2][0]).toBeGreaterThan(110.1);
+    expect(display[2][1]).toBeCloseTo(18, 6);
+    expect(display[3]).toEqual([110.2, 18, 2100, 3]);
+  });
+});
+
 describe("createMissionDeckLayers", () => {
-  it("always returns the six synchronized layer types in stable order", () => {
+  it("always returns the synchronized layer types in stable order", () => {
     const layers = makeLayers();
 
     expect(layers.map(({id}) => id)).toEqual([
@@ -307,6 +362,7 @@ describe("createMissionDeckLayers", () => {
       "wrj-algorithm-scanned",
       "wrj-algorithm-strips",
       "wrj-algorithm-routes",
+      "wrj-algorithm-vertical-connectors",
       "wrj-algorithm-trips",
       "wrj-algorithm-uav-triangles"
     ]);
@@ -314,8 +370,9 @@ describe("createMissionDeckLayers", () => {
     expect(layers[1]).toBeInstanceOf(PolygonLayer);
     expect(layers[2]).toBeInstanceOf(PathLayer);
     expect(layers[3]).toBeInstanceOf(PathLayer);
-    expect(layers[4]).toBeInstanceOf(TripsLayer);
-    expect(layers[5]).toBeInstanceOf(IconLayer);
+    expect(layers[4]).toBeInstanceOf(PathLayer);
+    expect(layers[5]).toBeInstanceOf(TripsLayer);
+    expect(layers[6]).toBeInstanceOf(IconLayer);
   });
 
   it("keeps region, scan coverage and strips at sea level while scaling only route and trip altitude", () => {
@@ -324,6 +381,7 @@ describe("createMissionDeckLayers", () => {
       scannedLayer,
       stripLayer,
       routeLayer,
+      connectorLayer,
       tripLayer
     ] = makeLayers();
     const region = layerProps<{
@@ -348,6 +406,7 @@ describe("createMissionDeckLayers", () => {
       getTimestamps: (datum: CaseBundleV2["sorties"][number]) => number[];
     }>(tripLayer);
 
+    expect(connectorLayer.id).toBe("wrj-algorithm-vertical-connectors");
     expect(region.getPolygon(region.data[0]).every(point => point[2] === 0)).toBe(true);
     expect(scanned.data).toHaveLength(1);
     expect(scanned.getPolygon(scanned.data[0]).every(point => point[2] === 0)).toBe(true);
@@ -373,6 +432,7 @@ describe("createMissionDeckLayers", () => {
       scannedLayer,
       stripLayer,
       routeLayer,
+      connectorLayer,
       tripLayer
     ] = makeLayers();
 
@@ -382,6 +442,7 @@ describe("createMissionDeckLayers", () => {
       filled: false,
       stroked: true
     });
+    expect(connectorLayer.id).toBe("wrj-algorithm-vertical-connectors");
     expect(stripLayer.props).toMatchObject({
       visible: true,
       opacity: 0.3,
@@ -413,9 +474,11 @@ describe("createMissionDeckLayers", () => {
       scannedLayer,
       stripLayer,
       routeLayer,
+      connectorLayer,
       tripLayer,
       markerLayer
     ] = makeLayers();
+    expect(connectorLayer.id).toBe("wrj-algorithm-vertical-connectors");
     type UavDatum = {uavId: string};
     type StripDatum = UavDatum & {stripId: string};
     const strip = layerProps<{
@@ -458,7 +521,7 @@ describe("createMissionDeckLayers", () => {
   });
 
   it("shows flying and three-second landed markers with scaled altitude and clockwise heading", () => {
-    const flyingLayer = makeLayers(5)[5];
+    const flyingLayer = makeLayers(5)[6];
     const flying = layerProps<{
       data: Array<{position: readonly [number, number, number]; headingDeg: number | null}>;
       billboard: boolean;
@@ -484,9 +547,9 @@ describe("createMissionDeckLayers", () => {
       mask: true
     });
 
-    expect(layerProps<{data: unknown[]}>(makeLayers(-1)[5]).data).toHaveLength(0);
-    expect(layerProps<{data: unknown[]}>(makeLayers(12.999)[5]).data).toHaveLength(1);
-    expect(layerProps<{data: unknown[]}>(makeLayers(13)[5]).data).toHaveLength(0);
+    expect(layerProps<{data: unknown[]}>(makeLayers(-1)[6]).data).toHaveLength(0);
+    expect(layerProps<{data: unknown[]}>(makeLayers(12.999)[6]).data).toHaveLength(1);
+    expect(layerProps<{data: unknown[]}>(makeLayers(13)[6]).data).toHaveLength(0);
   });
 
   it("keeps pick data identifiable and wires selection only when requested", () => {
@@ -499,6 +562,7 @@ describe("createMissionDeckLayers", () => {
         data: Array<{assignmentId: string}>;
         onClick?: (info: {object: {assignmentId: string}}) => void;
       }>(layer);
+      if (props.data.length === 0) continue;
       expect(props.data[0].assignmentId).toBe("ASG-01");
       props.onClick?.({object: props.data[0]});
     }
@@ -513,7 +577,7 @@ describe("createMissionDeckLayers", () => {
 });
 
 describe("createMissionDeckLayers overview mode", () => {
-  it("appends a non-pickable markers TextLayer after the six uav layers", () => {
+  it("appends a non-pickable markers TextLayer after the uav layers", () => {
     const layers = makeLayers(5, undefined, "overview");
 
     expect(layers.map(({id}) => id)).toEqual([
@@ -521,12 +585,13 @@ describe("createMissionDeckLayers overview mode", () => {
       "wrj-algorithm-scanned",
       "wrj-algorithm-strips",
       "wrj-algorithm-routes",
+      "wrj-algorithm-vertical-connectors",
       "wrj-algorithm-trips",
       "wrj-algorithm-uav-triangles",
       "wrj-algorithm-overview-markers"
     ]);
-    expect(layers[6]).toBeInstanceOf(TextLayer);
-    expect(layers[6].props).toMatchObject({
+    expect(layers[7]).toBeInstanceOf(TextLayer);
+    expect(layers[7].props).toMatchObject({
       visible: false, // routes.visible 由 makeLayers 关闭，markers 跟随它
       pickable: false,
       opacity: 1,
@@ -549,7 +614,7 @@ describe("createMissionDeckLayers overview mode", () => {
     const trips = layerProps<{
       data: Array<{uavId: string}>;
       getColor: (datum: {uavId: string}) => number[];
-    }>(layers[4]);
+    }>(layers[5]);
 
     expect(strips.getColor(strips.data[0])).toEqual([170, 170, 170, 255]);
     expect(scanned.getFillColor(scanned.data[0])).toEqual([86, 120, 154, 255]);
@@ -583,13 +648,18 @@ describe("createMissionDeckLayers overview mode", () => {
     expect(routes.data[0].timedPath).toEqual(overviewBundle.sorties[0].trip);
     // tab10[0] = #1f77b4 => [31,119,180]；完整航迹使用覆盖线 α0.85*255=217
     expect(routes.getColor(routes.data[0])).toEqual([31, 119, 180, 217]);
-    expect(routes.getPath(routes.data[0])).toEqual([
-      [110, 18, 0],
-      [110, 18, 240],
+    const routePath = routes.getPath(routes.data[0]);
+    expect(routePath).toHaveLength(5);
+    expect(routePath[1][0]).toBeCloseTo(110.0006, 6);
+    expect(routePath[1][1]).toBe(18);
+    expect(routePath[1][2]).toBe(240);
+    expect(routePath.slice(2, 4)).toEqual([
       [110.5, 18, 400],
-      [111.5, 18, 400],
-      [111.5, 18, 40]
+      [111.5, 18, 400]
     ]);
+    expect(routePath[4][0]).toBeCloseTo(111.5006, 6);
+    expect(routePath[4][1]).toBe(18);
+    expect(routePath[4][2]).toBe(40);
     const dash = layerProps<{
       getDashArray: (datum: {segmentType: SegmentType}) => [number, number];
     }>(layers[3]);
@@ -620,7 +690,7 @@ describe("createMissionDeckLayers overview mode", () => {
       getPixelOffset: (datum: {
         pixelOffset: [number, number];
       }) => [number, number];
-    }>(layers[6]);
+    }>(layers[7]);
 
     const byKey = new Map(markers.data.map(datum => [datum.key, datum]));
     expect(markers.data.map(({text}) => text).sort()).toEqual([
